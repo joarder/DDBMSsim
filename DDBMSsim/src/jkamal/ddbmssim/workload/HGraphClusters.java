@@ -45,18 +45,18 @@ public class HGraphClusters {
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
-				for(Data data : transaction.getTr_dataSet()) {
-					Data dbData = db.search(data.getData_id());
+				for(Integer data_id : transaction.getTr_dataSet()) {
+					Data data = db.search(data_id);
 					
 					//if(data.isData_hasShadowHMetisId()) {
-					if(!dataSet.contains(data.getData_id())) {
+					if(!dataSet.contains(data_id)) {
 						//System.out.println("@debug >> d = "+d+"| key: "+keyMap.get(data.getData_shadowHMetisId())+" | "+data.toString());
-						dbData.setData_hmetisClusterId(keyMap.get(data.getData_shadowHMetisId())+1);						
+						data.setData_hmetisClusterId(keyMap.get(data.getData_shadowHMetisId())+1);						
 						//System.out.println("@debug >> Data ("+data.toString()+") | hkey: "+data.getData_shadowHMetisId()+" | Cluster: "+data.getData_hmetisClusterId());
-						dbData.setData_shadowHMetisId(-1);
-						dbData.setData_hasShadowHMetisId(false);
+						data.setData_shadowHMetisId(-1);
+						data.setData_hasShadowHMetisId(false);
 						
-						dataSet.add(data.getData_id());
+						dataSet.add(data_id);
 						//d++;
 					}// else { // Repeated Data
 						//System.out.println("@debug >> *Repeated Data ("+data.toString()+") | hkey: "+data.getData_shadowHMetisId());

@@ -35,7 +35,7 @@ public class TransactionGenerator {
 	public void generateTransaction(Database db, Workload workload, int global_tr_id) {				
 		ArrayList<Transaction> transactionList;
 		Transaction transaction;		
-		Set<Data> trDataSet;
+		Set<Integer> trDataSet;
 		ArrayList<Integer> trDataList;		
 		Data data;
 		Double rand = 0.0;
@@ -62,7 +62,7 @@ public class TransactionGenerator {
 				++global_tr_id;
 				DBMSSimulator.incGlobal_tr_id();
 				
-				trDataSet = new TreeSet<Data>();
+				trDataSet = new TreeSet<Integer>();
 				trDataList = new ArrayList<Integer>();
 				
 				// k -- required numbers of Data items based on Transaction type
@@ -75,14 +75,14 @@ public class TransactionGenerator {
 					} else {
 						trDataList.add(data_id);						
 												
-						if(workload.getWrl_id() != 0)
+						/*if(workload.getWrl_id() != 0)
 							data = new Data(db.search(data_id));
 						else 
-							data = db.search(data_id);
-							
+							data = db.search(data_id);*/
+						data = db.search(data_id);							
 						data.getData_transaction_involved().add(global_tr_id);																														
 						
-						trDataSet.add(data);						
+						trDataSet.add(data_id);						
 					}					
 				} // end--k for() loop
 																

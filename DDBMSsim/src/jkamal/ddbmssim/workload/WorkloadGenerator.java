@@ -123,12 +123,12 @@ public class WorkloadGenerator {
 			}						
 			
 			// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
-			workloadClassifier.classifyTransactions(workload);
+			workloadClassifier.classifyTransactions(db, workload);
 			
 			// Assign Shadow HMetis Data Id and generate workload and fix files
-			this.assignShadowHMetisDataId(workload);			
-			this.generateWorkloadFile(workload);
-			this.generateFixFile(workload);
+			this.assignShadowHMetisDataId(db, workload);			
+			this.generateWorkloadFile(db, workload);
+			this.generateFixFile(db, workload);
 			
 			workload.show(db);
 			
@@ -152,7 +152,9 @@ public class WorkloadGenerator {
 				transaction.calculateTr_weight();
 				transaction.generateTransactionCost(db);								
 				
-				for(Data data : transaction.getTr_dataSet()) {
+				for(Integer data_id : transaction.getTr_dataSet()) {
+					Data data = db.search(data_id);
+					
 					// Remove already removed Transaction Ids from Data-Transaction involved List
 					Set<Integer> toBeRemovedTransactionSet = new TreeSet<Integer>();
 					for(Integer tr : data.getData_transaction_involved()) {
@@ -196,7 +198,9 @@ public class WorkloadGenerator {
 		// Refresh the whole Workload with the updated Data frequency
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
-				for(Data data : transaction.getTr_dataSet()) {	
+				for(Integer data_id : transaction.getTr_dataSet()) {
+					Data data = db.search(data_id);
+					
 					data.setData_frequency(dataFrequencyTracker.get(data.getData_id()));
 					data.calculateData_weight();
 					
@@ -256,11 +260,13 @@ public class WorkloadGenerator {
 	}
 	
 	// Assigns Shadow HMetis Data Id for Hypergraph partitioning
-	public void assignShadowHMetisDataId(Workload workload) {
+	public void assignShadowHMetisDataId(Database db, Workload workload) {
 		// Cleanup
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
-				for(Data data : transaction.getTr_dataSet()) {
+				for(Integer data_id : transaction.getTr_dataSet()) {
+					Data data = db.search(data_id);
+					
 					if(data.isData_hasShadowHMetisId()) {					
 						data.setData_shadowHMetisId(-1);
 						data.setData_hasShadowHMetisId(false);
@@ -273,7 +279,9 @@ public class WorkloadGenerator {
 		int shadow_hmetis_data_id = 1;		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
-				for(Data data : transaction.getTr_dataSet()) {
+				for(Integer data_id : transaction.getTr_dataSet()) {
+					Data data = db.search(data_id);
+					
 					if(!data.isData_hasShadowHMetisId()) {					
 						data.setData_shadowHMetisId(shadow_hmetis_data_id);
 						data.setData_hasShadowHMetisId(true);								
@@ -287,7 +295,7 @@ public class WorkloadGenerator {
 	}
 	
 	// Generates Workload File for Hypergraph partitioning
-	public void generateWorkloadFile(Workload workload) {
+	public void generateWorkloadFile(Database db, Workload workload) {
 		File workloadFile = new File(DBMSSimulator.DIR_LOCATION+"\\"
 				+workload.getWrl_id()+"-"+workload.getWrl_workloadFile());
 		
@@ -309,9 +317,9 @@ public class WorkloadGenerator {
 						if(transaction.getTr_class() != "green") {
 							writer.write(transaction.getTr_weight()+" ");
 							
-							Iterator<Data> data =  transaction.getTr_dataSet().iterator();
+							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
 							while(data.hasNext()) {
-								trData = data.next();
+								trData = db.search(data.next());
 								
 								writer.write(Integer.toString(trData.getData_shadowHMetisId()));							
 								
@@ -332,10 +340,10 @@ public class WorkloadGenerator {
 					for(Transaction transaction : entry.getValue()) {
 						if(transaction.getTr_class() != "green") {
 							
-							Iterator<Data> data =  transaction.getTr_dataSet().iterator();							
+							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();							
 							
 							while(data.hasNext()) {
-								trData = data.next();								
+								trData = db.search(data.next());								
 								
 								if(!uniqueDataSet.contains(trData.getData_shadowHMetisId())) {
 									++newline;
@@ -364,7 +372,7 @@ public class WorkloadGenerator {
 	
 	// Generates Fix Files (Determines whether a Data is movable from its current Partition or not) 
 	// for Hypergraph partitioning
-	public void generateFixFile(Workload workload) {
+	public void generateFixFile(Database db, Workload workload) {
 		File fixFile = new File(DBMSSimulator.DIR_LOCATION+"\\"
 				+workload.getWrl_id()+"-"+workload.getWrl_fixFile());
 		
@@ -382,10 +390,10 @@ public class WorkloadGenerator {
 				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 					for(Transaction transaction : entry.getValue()) {
 						if(transaction.getTr_class() != "green") {							
-							Iterator<Data> data =  transaction.getTr_dataSet().iterator();							
+							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();							
 							
 							while(data.hasNext()) {
-								trData = data.next();								
+								trData = db.search(data.next());								
 								
 								if(!uniqueDataSet.contains(trData.getData_shadowHMetisId())) {
 									++newline;

@@ -351,11 +351,12 @@ public class Workload implements Comparable<Workload> {
 		return null;
 	}
 	
-	public Data getData(Transaction transaction, int data_id) {
+	public Data getData(Database db, Transaction transaction, int data_id) {
 		Data data;
-		Iterator<Data> iterator = transaction.getTr_dataSet().iterator();
-		while(iterator.hasNext()) {
-			data = iterator.next();
+		Iterator<Integer> id = transaction.getTr_dataSet().iterator();
+		while(id.hasNext()) {
+			data = db.search(id.next());
+			
 			if(data.getData_id() == data_id)
 				return data;
 		}		

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import jkamal.ddbmssim.db.Data;
+import jkamal.ddbmssim.db.Database;
 
 public class TransactionClassifier {
 	// red --> Distributed Transactions
@@ -16,7 +17,7 @@ public class TransactionClassifier {
 
 	public TransactionClassifier() {}
 
-	public void classifyTransactions(Workload workload) {
+	public void classifyTransactions(Database db, Workload workload) {
 		int orange_tr_data = 0;
 		int green_tr_data = 0;
 		
@@ -28,10 +29,10 @@ public class TransactionClassifier {
 				if(transaction.getTr_dtCost() > 0)
 					transaction.setTr_class("red");
 				else {
-					Iterator<Data> data_iterator = transaction.getTr_dataSet().iterator();
+					Iterator<Integer> data_iterator = transaction.getTr_dataSet().iterator();
 					
 					while(data_iterator.hasNext()) {
-						Data data = data_iterator.next();
+						Data data = db.search(data_iterator.next());
 						int tr_counts = data.getData_transaction_involved().size();
 						
 						if(tr_counts <= 1) 
