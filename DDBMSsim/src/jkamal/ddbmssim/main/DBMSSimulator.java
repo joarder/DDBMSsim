@@ -22,11 +22,11 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 public class DBMSSimulator {	
 	public final static int DB_SERVERS = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-	public final static int DATA_OBJECTS = 7200; // 10GB Data (in Size)
-	public final static int TRANSACTION_NUMS = 1000;
-	public final static int SIMULATION_RUN_NUMBERS = 28;
+	public final static int DATA_OBJECTS = 72; // 10GB Data (in Size)
+	public final static int TRANSACTION_NUMS = 10;
+	public final static int SIMULATION_RUN_NUMBERS = 3;
 	
-	public final static String DIR_LOCATION = "C:\\Users\\jkamal\\git\\Prototype\\Prototype\\exec\\native\\hMetis\\1.5.3-win32";	
+	public final static String DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\Prototype\\Prototype\\exec\\native\\hMetis\\1.5.3-win32";	
 	public final static String HMETIS = "hmetis";
 	
 	public static RandomDataGenerator random_birth;
@@ -56,9 +56,9 @@ public class DBMSSimulator {
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
 		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size
-		//Database db = new Database(0, "test-db", 0, "Range", 0.01);
+		Database db = new Database(0, "test-db", 0, "Range", 0.01);
 		//Database db = new Database(0, "test-db", 0, "Range", 0.1);
-		Database db = new Database(0, "testdb", 0, "Range", 1);
+		//Database db = new Database(0, "testdb", 0, "Range", 1);
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
 		// Perform Bootstrapping through synthetic Data generation and placing it into appropriate Partition
