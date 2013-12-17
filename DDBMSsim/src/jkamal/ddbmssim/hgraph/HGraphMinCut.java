@@ -31,7 +31,7 @@ public class HGraphMinCut {
 
 	//public HGraphMinCut(File dir, String hgraph_exec, String hgraph_file, String fix_file, int num_partitions) {
 	public HGraphMinCut(Workload workload, String hgraph_exec, int partition_numbers) {
-		this.exec_dir = new File(DBMSSimulator.DIR_LOCATION);
+		this.exec_dir = new File(DBMSSimulator.hMETIS_DIR_LOCATION);
 		this.exec_name = hgraph_exec;
 		this.num_partitions = Integer.toString(partition_numbers);
 		this.setHgraph_file(workload.getWrl_id()+"-"+workload.getWrl_workloadFile());

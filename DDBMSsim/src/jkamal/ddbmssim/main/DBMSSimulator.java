@@ -26,8 +26,11 @@ public class DBMSSimulator {
 	public final static int TRANSACTION_NUMS = 10;
 	public final static int SIMULATION_RUN_NUMBERS = 3;
 	
-	public final static String DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\Prototype\\Prototype\\exec\\native\\hMetis\\1.5.3-win32";	
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\Prototype\\Prototype\\exec\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	
 	public final static String HMETIS = "hmetis";
+	public final static String METIS = "pmetis";
 	
 	public static RandomDataGenerator random_birth;
 	public static RandomDataGenerator random_death;
@@ -91,12 +94,12 @@ public class DBMSSimulator {
 		Database s2_db = new Database(db);
 		
 		SimulationMetricsLogger logger = new SimulationMetricsLogger();
-		PrintWriter bs_db_log = logger.getWriter(DIR_LOCATION, "bs_db_log");
-		PrintWriter s1_db_log = logger.getWriter(DIR_LOCATION, "s1_db_log");
-		PrintWriter s2_db_log = logger.getWriter(DIR_LOCATION, "s2_db_log");
+		PrintWriter bs_db_log = logger.getWriter(hMETIS_DIR_LOCATION, "bs_db_log");
+		PrintWriter s1_db_log = logger.getWriter(hMETIS_DIR_LOCATION, "s1_db_log");
+		PrintWriter s2_db_log = logger.getWriter(hMETIS_DIR_LOCATION, "s2_db_log");
 		
-		PrintWriter workload_log = logger.getWriter(DIR_LOCATION, "workload_log");		
-		PrintWriter partition_log = logger.getWriter(DIR_LOCATION, "partition_log");
+		PrintWriter workload_log = logger.getWriter(hMETIS_DIR_LOCATION, "workload_log");		
+		PrintWriter partition_log = logger.getWriter(hMETIS_DIR_LOCATION, "partition_log");
 		
 		int simulation_run = 0;	
 		while(simulation_run != DBMSSimulator.SIMULATION_RUN_NUMBERS) {			

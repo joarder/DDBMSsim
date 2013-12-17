@@ -288,7 +288,7 @@ public class WorkloadGenerator {
 	
 	// Generates Workload File for Hypergraph partitioning
 	public void generateWorkloadFile(Workload workload) {
-		File workloadFile = new File(DBMSSimulator.DIR_LOCATION+"\\"
+		File workloadFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
 				+workload.getWrl_id()+"-"+workload.getWrl_workloadFile());
 		
 		Data trData = null;
@@ -365,7 +365,7 @@ public class WorkloadGenerator {
 	// Generates Fix Files (Determines whether a Data is movable from its current Partition or not) 
 	// for Hypergraph partitioning
 	public void generateFixFile(Workload workload) {
-		File fixFile = new File(DBMSSimulator.DIR_LOCATION+"\\"
+		File fixFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
 				+workload.getWrl_id()+"-"+workload.getWrl_fixFile());
 		
 		Data trData = null;
