@@ -22,6 +22,7 @@ import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.DatabaseServer;
 import jkamal.ddbmssim.main.DBMSSimulator;
 
+//test
 public class WorkloadGenerator {	
 	private Map<Integer, Workload> workload_map;	
 	private WorkloadDataPreparer workloadDataPreparer;
