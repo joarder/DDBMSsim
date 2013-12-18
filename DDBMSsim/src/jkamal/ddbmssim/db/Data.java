@@ -30,6 +30,12 @@ public class Data implements Comparable<Data> {
 	private int data_hmetis_cluster_id;
 	private int data_shadow_hmetis_id;
 	private boolean data_hasShadowHMetisId;
+	
+	// Graph Partitioning Attributes
+	private int data_metis_cluster_id;
+	private int data_shadow_metis_id;
+	private boolean data_hasShadowMetisId;
+	
 	// Partition Attributes		
 	private int data_partition_id;			// Currently residing (Roaming/Home) Partition Id
 	private int data_home_partition_id;		// Original Home Partition Id	
@@ -57,7 +63,11 @@ public class Data implements Comparable<Data> {
 		
 		this.setData_hmetisClusterId(-1);
 		this.setData_shadowHMetisId(-1);
-		this.setData_hasShadowHMetisId(false);				
+		this.setData_hasShadowHMetisId(false);
+				
+		this.setData_metisClusterId(-1);
+		this.setData_shadowMetisId(-1);
+		this.setData_hasShadowMetisId(false);
 		
 		this.setData_partitionId(pid); // default partition id = -1 means undefined.
 		this.setData_homePartitionId(pid);
@@ -206,14 +216,6 @@ public class Data implements Comparable<Data> {
 		this.data_home_partition_id = data_home_partition_id;
 	}
 
-	public int getData_hmetisClusterId() {
-		return data_hmetis_cluster_id;
-	}
-
-	public void setData_hmetisClusterId(int data_hmetis_cluster_id) {
-		this.data_hmetis_cluster_id = data_hmetis_cluster_id;
-	}
-
 	public int getData_nodeId() {
 		return data_node_id;
 	}
@@ -244,6 +246,38 @@ public class Data implements Comparable<Data> {
 
 	public void setData_hasShadowHMetisId(boolean data_hasHMetisId) {
 		this.data_hasShadowHMetisId = data_hasHMetisId;
+	}
+	
+	public int getData_hmetisClusterId() {
+		return data_hmetis_cluster_id;
+	}
+
+	public void setData_hmetisClusterId(int data_hmetis_cluster_id) {
+		this.data_hmetis_cluster_id = data_hmetis_cluster_id;
+	}
+
+	public int getData_metisClusterId() {
+		return data_metis_cluster_id;
+	}
+
+	public void setData_metisClusterId(int data_metis_cluster_id) {
+		this.data_metis_cluster_id = data_metis_cluster_id;
+	}
+
+	public int getData_shadowMetisId() {
+		return data_shadow_metis_id;
+	}
+
+	public void setData_shadowMetisId(int data_shadow_metis_id) {
+		this.data_shadow_metis_id = data_shadow_metis_id;
+	}
+
+	public boolean isData_hasShadowMetisId() {
+		return data_hasShadowMetisId;
+	}
+
+	public void setData_hasShadowMetisId(boolean data_hasShadowMetisId) {
+		this.data_hasShadowMetisId = data_hasShadowMetisId;
 	}
 
 	public boolean isData_isMoveable() {

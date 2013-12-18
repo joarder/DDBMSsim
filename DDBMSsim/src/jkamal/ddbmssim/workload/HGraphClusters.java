@@ -22,47 +22,41 @@ public class HGraphClusters {
 	
 	public void readPartFile(Database db, Workload workload, int partition_numbers) throws IOException {		
 		Map<Integer, Integer> keyMap = new TreeMap<Integer, Integer>();		
-		String wrl_fileName = workload.getWrl_workloadFile();		
+		String wrl_fileName = workload.getWrl_hGraphWorkloadFile();		
 		String part_file = wrl_fileName+".part."+partition_numbers;	
-		File part = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"+workload.getWrl_id()+"-"+part_file);
-		int cluster_id = -1;
-		int key = 0;
+		File part = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"+workload.getWrl_id()+"-"+part_file);		
+		int key = 1;
 		
 		Scanner scanner = new Scanner(part);
 		try {
 			while(scanner.hasNextLine()) {
-				cluster_id = Integer.valueOf(scanner.nextLine());				
-				++key;				
-				keyMap.put(key, cluster_id);
-				//System.out.println("@debug >> key: "+key+" | Cluster: "+cluster_id);
+				int cluster_id = Integer.valueOf(scanner.nextLine());								
+				keyMap.put(key, cluster_id);	//System.out.println("@debug >> key: "+key+" | Cluster: "+cluster_id);				
+				++key;
 			}						
 		} finally {
 			scanner.close();
 		}					
 		
-		//int d = 1;
-		//int r = 1;
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
 				for(Integer data_id : transaction.getTr_dataSet()) {
 					Data data = db.search(data_id);
 					
-					//if(data.isData_hasShadowHMetisId()) {
 					if(!dataSet.contains(data_id)) {
-						//System.out.println("@debug >> d = "+d+"| key: "+keyMap.get(data.getData_shadowHMetisId())+" | "+data.toString());
-						data.setData_hmetisClusterId(keyMap.get(data.getData_shadowHMetisId())+1);						
-						//System.out.println("@debug >> Data ("+data.toString()+") | hkey: "+data.getData_shadowHMetisId()+" | Cluster: "+data.getData_hmetisClusterId());
+						int shadow_id = workload.getWrl_hg_dataId_shadowId_map().get(data.getData_id());
+						int cluster_id = keyMap.get(shadow_id)+1;
+						//System.out.println("@debug >> "+data.toString()+" | S="+shadow_id+" | C="+cluster_id);
+						
+						data.setData_hmetisClusterId(cluster_id);
+						workload.getWrl_hg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
+
 						data.setData_shadowHMetisId(-1);
 						data.setData_hasShadowHMetisId(false);
 						
-						dataSet.add(data_id);
-						//d++;
-					}// else { // Repeated Data
-						//System.out.println("@debug >> *Repeated Data ("+data.toString()+") | hkey: "+data.getData_shadowHMetisId());
-						//r++;
-						//System.out.println("@debug >> *r = "+r);
-					//}
+						dataSet.add(data_id);					
+					}
 				} // end -- for()-Data
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction Types

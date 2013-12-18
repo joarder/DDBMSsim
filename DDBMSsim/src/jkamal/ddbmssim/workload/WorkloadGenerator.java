@@ -127,8 +127,9 @@ public class WorkloadGenerator {
 			
 			// Assign Shadow HMetis Data Id and generate workload and fix files
 			this.assignShadowHMetisDataId(db, workload);			
-			this.generateWorkloadFile(db, workload);
-			this.generateFixFile(db, workload);
+			this.generateHGraphWorkloadFile(db, workload);
+			this.generateHGraphFixFile(db, workload);
+			this.generateGraphWorkloadFile(db, workload);
 			
 			workload.show(db);
 			
@@ -282,7 +283,9 @@ public class WorkloadGenerator {
 				for(Integer data_id : transaction.getTr_dataSet()) {
 					Data data = db.search(data_id);
 					
-					if(!data.isData_hasShadowHMetisId()) {					
+					if(!data.isData_hasShadowHMetisId()) {
+						workload.getWrl_hg_dataId_shadowId_map().put(data.getData_id(), shadow_hmetis_data_id);
+						
 						data.setData_shadowHMetisId(shadow_hmetis_data_id);
 						data.setData_hasShadowHMetisId(true);								
 						++shadow_hmetis_data_id;					
@@ -295,9 +298,9 @@ public class WorkloadGenerator {
 	}
 	
 	// Generates Workload File for Hypergraph partitioning
-	public void generateWorkloadFile(Database db, Workload workload) {
+	public void generateHGraphWorkloadFile(Database db, Workload workload) {
 		File workloadFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
-				+workload.getWrl_id()+"-"+workload.getWrl_workloadFile());
+				+workload.getWrl_id()+"-"+workload.getWrl_hGraphWorkloadFile());
 		
 		Data trData = null;
 		int hyper_edges = workload.getWrl_totalTransactions();
@@ -372,9 +375,9 @@ public class WorkloadGenerator {
 	
 	// Generates Fix Files (Determines whether a Data is movable from its current Partition or not) 
 	// for Hypergraph partitioning
-	public void generateFixFile(Database db, Workload workload) {
+	public void generateHGraphFixFile(Database db, Workload workload) {
 		File fixFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
-				+workload.getWrl_id()+"-"+workload.getWrl_fixFile());
+				+workload.getWrl_id()+"-"+workload.getWrl_hGraphFixFile());
 		
 		Data trData = null;
 		
@@ -420,6 +423,80 @@ public class WorkloadGenerator {
 		} catch (IOException e) {		
 			e.printStackTrace();
 		}		
+	}
+	
+	// Generates Workload File for Graph partitioning
+	public void generateGraphWorkloadFile(Database db, Workload workload) {
+		File workloadFile = new File(DBMSSimulator.METIS_DIR_LOCATION+"\\"
+				+workload.getWrl_id()+"-"+workload.getWrl_hGraphWorkloadFile());
+		
+		Data trData = null;
+		Data trInvolvedData = null;
+		Set<Integer> dataIdSet = null;
+		Set<Integer> dataSet = new TreeSet<Integer>();
+		int edges = workload.getWrl_totalTransactions(); // Total number of edges need to be determined
+		int vertices = workload.getWrl_totalDataObjects();
+		int hasTransactionWeight = 1;
+		int hasDataWeight = 1;		
+		
+		try {
+			workloadFile.createNewFile();
+			Writer writer = null;
+			try {
+				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
+				writer.write(edges+" "+vertices+" "+hasTransactionWeight+""+hasDataWeight+"\n");
+				
+				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+					for(Transaction transaction : entry.getValue()) {
+						if(transaction.getTr_class() != "green") {
+							
+							Iterator<Integer> dataId =  transaction.getTr_dataSet().iterator();
+							while(dataId.hasNext()) {
+								dataIdSet = new TreeSet<Integer>();
+								trData = db.search(dataId.next());
+													
+								if(!dataSet.contains(trData.getData_id())) {								
+									writer.write(Integer.toString(trData.getData_shadowHMetisId())+" ");							
+									writer.write(Integer.toString(trData.getData_weight())+" ");
+									dataIdSet.add(trData.getData_id());
+									
+									if(trData.getData_transaction_involved().size() != 0) {					
+										for(Integer transaction_id : trData.getData_transaction_involved()) {
+											Transaction tr = workload.getTransaction(transaction_id);
+											
+											if(tr != null) {
+												for(int trInvolvedDataId : tr.getTr_dataSet()) {
+													trInvolvedData = db.search(trInvolvedDataId);
+													
+													if(!dataIdSet.contains(trInvolvedDataId)) {
+														writer.write(Integer.toString(trInvolvedData.getData_shadowHMetisId()));							
+														writer.write(tr.getTr_weight()+" ");
+														
+														dataIdSet.add(trInvolvedData.getData_id());
+													}
+												}
+											}
+										}
+									}
+									
+									if(dataId.hasNext())
+										writer.write(" ");
+								}
+																
+							} // end -- while() loop
+							
+							writer.write("\n");						
+						} // end -- if()-Transaction Class
+					} // end -- for()-Transaction
+				} // end -- for()-Transaction-Types				
+			} catch(IOException e) {
+				e.printStackTrace();
+			}finally {
+				writer.close();
+			}
+		} catch (IOException e) {		
+			e.printStackTrace();
+		}
 	}
 	
 	public void print(Workload workload) {

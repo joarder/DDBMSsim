@@ -38,8 +38,16 @@ public class Workload implements Comparable<Workload> {
 	private int wrl_intraNodeDataMovements;
 	private int wrl_interNodeDataMovements;
 	
-	private String wrl_workload_file = null;
-	private String wrl_fix_file = null;
+	private Map<Integer, Integer> wrl_hg_dataId_shadowId_map;
+	private Map<Integer, Integer> wrl_hg_dataId_clusterId_map;
+	
+	private Map<Integer, Integer> wrl_gr_dataId_shadowId_map;
+	private Map<Integer, Integer> wrl_gr_dataId_clusterId_map;
+	
+	private String wrl_hgraph_workload_file = null;
+	private String wrl_hgraph_fix_file = null;
+	
+	private String wrl_graph_workload_file = null;
 	
 	private double wrl_dt_impact;
 	private int wrl_dt_nums;
@@ -74,8 +82,16 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_intraNodeDataMovements(0);
 		this.setWrl_interNodeDataMovements(0);
 		
-		this.setWrl_workloadFile("workload.txt");
-		this.setWrl_fixFile("fixfile.txt");
+		this.setWrl_hg_dataId_shadowId_map(new TreeMap<Integer, Integer>());
+		this.setWrl_hg_dataId_clusterId_map(new TreeMap<Integer, Integer>());
+		
+		this.setWrl_gr_dataId_shadowId_map(new TreeMap<Integer, Integer>());
+		this.setWrl_gr_dataId_clusterId_map(new TreeMap<Integer, Integer>());
+		
+		this.setWrl_hGraphWorkloadFile("hgr-workload.txt");
+		this.setWrl_hGraphFixFile("hgr-fixfile.txt");
+		
+		this.setWrl_graphWorkloadFile("gr-workload.txt");
 		
 		this.setWrl_dt_impact(0.0);
 		this.setWrl_dt_nums(0);
@@ -87,7 +103,7 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_data_movement_strategy(null);
 		this.setMessage(" (Initial Stage) ");
 	}
-	
+
 	// Copy Constructor
 	public Workload(Workload workload) {
 		this.setWrl_id(workload.getWrl_id());
@@ -133,9 +149,36 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_totalDataObjects(workload.getWrl_totalDataObjects());
 		this.setWrl_intraNodeDataMovements(workload.getWrl_intraNodeDataMovements());
 		this.setWrl_interNodeDataMovements(workload.getWrl_interNodeDataMovements());
-				
-		this.setWrl_workloadFile(workload.getWrl_workloadFile());
-		this.setWrl_fixFile(workload.getWrl_fixFile());
+			
+		//HyperGraph
+		
+		Map<Integer, Integer> clone_dataId_shadowId_map = new TreeMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : workload.getWrl_hg_dataId_shadowId_map().entrySet())
+			clone_dataId_shadowId_map.put(entry.getKey(), entry.getValue());
+		this.setWrl_hg_dataId_shadowId_map(clone_dataId_shadowId_map);
+		
+		Map<Integer, Integer> clone_dataId_clusterId_map = new TreeMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : workload.getWrl_hg_dataId_clusterId_map().entrySet())
+			clone_dataId_clusterId_map.put(entry.getKey(), entry.getValue());
+		this.setWrl_hg_dataId_clusterId_map(clone_dataId_clusterId_map);
+		
+		//Graph
+		
+		Map<Integer, Integer> clone_gr_dataId_shadowId_map = new TreeMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : workload.getWrl_gr_dataId_shadowId_map().entrySet())
+			clone_gr_dataId_shadowId_map.put(entry.getKey(), entry.getValue());
+		this.setWrl_gr_dataId_shadowId_map(clone_gr_dataId_shadowId_map);
+
+		Map<Integer, Integer> clone_gr_dataId_clusterId_map = new TreeMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : workload.getWrl_gr_dataId_clusterId_map().entrySet())
+			clone_gr_dataId_clusterId_map.put(entry.getKey(), entry.getValue());
+		this.setWrl_gr_dataId_clusterId_map(clone_gr_dataId_clusterId_map);
+		
+		//HyperGraph Files
+		this.setWrl_hGraphWorkloadFile(workload.getWrl_hGraphWorkloadFile());
+		this.setWrl_hGraphFixFile(workload.getWrl_hGraphFixFile());
+		//Graph Files
+		this.setWrl_graphWorkloadFile(workload.getWrl_graphWorkloadFile());
 		
 		this.setWrl_dt_impact(workload.getWrl_DtImpact());
 		this.setWrl_dt_nums(workload.getWrl_DtNumbers());
@@ -316,22 +359,67 @@ public class Workload implements Comparable<Workload> {
 		this.wrl_interNodeDataMovements = wrl_interNodeDataMovements;
 	}
 
-	public String getWrl_workloadFile() {
-		return wrl_workload_file;
+	
+	public Map<Integer, Integer> getWrl_hg_dataId_shadowId_map() {
+		return wrl_hg_dataId_shadowId_map;
 	}
 
-	public void setWrl_workloadFile(String wrl_workload_file) {
-		this.wrl_workload_file = wrl_workload_file;
+	public void setWrl_hg_dataId_shadowId_map(
+			Map<Integer, Integer> wrl_dataId_shadowId_map) {
+		this.wrl_hg_dataId_shadowId_map = wrl_dataId_shadowId_map;
 	}
 
-	public String getWrl_fixFile() {
-		return wrl_fix_file;
+	public Map<Integer, Integer> getWrl_hg_dataId_clusterId_map() {
+		return wrl_hg_dataId_clusterId_map;
 	}
 
-	public void setWrl_fixFile(String wrl_fixfile) {
-		this.wrl_fix_file = wrl_fixfile;
+	public void setWrl_hg_dataId_clusterId_map(
+			Map<Integer, Integer> wrl_dataId_clusterId_map) {
+		this.wrl_hg_dataId_clusterId_map = wrl_dataId_clusterId_map;
+	}
+
+	public Map<Integer, Integer> getWrl_gr_dataId_shadowId_map() {
+		return wrl_gr_dataId_shadowId_map;
+	}
+
+	public void setWrl_gr_dataId_shadowId_map(
+			Map<Integer, Integer> wrl_gr_dataId_shadowId_map) {
+		this.wrl_gr_dataId_shadowId_map = wrl_gr_dataId_shadowId_map;
+	}
+
+	public Map<Integer, Integer> getWrl_gr_dataId_clusterId_map() {
+		return wrl_gr_dataId_clusterId_map;
+	}
+
+	public void setWrl_gr_dataId_clusterId_map(
+			Map<Integer, Integer> wrl_gr_dataId_clusterId_map) {
+		this.wrl_gr_dataId_clusterId_map = wrl_gr_dataId_clusterId_map;
 	}
 	
+	public String getWrl_hGraphWorkloadFile() {
+		return this.wrl_hgraph_workload_file;
+	}
+
+	public void setWrl_hGraphWorkloadFile(String wrl_workload_file) {
+		this.wrl_hgraph_workload_file = wrl_workload_file;
+	}
+
+	public String getWrl_hGraphFixFile() {
+		return this.wrl_hgraph_fix_file;
+	}
+
+	public void setWrl_hGraphFixFile(String wrl_fixfile) {
+		this.wrl_hgraph_fix_file = wrl_fixfile;
+	}
+	
+	public String getWrl_graphWorkloadFile() {
+		return wrl_graph_workload_file;
+	}
+
+	public void setWrl_graphWorkloadFile(String wrl_graph_workload_file) {
+		this.wrl_graph_workload_file = wrl_graph_workload_file;
+	}
+
 	public double getWrl_DtImpact() {
 		return wrl_dt_impact;
 	}
@@ -410,14 +498,6 @@ public class Workload implements Comparable<Workload> {
 
 	public void setWrl_data_movement_strategy(String wrl_data_movement_strategy) {
 		this.wrl_data_movement_strategy = wrl_data_movement_strategy;
-	}
-
-	public void updateWrl_workloadFileName(String string) {
-		this.setWrl_workloadFile(string+"-"+this.getWrl_workloadFile());
-	}
-	
-	public void updateWrl_fixFileName(String string) {
-		this.setWrl_fixFile(string+"-"+this.getWrl_fixFile());
 	}
 
 	// Calculate DT Impacts for the Workload

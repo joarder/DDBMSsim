@@ -84,6 +84,7 @@ public class DBMSSimulator {
 		
 		//==============================================================================================
 		// Hypergraph Partitioning and Data Movement
+		
 		HGraphClusters hGraphClusters_bs = new HGraphClusters();
 		HGraphClusters hGraphClusters_s1 = new HGraphClusters();
 		HGraphClusters hGraphClusters_s2 = new HGraphClusters();
@@ -113,15 +114,13 @@ public class DBMSSimulator {
 			// Run hMetis HyperGraph Partitioning							
 			HGraphMinCut minCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size()); 		
 			minCut.runHMetis();
-
-			//test
 			
 			// Wait for 5 seconds to ensure that the Part file have been generated properly
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}						
+			}					
 			
 		//=== Base Strategy
 			// Logging
