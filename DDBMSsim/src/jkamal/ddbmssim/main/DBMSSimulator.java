@@ -111,6 +111,8 @@ public class DBMSSimulator {
 			HGraphMinCut minCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size()); 		
 			minCut.runHMetis();
 
+			//test
+			
 			// Wait for 5 seconds to ensure that the Part file have been generated properly
 			try {
 				Thread.sleep(5000);
