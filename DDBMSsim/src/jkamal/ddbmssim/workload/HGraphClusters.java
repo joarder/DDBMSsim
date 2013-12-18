@@ -24,7 +24,7 @@ public class HGraphClusters {
 		Map<Integer, Integer> keyMap = new TreeMap<Integer, Integer>();		
 		String wrl_fileName = workload.getWrl_workloadFile();		
 		String part_file = wrl_fileName+".part."+partition_numbers;	
-		File part = new File(DBMSSimulator.DIR_LOCATION+"\\"+workload.getWrl_id()+"-"+part_file);
+		File part = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"+workload.getWrl_id()+"-"+part_file);
 		int cluster_id = -1;
 		int key = 0;
 		

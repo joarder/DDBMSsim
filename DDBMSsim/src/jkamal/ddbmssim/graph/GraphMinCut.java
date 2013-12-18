@@ -2,7 +2,7 @@
  * @author Joarder Kamal
  */
 
-package jkamal.ddbmssim.hgraph;
+package jkamal.ddbmssim.graph;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,12 +12,10 @@ import jkamal.ddbmssim.io.StreamCollector;
 import jkamal.ddbmssim.main.DBMSSimulator;
 import jkamal.ddbmssim.workload.Workload;
 
-public class HGraphMinCut {
+public class GraphMinCut {
 	
 	/**
-	 * shmetis HGraphFile Nparts UBfactor 
-	 *  or,
-	 * hmetis HGraphFile Nparts UBfactor Nruns CType RType Vcycle Reconst dbglvl
+	 * pmetis HGraphFile Nparts UBfactor 
 	 *  or,
 	 * khmetis HGraphFile Nparts UBfactor Nruns CType OType Vcycle dbglvl 
 	 */	
@@ -30,7 +28,7 @@ public class HGraphMinCut {
 	private String fixfile = null;
 
 	//public HGraphMinCut(File dir, String hgraph_exec, String hgraph_file, String fix_file, int num_partitions) {
-	public HGraphMinCut(Workload workload, String hgraph_exec, int partition_numbers) {
+	public GraphMinCut(Workload workload, String hgraph_exec, int partition_numbers) {
 		this.exec_dir = new File(DBMSSimulator.hMETIS_DIR_LOCATION);
 		this.exec_name = hgraph_exec;
 		this.num_partitions = Integer.toString(partition_numbers);
