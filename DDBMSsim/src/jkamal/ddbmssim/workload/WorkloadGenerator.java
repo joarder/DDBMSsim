@@ -437,14 +437,17 @@ public class WorkloadGenerator {
 		int edges = workload.getWrl_totalTransactions(); // Total number of edges need to be determined
 		int vertices = workload.getWrl_totalDataObjects();
 		int hasTransactionWeight = 1;
-		int hasDataWeight = 1;		
+		int hasDataWeight = 1;
+		int eg = 1;
+		int d = 1;
 		
 		try {
 			workloadFile.createNewFile();
 			Writer writer = null;
 			try {
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
-				writer.write(edges+" "+vertices+" "+hasTransactionWeight+""+hasDataWeight+"\n");
+				//writer.write(edges+" "+vertices+" "+hasTransactionWeight+""+hasDataWeight+"\n");
+				writer.write("\n");
 				
 				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 					for(Transaction transaction : entry.getValue()) {
@@ -452,40 +455,40 @@ public class WorkloadGenerator {
 							
 							Iterator<Integer> dataId =  transaction.getTr_dataSet().iterator();
 							while(dataId.hasNext()) {
-								dataIdSet = new TreeSet<Integer>();
 								trData = db.search(dataId.next());
 													
-								if(!dataSet.contains(trData.getData_id())) {								
-									writer.write(Integer.toString(trData.getData_shadowHMetisId())+" ");							
-									writer.write(Integer.toString(trData.getData_weight())+" ");
-									dataIdSet.add(trData.getData_id());
+								if(!dataSet.contains(trData.getData_id())) {
+									dataSet.add(trData.getData_id());
+									writer.write(d+"-"+Integer.toString(trData.getData_weight())+" ");
+																		
+									System.out.println("@debug >> "+d+"|"+trData.toString());
 									
-									if(trData.getData_transaction_involved().size() != 0) {					
+									/*if(trData.getData_transaction_involved().size() != 0) {					
 										for(Integer transaction_id : trData.getData_transaction_involved()) {
 											Transaction tr = workload.getTransaction(transaction_id);
 											
 											if(tr != null) {
+												dataIdSet = new TreeSet<Integer>();
 												for(int trInvolvedDataId : tr.getTr_dataSet()) {
-													trInvolvedData = db.search(trInvolvedDataId);
+													trInvolvedData = db.search(trInvolvedDataId);													
 													
 													if(!dataIdSet.contains(trInvolvedDataId)) {
 														writer.write(Integer.toString(trInvolvedData.getData_shadowHMetisId()));							
 														writer.write(tr.getTr_weight()+" ");
+														++eg;
 														
 														dataIdSet.add(trInvolvedData.getData_id());
 													}
 												}
 											}
 										}
-									}
+									}*/
 									
+									++d;
 									if(dataId.hasNext())
-										writer.write(" ");
-								}
-																
-							} // end -- while() loop
-							
-							writer.write("\n");						
+										writer.write("\n");
+								}																
+							} // end -- while() loop																				
 						} // end -- if()-Transaction Class
 					} // end -- for()-Transaction
 				} // end -- for()-Transaction-Types				

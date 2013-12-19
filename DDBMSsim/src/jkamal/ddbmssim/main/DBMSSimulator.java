@@ -79,8 +79,7 @@ public class DBMSSimulator {
 		//==============================================================================================
 		// Workload generation for the entire simulation		
 		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
-		workloadGenerator.generateWorkloads(dbs, db);
-		
+		workloadGenerator.generateWorkloads(dbs, db);		
 		
 		//==============================================================================================
 		// Hypergraph Partitioning and Data Movement
