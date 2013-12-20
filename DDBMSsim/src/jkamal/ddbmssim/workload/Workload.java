@@ -38,10 +38,8 @@ public class Workload implements Comparable<Workload> {
 	private int wrl_intraNodeDataMovements;
 	private int wrl_interNodeDataMovements;
 	
-	private Map<Integer, Integer> wrl_hg_dataId_shadowId_map;
-	private Map<Integer, Integer> wrl_hg_dataId_clusterId_map;
-	
-	private Map<Integer, Integer> wrl_gr_dataId_shadowId_map;
+	private Map<Integer, Integer> wrl_dataId_shadowId_map;
+	private Map<Integer, Integer> wrl_hg_dataId_clusterId_map;	
 	private Map<Integer, Integer> wrl_gr_dataId_clusterId_map;
 	
 	private String wrl_hgraph_workload_file = null;
@@ -82,10 +80,8 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_intraNodeDataMovements(0);
 		this.setWrl_interNodeDataMovements(0);
 		
-		this.setWrl_hg_dataId_shadowId_map(new TreeMap<Integer, Integer>());
-		this.setWrl_hg_dataId_clusterId_map(new TreeMap<Integer, Integer>());
-		
-		this.setWrl_gr_dataId_shadowId_map(new TreeMap<Integer, Integer>());
+		this.setWrl_dataId_shadowId_map(new TreeMap<Integer, Integer>());
+		this.setWrl_hg_dataId_clusterId_map(new TreeMap<Integer, Integer>());		
 		this.setWrl_gr_dataId_clusterId_map(new TreeMap<Integer, Integer>());
 		
 		this.setWrl_hGraphWorkloadFile("hgr-workload.txt");
@@ -149,26 +145,20 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_totalDataObjects(workload.getWrl_totalDataObjects());
 		this.setWrl_intraNodeDataMovements(workload.getWrl_intraNodeDataMovements());
 		this.setWrl_interNodeDataMovements(workload.getWrl_interNodeDataMovements());
-			
-		//HyperGraph
 		
+		//Shadow Id
 		Map<Integer, Integer> clone_dataId_shadowId_map = new TreeMap<Integer, Integer>();
-		for(Entry<Integer, Integer> entry : workload.getWrl_hg_dataId_shadowId_map().entrySet())
+		for(Entry<Integer, Integer> entry : workload.getWrl_dataId_shadowId_map().entrySet())
 			clone_dataId_shadowId_map.put(entry.getKey(), entry.getValue());
-		this.setWrl_hg_dataId_shadowId_map(clone_dataId_shadowId_map);
+		this.setWrl_dataId_shadowId_map(clone_dataId_shadowId_map);
 		
+		//HyperGraph
 		Map<Integer, Integer> clone_dataId_clusterId_map = new TreeMap<Integer, Integer>();
 		for(Entry<Integer, Integer> entry : workload.getWrl_hg_dataId_clusterId_map().entrySet())
 			clone_dataId_clusterId_map.put(entry.getKey(), entry.getValue());
 		this.setWrl_hg_dataId_clusterId_map(clone_dataId_clusterId_map);
 		
 		//Graph
-		
-		Map<Integer, Integer> clone_gr_dataId_shadowId_map = new TreeMap<Integer, Integer>();
-		for(Entry<Integer, Integer> entry : workload.getWrl_gr_dataId_shadowId_map().entrySet())
-			clone_gr_dataId_shadowId_map.put(entry.getKey(), entry.getValue());
-		this.setWrl_gr_dataId_shadowId_map(clone_gr_dataId_shadowId_map);
-
 		Map<Integer, Integer> clone_gr_dataId_clusterId_map = new TreeMap<Integer, Integer>();
 		for(Entry<Integer, Integer> entry : workload.getWrl_gr_dataId_clusterId_map().entrySet())
 			clone_gr_dataId_clusterId_map.put(entry.getKey(), entry.getValue());
@@ -360,13 +350,13 @@ public class Workload implements Comparable<Workload> {
 	}
 
 	
-	public Map<Integer, Integer> getWrl_hg_dataId_shadowId_map() {
-		return wrl_hg_dataId_shadowId_map;
+	public Map<Integer, Integer> getWrl_dataId_shadowId_map() {
+		return wrl_dataId_shadowId_map;
 	}
 
-	public void setWrl_hg_dataId_shadowId_map(
+	public void setWrl_dataId_shadowId_map(
 			Map<Integer, Integer> wrl_dataId_shadowId_map) {
-		this.wrl_hg_dataId_shadowId_map = wrl_dataId_shadowId_map;
+		this.wrl_dataId_shadowId_map = wrl_dataId_shadowId_map;
 	}
 
 	public Map<Integer, Integer> getWrl_hg_dataId_clusterId_map() {
@@ -376,15 +366,6 @@ public class Workload implements Comparable<Workload> {
 	public void setWrl_hg_dataId_clusterId_map(
 			Map<Integer, Integer> wrl_dataId_clusterId_map) {
 		this.wrl_hg_dataId_clusterId_map = wrl_dataId_clusterId_map;
-	}
-
-	public Map<Integer, Integer> getWrl_gr_dataId_shadowId_map() {
-		return wrl_gr_dataId_shadowId_map;
-	}
-
-	public void setWrl_gr_dataId_shadowId_map(
-			Map<Integer, Integer> wrl_gr_dataId_shadowId_map) {
-		this.wrl_gr_dataId_shadowId_map = wrl_gr_dataId_shadowId_map;
 	}
 
 	public Map<Integer, Integer> getWrl_gr_dataId_clusterId_map() {

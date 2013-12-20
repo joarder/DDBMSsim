@@ -26,14 +26,16 @@ public class GraphMinCut {
 	private String graph_file = null;
 	private List<String> arg_list = new ArrayList<String>();		
 
-	public GraphMinCut(Workload workload, String hgraph_exec, int partition_numbers) {
+	public GraphMinCut(Workload workload, String graph_exec, int partition_numbers) {
 		this.exec_dir = new File(DBMSSimulator.METIS_DIR_LOCATION);
-		this.exec_name = hgraph_exec;
+		this.exec_name = graph_exec;
 		this.num_partitions = Integer.toString(partition_numbers);
-		this.setGraph_file(workload.getWrl_id()+"-"+workload.getWrl_hGraphWorkloadFile()); System.out.println("@ - "+this.getGraph_file());					
+		this.setGraph_file(workload.getWrl_id()+"-"+workload.getWrl_graphWorkloadFile()); 
+		
+		System.out.println("@ - "+this.getGraph_file());					
 		
 		switch(this.exec_name) {
-		case "phmetis":		
+		case "pmetis":		
 			this.arg_list.add("cmd");
 			this.arg_list.add("/c");
 			this.arg_list.add("start");
@@ -42,7 +44,7 @@ public class GraphMinCut {
 			this.arg_list.add(this.num_partitions);		// Nparts
 			break;
 		
-		case "khmetis":
+		case "kmetis":
 			this.arg_list.add("cmd");
 			this.arg_list.add("/c");
 			this.arg_list.add("start");
@@ -61,10 +63,10 @@ public class GraphMinCut {
 		this.graph_file = graph_file;
 	}
 
-	public void runMetis() throws IOException {
-		String[] args = arg_list.toArray(new String[arg_list.size()]);
+	public void runMetis() throws IOException {		
+		String[] args = this.arg_list.toArray(new String[this.arg_list.size()]);				
 		
-		ProcessBuilder pb = new ProcessBuilder(args);
+		ProcessBuilder pb = new ProcessBuilder(args);		
 		pb.directory(exec_dir);
 		Process p = pb.start();
 		

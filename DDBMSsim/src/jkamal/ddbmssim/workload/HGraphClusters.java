@@ -45,15 +45,15 @@ public class HGraphClusters {
 					Data data = db.search(data_id);
 					
 					if(!dataSet.contains(data_id)) {
-						int shadow_id = workload.getWrl_hg_dataId_shadowId_map().get(data.getData_id());
+						int shadow_id = workload.getWrl_dataId_shadowId_map().get(data.getData_id());
 						int cluster_id = keyMap.get(shadow_id)+1;
 						//System.out.println("@debug >> "+data.toString()+" | S="+shadow_id+" | C="+cluster_id);
 						
 						data.setData_hmetisClusterId(cluster_id);
 						workload.getWrl_hg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
 
-						data.setData_shadowHMetisId(-1);
-						data.setData_hasShadowHMetisId(false);
+						data.setData_shadowId(-1);
+						data.setData_hasShadowId(false);
 						
 						dataSet.add(data_id);					
 					}

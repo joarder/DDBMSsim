@@ -26,15 +26,11 @@ public class Data implements Comparable<Data> {
 	// Transaction Attributes
 	private Set<Integer> data_transaction_involved;
 	
-	// HyperGraph Partitioning Attributes
+	// HyperGraph and Graph Partitioning Attributes
 	private int data_hmetis_cluster_id;
-	private int data_shadow_hmetis_id;
-	private boolean data_hasShadowHMetisId;
-	
-	// Graph Partitioning Attributes
 	private int data_metis_cluster_id;
-	private int data_shadow_metis_id;
-	private boolean data_hasShadowMetisId;
+	private int data_shadow_id;
+	private boolean data_hasShadowId;
 	
 	// Partition Attributes		
 	private int data_partition_id;			// Currently residing (Roaming/Home) Partition Id
@@ -62,12 +58,9 @@ public class Data implements Comparable<Data> {
 		this.setData_transaction_involved(new TreeSet<Integer>());
 		
 		this.setData_hmetisClusterId(-1);
-		this.setData_shadowHMetisId(-1);
-		this.setData_hasShadowHMetisId(false);
-				
 		this.setData_metisClusterId(-1);
-		this.setData_shadowMetisId(-1);
-		this.setData_hasShadowMetisId(false);
+		this.setData_shadowId(-1);
+		this.setData_hasShadowId(false);
 		
 		this.setData_partitionId(pid); // default partition id = -1 means undefined.
 		this.setData_homePartitionId(pid);
@@ -99,8 +92,8 @@ public class Data implements Comparable<Data> {
 		this.setData_transaction_involved(clone_data_transaction_involved);
 		
 		this.setData_hmetisClusterId(data.getData_hmetisClusterId());
-		this.setData_shadowHMetisId(data.getData_shadowHMetisId());
-		this.setData_hasShadowHMetisId(data.isData_hasShadowHMetisId());
+		this.setData_shadowId(data.getData_shadowId());
+		this.setData_hasShadowId(data.isData_hasShadowId());
 				
 		this.setData_partitionId(data.getData_partitionId());				
 		this.setData_homePartitionId(data.getData_homePartitionId());
@@ -232,20 +225,20 @@ public class Data implements Comparable<Data> {
 		this.data_home_node_id = data_home_node_id;
 	}
 
-	public int getData_shadowHMetisId() {
-		return data_shadow_hmetis_id;
+	public int getData_shadowId() {
+		return data_shadow_id;
 	}
 
-	public void setData_shadowHMetisId(int data_hmetis_id) {
-		this.data_shadow_hmetis_id = data_hmetis_id;
+	public void setData_shadowId(int data_shadow_id) {
+		this.data_shadow_id = data_shadow_id;
 	}
 
-	public boolean isData_hasShadowHMetisId() {
-		return data_hasShadowHMetisId;
+	public boolean isData_hasShadowId() {
+		return data_hasShadowId;
 	}
 
-	public void setData_hasShadowHMetisId(boolean data_hasHMetisId) {
-		this.data_hasShadowHMetisId = data_hasHMetisId;
+	public void setData_hasShadowId(boolean data_hasShadowId) {
+		this.data_hasShadowId = data_hasShadowId;
 	}
 	
 	public int getData_hmetisClusterId() {
@@ -262,22 +255,6 @@ public class Data implements Comparable<Data> {
 
 	public void setData_metisClusterId(int data_metis_cluster_id) {
 		this.data_metis_cluster_id = data_metis_cluster_id;
-	}
-
-	public int getData_shadowMetisId() {
-		return data_shadow_metis_id;
-	}
-
-	public void setData_shadowMetisId(int data_shadow_metis_id) {
-		this.data_shadow_metis_id = data_shadow_metis_id;
-	}
-
-	public boolean isData_hasShadowMetisId() {
-		return data_hasShadowMetisId;
-	}
-
-	public void setData_hasShadowMetisId(boolean data_hasShadowMetisId) {
-		this.data_hasShadowMetisId = data_hasShadowMetisId;
 	}
 
 	public boolean isData_isMoveable() {
