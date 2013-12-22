@@ -48,11 +48,12 @@ public class TransactionReducer {
 	}
 	
 	public void releaseData(Database db, Transaction transaction) {
-		for(Data data : transaction.getTr_dataSet()) {
+		for(Integer data_id : transaction.getTr_dataSet()) {
+			Data data = db.search(data_id);			
 			data.getData_transaction_involved().remove((Object)transaction.getTr_id()); // removing object
 			
-			Data dbData = db.search(data.getData_id());
-			dbData.getData_transaction_involved().remove((Object)transaction.getTr_id()); // removing object
+			//Data dbData = db.search(data.getData_id());
+			//dbData.getData_transaction_involved().remove((Object)transaction.getTr_id()); // removing object
 		}
 	}
 	

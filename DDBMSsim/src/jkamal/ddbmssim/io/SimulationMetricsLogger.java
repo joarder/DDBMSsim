@@ -151,11 +151,15 @@ public class SimulationMetricsLogger {
 				if(data.getData_transaction_involved().size() != 0) {					
 					for(Integer transaction_id : data.getData_transaction_involved()) {
 						Transaction transaction = workload.getTransaction(transaction_id);
-
-						writer.print("T"+transaction.getTr_id()+" ");						
-						writer.print(transaction.getTr_weight()+" ");
-						writer.print(transaction.getTr_ranking()+" ");
-						writer.print(transaction.getTr_frequency()+" ");							
+						
+						if(transaction != null) {
+							writer.print("T"+transaction.getTr_id()+" ");						
+							writer.print(transaction.getTr_weight()+" ");
+							writer.print(transaction.getTr_ranking()+" ");
+							writer.print(transaction.getTr_frequency()+" ");
+						} else {
+							//System.out.println("@debug >> "+data.toString()+" | T"+transaction_id);
+						}
 					}
 				}
 				

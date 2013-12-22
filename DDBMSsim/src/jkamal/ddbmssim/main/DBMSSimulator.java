@@ -12,6 +12,7 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 import jkamal.ddbmssim.db.DataMovement;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.DatabaseServer;
+import jkamal.ddbmssim.graph.GraphMinCut;
 import jkamal.ddbmssim.hgraph.HGraphMinCut;
 import jkamal.ddbmssim.bootstrap.Bootstrapping;
 import jkamal.ddbmssim.io.SimulationMetricsLogger;
@@ -22,12 +23,12 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 public class DBMSSimulator {	
 	public final static int DB_SERVERS = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-	public final static int DATA_OBJECTS = 72; // 10GB Data (in Size)
-	public final static int TRANSACTION_NUMS = 10;
+	public final static int DATA_OBJECTS = 10; // 10GB Data (in Size)
+	public final static int TRANSACTION_NUMS = 5;
 	public final static int SIMULATION_RUN_NUMBERS = 3;
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
 	
 	public final static String HMETIS = "hmetis";
 	public final static String METIS = "pmetis";
@@ -79,7 +80,10 @@ public class DBMSSimulator {
 		//==============================================================================================
 		// Workload generation for the entire simulation		
 		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
-		workloadGenerator.generateWorkloads(dbs, db);
+		workloadGenerator.generateWorkloads(dbs, db);		
+		
+		//==============================================================================================
+		// Hypergraph Partitioning and Data Movement
 		
 		HGraphClusters hGraphClusters_bs = new HGraphClusters();
 		HGraphClusters hGraphClusters_s1 = new HGraphClusters();
@@ -107,16 +111,21 @@ public class DBMSSimulator {
 			workload.setMessage("in");
 			
 			//==============================================================================================
-			// Run hMetis HyperGraph Partitioning							
-			HGraphMinCut minCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size()); 		
-			minCut.runHMetis();
+			// Run hMetis HyperGraph Partitioning
+			HGraphMinCut hgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size()); 		
+			hgraphMinCut.runHMetis();
+			
+			//==============================================================================================
+			// Run Metis Graph Partitioning							
+			GraphMinCut graphMinCut = new GraphMinCut(workload, METIS, db.getDb_partitions().size()); 		
+			graphMinCut.runMetis();
 			
 			// Wait for 5 seconds to ensure that the Part file have been generated properly
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}						
+			}					
 			
 		//=== Base Strategy
 			// Logging

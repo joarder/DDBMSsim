@@ -205,30 +205,30 @@ public class DataMovement {
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
-				for(Data data : transaction.getTr_dataSet()) {					
-					Data dbData = db.search(data.getData_id());
+				for(Integer data_id : transaction.getTr_dataSet()) {					
+					Data data = db.search(data_id);
 					
-					if(!dataSet.contains(dbData.getData_id())) {
-						dataSet.add(dbData.getData_id());
+					if(!dataSet.contains(data.getData_id())) {
+						dataSet.add(data.getData_id());
 						
-						home_partition_id = dbData.getData_homePartitionId();
-						home_partition = db.getPartition(dbData.getData_homePartitionId());																		
+						home_partition_id = data.getData_homePartitionId();
+						home_partition = db.getPartition(data.getData_homePartitionId());																		
 						
-						current_partition_id = dbData.getData_partitionId();									
+						current_partition_id = data.getData_partitionId();									
 						current_partition = db.getPartition(current_partition_id);
-						current_node_id = dbData.getData_nodeId();			
+						current_node_id = data.getData_nodeId();			
 						
-						dst_partition_id = keyMap.get(dbData.getData_hmetisClusterId());
+						dst_partition_id = keyMap.get(data.getData_hmetisClusterId());
 						dst_partition = db.getPartition(dst_partition_id);
 						dst_node_id = dst_partition.getPartition_nodeId();
 						
-						dbData.setData_hmetisClusterId(-1);						
+						data.setData_hmetisClusterId(-1);						
 						
 						if(dst_partition_id != current_partition_id) { // Data needs to be moved					
-							if(dbData.isData_isRoaming()) { // Data is already Roaming
+							if(data.isData_isRoaming()) { // Data is already Roaming
 								if(dst_partition_id == home_partition_id) {
-									this.updateData(dbData, dst_partition_id, dst_node_id, false);
-									this.updatePartition(db, dbData, current_partition_id, dst_partition_id);
+									this.updateData(data, dst_partition_id, dst_node_id, false);
+									this.updatePartition(db, data, current_partition_id, dst_partition_id);
 									this.updateMovementCounts(dst_node_id, current_node_id);
 									
 									current_partition.decPartition_foreign_data();
@@ -237,8 +237,8 @@ public class DataMovement {
 								} else if(dst_partition_id == current_partition_id) {									
 									// Nothing to do									
 								} else {
-									this.updateData(dbData, dst_partition_id, dst_node_id, true);
-									this.updatePartition(db, dbData, current_partition_id, dst_partition_id);
+									this.updateData(data, dst_partition_id, dst_node_id, true);
+									this.updatePartition(db, data, current_partition_id, dst_partition_id);
 									this.updateMovementCounts(dst_node_id, current_node_id);
 									
 									dst_partition.incPartition_foreign_data();
@@ -246,8 +246,8 @@ public class DataMovement {
 									
 								}
 							} else {
-								this.updateData(dbData, dst_partition_id, dst_node_id, true);
-								this.updatePartition(db, dbData, current_partition_id, dst_partition_id);
+								this.updateData(data, dst_partition_id, dst_node_id, true);
+								this.updatePartition(db, data, current_partition_id, dst_partition_id);
 								this.updateMovementCounts(dst_node_id, current_node_id);
 								
 								dst_partition.incPartition_foreign_data();								
