@@ -132,7 +132,7 @@ public class WorkloadGenerator {
 			this.generateHGraphFixFile(db, workload);
 			this.generateGraphWorkloadFile(db, workload);
 			
-			workload.show(db);
+			workload.show(db, "");
 			
 			// Clone the Workload
 			Workload cloneWorkload = new Workload(workload);			
@@ -438,8 +438,8 @@ public class WorkloadGenerator {
 		String content = "";
 		int edges = 0; // Total number of edges need to be determined
 		int vertices = workload.getWrl_totalDataObjects();		
-		int hasVertexWeight = 0;
-		int hasEdgeWeight = 0;
+		int hasVertexWeight = 1;
+		int hasEdgeWeight = 1;
 		int new_line = vertices;
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
@@ -452,22 +452,22 @@ public class WorkloadGenerator {
 											
 						if(!dataSet.contains(trData.getData_id())) {
 							dataSet.add(trData.getData_id());
-							//String str = Integer.toString(trData.getData_weight())+" ";
-							String str = "";
+							String str = Integer.toString(trData.getData_weight())+" ";
+							//String str = Integer.toString(trData.getData_shadowId())+"-";
+							//String str = "";
+							dataIdSet = new TreeSet<Integer>();
 							
 							if(trData.getData_transaction_involved().size() != 0) {					
 								for(Integer transaction_id : trData.getData_transaction_involved()) {
 									Transaction tr = workload.getTransaction(transaction_id);
 									
-									if(tr != null) {// && tr.getTr_id()!= transaction.getTr_id()) {
-										dataIdSet = new TreeSet<Integer>();
-										
+									if(tr != null) {
 										for(int trInvolvedDataId : tr.getTr_dataSet()) {
 											trInvolvedData = db.search(trInvolvedDataId);													
 											
 											if(!dataIdSet.contains(trInvolvedDataId) && trInvolvedData.getData_id() != trData.getData_id()) {
 												str += Integer.toString(trInvolvedData.getData_shadowId())+" ";							
-												//str += tr.getTr_weight()+" ";
+												str += tr.getTr_weight()+" ";
 												
 												++edges;
 												
@@ -497,8 +497,8 @@ public class WorkloadGenerator {
 
 			try {
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
-				//writer.write(vertices+" "+edges+" "+hasVertexWeight+""+hasEdgeWeight+"\n"+content);
-				writer.write(vertices+" "+edges+"\n"+content);
+				writer.write(vertices+" "+(edges/2)+" "+hasVertexWeight+""+hasEdgeWeight+"\n"+content);
+				//writer.write(vertices+" "+(edges/2)+"\n"+content);
 			} catch(IOException e) {
 				e.printStackTrace();
 			}finally {
