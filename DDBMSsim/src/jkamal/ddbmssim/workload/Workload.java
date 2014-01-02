@@ -36,24 +36,30 @@ public class Workload implements Comparable<Workload> {
 	private int[] wrl_transactionDeathProp;		
 
 	private Map<Integer, Integer> wrl_dataId_shadowId_map;
-	private Map<Integer, Integer> wrl_hg_dataId_clusterId_map;	
+	private Map<Integer, Integer> wrl_hg_dataId_clusterId_map;
+	private Map<Integer, Integer> wrl_chg_dataId_clusterId_map;
 	private Map<Integer, Integer> wrl_gr_dataId_clusterId_map;
 	
 	private String wrl_hg_workload_file = null;
-	private String wrl_hg_fix_file = null;	
+	private String wrl_hg_fix_file = null;
+	private String wrl_chg_workload_file = null;
+	private String wrl_chg_fix_file = null;
 	private String wrl_gr_workload_file = null;
 		
-	private double wrl_hg_dt_impact;
-	private int wrl_hg_dt_nums;	
-	private double wrl_hg_percentage_dt;
+	private double wrl_dt_impact;
+	private int wrl_dt_nums;	
+	private double wrl_percentage_dt;
+	
 	private double wrl_hg_percentage_pdmv;
 	private double wrl_hg_percentage_ndmv;
 	private int wrl_hg_intraNodeDataMovements;
 	private int wrl_hg_interNodeDataMovements;
+
+	private double wrl_chg_percentage_pdmv;
+	private double wrl_chg_percentage_ndmv;
+	private int wrl_chg_intraNodeDataMovements;
+	private int wrl_chg_interNodeDataMovements;
 	
-	private double wrl_gr_dt_impact;
-	private int wrl_gr_dt_nums;
-	private double wrl_gr_percentage_dt;
 	private double wrl_gr_percentage_intra_dmv;
 	private double wrl_gr_percentage_inter_dmv;
 	private int wrl_gr_intra_dmv;
@@ -83,24 +89,30 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_transactionDeathProp(new int[this.getWrl_transactionTypes()]);				
 		
 		this.setWrl_dataId_shadowId_map(new TreeMap<Integer, Integer>());
-		this.setWrl_hg_dataId_clusterId_map(new TreeMap<Integer, Integer>());		
+		this.setWrl_hg_dataId_clusterId_map(new TreeMap<Integer, Integer>());
+		this.setWrl_chg_dataId_clusterId_map(new TreeMap<Integer, Integer>());
 		this.setWrl_gr_dataId_clusterId_map(new TreeMap<Integer, Integer>());
 		
 		this.setWrl_hGraphWorkloadFile("hgr-workload.txt");
 		this.setWrl_hGraphFixFile("hgr-fixfile.txt");		
+		this.setWrl_chGraphWorkloadFile("chgr-workload.txt");
+		this.setWrl_chGraphFixFile("chgr-fixfile.txt");
 		this.setWrl_graphWorkloadFile("gr-workload.txt");
 		
-		this.setWrl_hg_distributedTransactions(0);
-		this.setWrl_hg_impactOfDistributedTransactions(0.0);		
-		this.setWrl_hg_percentageDistributedTransactions(0.0);
+		this.setWrl_distributedTransactions(0);
+		this.setWrl_impactOfDistributedTransactions(0.0);		
+		this.setWrl_percentageDistributedTransactions(0.0);
+		
 		this.setWrl_hg_percentageIntraNodeDataMovements(0.0);
 		this.setWrl_hg_percentageInterNodeDataMovements(0.0);
 		this.setWrl_hg_intraNodeDataMovements(0);
 		this.setWrl_hg_interNodeDataMovements(0);
 		
-		this.setWrl_gr_distributedTransactions(0);
-		this.setWrl_gr_impactOfDistributedTransactions(0.0);		
-		this.setWrl_gr_percentageDistributedTransactions(0.0);
+		this.setWrl_chg_percentageIntraNodeDataMovements(0.0);
+		this.setWrl_chg_percentageInterNodeDataMovements(0.0);
+		this.setWrl_chg_intraNodeDataMovements(0);
+		this.setWrl_chg_interNodeDataMovements(0);
+		
 		this.setWrl_gr_percentageIntraNodeDataMovements(0.0);
 		this.setWrl_gr_percentageInterNodeDataMovements(0.0);
 		this.setWrl_gr_intraNodeDataMovements(0);
@@ -166,6 +178,12 @@ public class Workload implements Comparable<Workload> {
 			clone_dataId_clusterId_map.put(entry.getKey(), entry.getValue());
 		this.setWrl_hg_dataId_clusterId_map(clone_dataId_clusterId_map);
 		
+		//Compressed HyperGraph
+		Map<Integer, Integer> clone_chg_dataId_clusterId_map = new TreeMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : workload.getWrl_chg_dataId_clusterId_map().entrySet())
+			clone_chg_dataId_clusterId_map.put(entry.getKey(), entry.getValue());
+		this.setWrl_chg_dataId_clusterId_map(clone_chg_dataId_clusterId_map);
+		
 		//Graph
 		Map<Integer, Integer> clone_gr_dataId_clusterId_map = new TreeMap<Integer, Integer>();
 		for(Entry<Integer, Integer> entry : workload.getWrl_gr_dataId_clusterId_map().entrySet())
@@ -175,20 +193,26 @@ public class Workload implements Comparable<Workload> {
 		//HyperGraph Files
 		this.setWrl_hGraphWorkloadFile(workload.getWrl_hGraphWorkloadFile());
 		this.setWrl_hGraphFixFile(workload.getWrl_hGraphFixFile());
+		//Compressed HyperGraph Files
+		this.setWrl_chGraphWorkloadFile(workload.getWrl_chGraphWorkloadFile());
+		this.setWrl_chGraphFixFile(workload.getWrl_chGraphFixFile());
 		//Graph Files
 		this.setWrl_graphWorkloadFile(workload.getWrl_graphWorkloadFile());
 		
-		this.setWrl_hg_distributedTransactions(workload.getWrl_hg_distributedTransactions());
-		this.setWrl_hg_impactOfDistributedTransactions(workload.getWrl_hg_impactOfDistributedTransactions());		
-		this.setWrl_hg_percentageDistributedTransactions(workload.getWrl_hg_percentageDistributedTransactions());
+		this.setWrl_distributedTransactions(workload.getWrl_distributedTransactions());
+		this.setWrl_impactOfDistributedTransactions(workload.getWrl_impactOfDistributedTransactions());		
+		this.setWrl_percentageDistributedTransactions(workload.getWrl_percentageDistributedTransactions());
+		//Hypergraph
 		this.setWrl_hg_percentageIntraNodeDataMovements(workload.getWrl_hg_percentageIntraNodeDataMovements());
 		this.setWrl_hg_percentageInterNodeDataMovements(workload.getWrl_hg_percentageInterNodeDataMovements());
 		this.setWrl_hg_intraNodeDataMovements(workload.getWrl_hg_intraNodeDataMovements());
 		this.setWrl_hg_interNodeDataMovements(workload.getWrl_hg_interNodeDataMovements());
-				
-		this.setWrl_gr_distributedTransactions(workload.getWrl_gr_distributedTransactions());
-		this.setWrl_gr_impactOfDistributedTransactions(workload.getWrl_gr_impactOfDistributedTransactions());
-		this.setWrl_gr_percentageDistributedTransactions(workload.getWrl_gr_percentageDistributedTransactions());
+		//Compressed Hypergraph				
+		this.setWrl_chg_percentageIntraNodeDataMovements(workload.getWrl_chg_percentageIntraNodeDataMovements());
+		this.setWrl_chg_percentageInterNodeDataMovements(workload.getWrl_chg_percentageInterNodeDataMovements());
+		this.setWrl_chg_intraNodeDataMovements(workload.getWrl_chg_intraNodeDataMovements());
+		this.setWrl_chg_interNodeDataMovements(workload.getWrl_chg_interNodeDataMovements());
+		//Graph
 		this.setWrl_gr_percentageIntraNodeDataMovements(workload.getWrl_gr_percentageIntraNodeDataMovements());
 		this.setWrl_gr_percentageInterNodeDataMovements(workload.getWrl_gr_percentageInterNodeDataMovements());
 		this.setWrl_gr_intraNodeDataMovements(workload.getWrl_gr_intraNodeDataMovements());
@@ -419,12 +443,12 @@ public class Workload implements Comparable<Workload> {
 		this.wrl_gr_workload_file = wrl_graph_workload_file;
 	}
 
-	public double getWrl_hg_impactOfDistributedTransactions() {
-		return wrl_hg_dt_impact;
+	public double getWrl_impactOfDistributedTransactions() {
+		return wrl_dt_impact;
 	}
 
-	public void setWrl_hg_impactOfDistributedTransactions(double wrl_dt_impact) {
-		this.wrl_hg_dt_impact = wrl_dt_impact;
+	public void setWrl_impactOfDistributedTransactions(double wrl_dt_impact) {
+		this.wrl_dt_impact = wrl_dt_impact;
 	}
 	
 	public Transaction getTransaction(int transaction_id) {		
@@ -451,20 +475,20 @@ public class Workload implements Comparable<Workload> {
 		return null;
 	}
 
-	public int getWrl_hg_distributedTransactions() {
-		return wrl_hg_dt_nums;
+	public int getWrl_distributedTransactions() {
+		return wrl_dt_nums;
 	}
 
-	public void setWrl_hg_distributedTransactions(int wrl_dt_nums) {
-		this.wrl_hg_dt_nums = wrl_dt_nums;
+	public void setWrl_distributedTransactions(int wrl_dt_nums) {
+		this.wrl_dt_nums = wrl_dt_nums;
 	}
 
-	public double getWrl_hg_percentageDistributedTransactions() {
-		return wrl_hg_percentage_dt;
+	public double getWrl_percentageDistributedTransactions() {
+		return wrl_percentage_dt;
 	}
 
-	public void setWrl_hg_percentageDistributedTransactions(double wrl_percentage_dt) {
-		this.wrl_hg_percentage_dt = wrl_percentage_dt;
+	public void setWrl_percentageDistributedTransactions(double wrl_percentage_dt) {
+		this.wrl_percentage_dt = wrl_percentage_dt;
 	}
 
 	public double getWrl_hg_percentageIntraNodeDataMovements() {
@@ -482,37 +506,73 @@ public class Workload implements Comparable<Workload> {
 	public void setWrl_hg_percentageInterNodeDataMovements(double wrl_percentage_ndmv) {
 		this.wrl_hg_percentage_ndmv = wrl_percentage_ndmv;
 	}
+	
+	// Compressed Hypergraph
 
+	public Map<Integer, Integer> getWrl_chg_dataId_clusterId_map() {
+		return wrl_chg_dataId_clusterId_map;
+	}
+
+	public void setWrl_chg_dataId_clusterId_map(
+			Map<Integer, Integer> wrl_chg_dataId_clusterId_map) {
+		this.wrl_chg_dataId_clusterId_map = wrl_chg_dataId_clusterId_map;
+	}
+
+	public String getWrl_chGraphWorkloadFile() {
+		return wrl_chg_workload_file;
+	}
+
+	public void setWrl_chGraphWorkloadFile(String wrl_chg_workload_file) {
+		this.wrl_chg_workload_file = wrl_chg_workload_file;
+	}
+
+	public String getWrl_chGraphFixFile() {
+		return wrl_chg_fix_file;
+	}
+
+	public void setWrl_chGraphFixFile(String wrl_chg_fix_file) {
+		this.wrl_chg_fix_file = wrl_chg_fix_file;
+	}
+
+	public double getWrl_chg_percentageIntraNodeDataMovements() {
+		return wrl_chg_percentage_pdmv;
+	}
+
+	public void setWrl_chg_percentageIntraNodeDataMovements(double wrl_chg_percentage_pdmv) {
+		this.wrl_chg_percentage_pdmv = wrl_chg_percentage_pdmv;
+	}
+
+	public double getWrl_chg_percentageInterNodeDataMovements() {
+		return wrl_chg_percentage_ndmv;
+	}
+
+	public void setWrl_chg_percentageInterNodeDataMovements(double wrl_chg_percentage_ndmv) {
+		this.wrl_chg_percentage_ndmv = wrl_chg_percentage_ndmv;
+	}
+
+	public int getWrl_chg_intraNodeDataMovements() {
+		return wrl_chg_intraNodeDataMovements;
+	}
+
+	public void setWrl_chg_intraNodeDataMovements(int wrl_chg_intraNodeDataMovements) {
+		this.wrl_chg_intraNodeDataMovements = wrl_chg_intraNodeDataMovements;
+	}
+
+	public int getWrl_chg_interNodeDataMovements() {
+		return wrl_chg_interNodeDataMovements;
+	}
+
+	public void setWrl_chg_interNodeDataMovements(int wrl_chg_interNodeDataMovements) {
+		this.wrl_chg_interNodeDataMovements = wrl_chg_interNodeDataMovements;
+	}
+
+	// Graph
 	public String getWrl_gr_workload_file() {
 		return wrl_gr_workload_file;
 	}
 
 	public void setWrl_gr_workload_file(String wrl_gr_workload_file) {
 		this.wrl_gr_workload_file = wrl_gr_workload_file;
-	}
-
-	public double getWrl_gr_impactOfDistributedTransactions() {
-		return wrl_gr_dt_impact;
-	}
-
-	public void setWrl_gr_impactOfDistributedTransactions(double wrl_gr_dt_impact) {
-		this.wrl_gr_dt_impact = wrl_gr_dt_impact;
-	}
-
-	public int getWrl_gr_distributedTransactions() {
-		return wrl_gr_dt_nums;
-	}
-
-	public void setWrl_gr_distributedTransactions(int wrl_gr_dt_nums) {
-		this.wrl_gr_dt_nums = wrl_gr_dt_nums;
-	}
-
-	public double getWrl_gr_percentageDistributedTransactions() {
-		return wrl_gr_percentage_dt;
-	}
-
-	public void setWrl_gr_percentageDistributedTransactions(double wrl_gr_percentage_dt) {
-		this.wrl_gr_percentage_dt = wrl_gr_percentage_dt;
 	}
 
 	public double getWrl_gr_percentageIntraNodeDataMovements() {
@@ -564,7 +624,7 @@ public class Workload implements Comparable<Workload> {
 	}
 
 	// Calculate DT Impacts for the Workload
-	public void hg_CalculateDTImapct(Database db) {
+	public void calculateDTImapct(Database db) {
 		int total_impact = 0;
 		int total_trFreq = 0;
 		
@@ -579,29 +639,11 @@ public class Workload implements Comparable<Workload> {
 		//double dt_impact = (double) total_impact/this.getWrl_totalTransaction();
 		double dt_impact = (double) total_impact/total_trFreq;
 		dt_impact = Math.round(dt_impact * 100.0)/100.0;
-		this.setWrl_hg_impactOfDistributedTransactions(dt_impact);
-	}
-	
-	public void gr_CalculateDTImapct(Database db) {
-		int total_impact = 0;
-		int total_trFreq = 0;
-		
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) 
-			for(Transaction transaction : entry.getValue()) {
-				transaction.generateTransactionCost(db);
-				
-				total_impact += transaction.getTr_dtCost() * transaction.getTr_weight();
-				total_trFreq += transaction.getTr_frequency();
-			}
-				
-		//double dt_impact = (double) total_impact/this.getWrl_totalTransaction();
-		double dt_impact = (double) total_impact/total_trFreq;
-		dt_impact = Math.round(dt_impact * 100.0)/100.0;
-		this.setWrl_gr_impactOfDistributedTransactions(dt_impact);
+		this.setWrl_impactOfDistributedTransactions(dt_impact);
 	}
 
 	// Calculate the percentage of Distributed Transactions within the Workload (before and after the Data movements)
-	public void hg_CalculateDTPercentage() {
+	public void calculateDTPercentage() {
 		int counts = 0; 
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
@@ -613,24 +655,8 @@ public class Workload implements Comparable<Workload> {
 				
 		double percentage = ((double)counts/(double)this.getWrl_totalTransactions())*100.0;
 		percentage = Math.round(percentage * 100.0)/100.0;
-		this.setWrl_hg_distributedTransactions(counts);
-		this.setWrl_hg_percentageDistributedTransactions(percentage);	
-	}
-	
-	public void gr_CalculateDTPercentage() {
-		int counts = 0; 
-		
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
-				if(transaction.getTr_dtCost() >= 1)
-					++counts;			
-			} // end -- for()-Transaction		
-		} // end -- for()-
-				
-		double percentage = ((double)counts/(double)this.getWrl_totalTransactions())*100.0;
-		percentage = Math.round(percentage * 100.0)/100.0;
-		this.setWrl_gr_distributedTransactions(counts);
-		this.setWrl_gr_percentageDistributedTransactions(percentage);	
+		this.setWrl_distributedTransactions(counts);
+		this.setWrl_percentageDistributedTransactions(percentage);	
 	}
 	
 	// Calculate the percentage of Data movements within the Workload (after running Strategy-Base/1/2)
@@ -645,6 +671,20 @@ public class Workload implements Comparable<Workload> {
 		double percentage = ((double)inter_node_movements/counts)*100.0;
 		percentage = Math.round(percentage*100.0)/100.0;
 		this.setWrl_hg_percentageInterNodeDataMovements(percentage);
+	}
+	
+	// For Compressed Hypergraph
+	public void chg_CalculateIntraNodeDataMovementPercentage(int intra_node_movements) {
+		double percentage = ((double)intra_node_movements/this.getWrl_totalDataObjects())*100.0;
+		percentage = Math.round(percentage*100.0)/100.0;
+		this.setWrl_chg_percentageIntraNodeDataMovements(percentage);
+	}
+	
+	public void chg_CalculateInterNodeDataMovementPercentage(int inter_node_movements) {
+		int counts = this.getWrl_totalDataObjects();		
+		double percentage = ((double)inter_node_movements/counts)*100.0;
+		percentage = Math.round(percentage*100.0)/100.0;
+		this.setWrl_chg_percentageInterNodeDataMovements(percentage);
 	}
 	
 	// Calculate the percentage of Data movements within the Workload (after running Strategy-Base/1/2)
@@ -730,13 +770,13 @@ public class Workload implements Comparable<Workload> {
 		
 		switch(type) {
 		case "hgr":
-			this.hg_CalculateDTPercentage();	
-			this.hg_CalculateDTImapct(db);
+			this.calculateDTPercentage();	
+			this.calculateDTImapct(db);
 			
-			System.out.println("      # Distributed Transactions: "+this.getWrl_hg_distributedTransactions()
-					+" ("+this.getWrl_hg_percentageDistributedTransactions()+"% of " 
+			System.out.println("      # Distributed Transactions: "+this.getWrl_distributedTransactions()
+					+" ("+this.getWrl_percentageDistributedTransactions()+"% of " 
 					+"Total "+this.getWrl_totalTransactions()+" Workload Transactions)");
-			System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_hg_impactOfDistributedTransactions()
+			System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_impactOfDistributedTransactions()
 					+" (for a particular workload round)");
 			
 			if(this.isWrl_hasDataMoved()) {
@@ -750,38 +790,15 @@ public class Workload implements Comparable<Workload> {
 			
 			db.show();		
 			break;
-			
-		case "gr":
-			this.gr_CalculateDTPercentage();	
-			this.gr_CalculateDTImapct(db);
-			
-			System.out.println("      # Distributed Transactions: "+this.getWrl_gr_distributedTransactions()
-					+" ("+this.getWrl_gr_percentageDistributedTransactions()+"% of " 
-					+"Total "+this.getWrl_totalTransactions()+" Workload Transactions)");
-			System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_gr_impactOfDistributedTransactions()
-					+" (for a particular workload round)");
-			
-			if(this.isWrl_hasDataMoved()) {
-				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_gr_intraNodeDataMovements()
-						+" ("+this.getWrl_gr_percentageIntraNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
-				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_gr_interNodeDataMovements()
-						+" ("+this.getWrl_gr_percentageInterNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
-			}
-			
-			db.show();	
-			break;
-			
+
 		default:
-			this.hg_CalculateDTPercentage();	
-			this.hg_CalculateDTImapct(db);
+			this.calculateDTPercentage();	
+			this.calculateDTImapct(db);
 			
-			System.out.println("      # Distributed Transactions: "+this.getWrl_hg_distributedTransactions()
-					+" ("+this.getWrl_gr_percentageDistributedTransactions()+"% of " 
+			System.out.println("      # Distributed Transactions: "+this.getWrl_distributedTransactions()
+					+" ("+this.getWrl_percentageDistributedTransactions()+"% of " 
 					+"Total "+this.getWrl_totalTransactions()+" Workload Transactions)");
-			System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_hg_impactOfDistributedTransactions()
-					+" (for a particular workload round)");
+			System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_impactOfDistributedTransactions());
 			
 			break;
 		}

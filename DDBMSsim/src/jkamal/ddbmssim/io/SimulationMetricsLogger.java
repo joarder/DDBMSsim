@@ -186,14 +186,14 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
-				writer.print(workload.getWrl_hg_distributedTransactions()+" ");
-				writer.print(workload.getWrl_hg_impactOfDistributedTransactions()+" ");																		
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
 			} else {					
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
 				
-				writer.print(workload.getWrl_hg_distributedTransactions()+" ");
-				writer.print(workload.getWrl_hg_impactOfDistributedTransactions()+" ");								
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
 				
 				writer.print(workload.getWrl_totalDataObjects()+" ");
 				writer.print(workload.getWrl_hg_intraNodeDataMovements()+" ");
@@ -204,19 +204,42 @@ public class SimulationMetricsLogger {
 				writer.println();
 			}
 			break;
+		case "chgr":
+			if(!this.isData_movement()) {
+				writer.print(workload.getWrl_id()+" ");			
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
+			} else {					
+				//writer.print(workload.getWrl_data_movement_strategy()+" ");
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
+				
+				writer.print(workload.getWrl_totalDataObjects()+" ");
+				writer.print(workload.getWrl_chg_intraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_chg_percentageIntraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_chg_interNodeDataMovements()+" ");
+				writer.print(workload.getWrl_chg_percentageInterNodeDataMovements());
+				
+				writer.println();
+			}
+			break;			
 		case "gr":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
-				writer.print(workload.getWrl_gr_distributedTransactions()+" ");
-				writer.print(workload.getWrl_gr_impactOfDistributedTransactions()+" ");																		
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
 			} else {					
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
 				
-				writer.print(workload.getWrl_gr_distributedTransactions()+" ");
-				writer.print(workload.getWrl_gr_impactOfDistributedTransactions()+" ");								
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
 				
 				writer.print(workload.getWrl_totalDataObjects()+" ");
 				writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");

@@ -270,6 +270,10 @@ public class DataMovement {
 			workload.setWrl_hg_intraNodeDataMovements(this.getIntra_node_data_movements());
 			workload.setWrl_hg_interNodeDataMovements(this.getInter_node_data_movements());
 			break;
+		case "chgr":
+			workload.setWrl_chg_intraNodeDataMovements(this.getIntra_node_data_movements());
+			workload.setWrl_chg_interNodeDataMovements(this.getInter_node_data_movements());
+			break;
 		case "gr":
 			workload.setWrl_gr_intraNodeDataMovements(this.getIntra_node_data_movements());
 			workload.setWrl_gr_interNodeDataMovements(this.getInter_node_data_movements());
@@ -280,16 +284,19 @@ public class DataMovement {
 	
 	public void metricsGeneration(Database db, Workload workload, String type) {
 		// Calculating Various Metrics
+		workload.calculateDTPercentage();
+		workload.calculateDTImapct(db);
+		
 		switch(type) {
-		case "hgr":
-			workload.hg_CalculateDTPercentage();
-			workload.hg_CalculateDTImapct(db);
+		case "hgr":			
 			workload.hg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_hg_intraNodeDataMovements());
 			workload.hg_CalculateInterNodeDataMovementPercentage(workload.getWrl_hg_interNodeDataMovements());
 			break;
+		case "chgr":			
+			workload.chg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_chg_intraNodeDataMovements());
+			workload.chg_CalculateInterNodeDataMovementPercentage(workload.getWrl_chg_interNodeDataMovements());
+			break;
 		case "gr":
-			workload.gr_CalculateDTPercentage();
-			workload.gr_CalculateDTImapct(db);
 			workload.gr_CalculateIntraNodeDataMovementPercentage(workload.getWrl_gr_intraNodeDataMovements());
 			workload.gr_CalculateInterNodeDataMovementPercentage(workload.getWrl_gr_interNodeDataMovements());
 			break;
