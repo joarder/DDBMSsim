@@ -51,16 +51,13 @@ public class DataMovement {
 	}
 
 	public void baseStrategy(Database db, Workload workload, String type) {
-		workload.setWrl_hg_interNodeDataMovements(0);
-		workload.setWrl_hg_intraNodeDataMovements(0);
-		
 		this.setIntra_node_data_movements(0);
 		this.setInter_node_data_movements(0);
 		this.metricsGeneration(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
-		Matrix mapping = mappingTable.generateMappingTable(db, workload);
+		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
 				"      (First Row: Pre-Partition Id, First Col: Cluster Id, Elements: Data Occurance Counts)");
 		mapping.print();
@@ -82,16 +79,13 @@ public class DataMovement {
 	}
 	
 	public void strategy1(Database db, Workload workload, String type) {
-		workload.setWrl_hg_interNodeDataMovements(0);
-		workload.setWrl_hg_intraNodeDataMovements(0);
-
 		this.setIntra_node_data_movements(0);
 		this.setInter_node_data_movements(0);
 		this.metricsGeneration(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
-		Matrix mapping = mappingTable.generateMappingTable(db, workload);
+		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
 				"   [First Row: Pre-Partition Id, First Col: Cluster Id, Elements: Data Occurance Counts]");
 		mapping.print();
@@ -115,16 +109,13 @@ public class DataMovement {
 	}
 	
 	public void strategy2(Database db, Workload workload, String type) {	
-		workload.setWrl_hg_interNodeDataMovements(0);
-		workload.setWrl_hg_intraNodeDataMovements(0);
-
 		this.setIntra_node_data_movements(0);
 		this.setInter_node_data_movements(0);
 		this.metricsGeneration(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
-		Matrix mapping = mappingTable.generateMappingTable(db, workload);
+		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n   [First Row: Pre-Partition Id, First Col: Cluster Id, Elements: Data Occurance Counts]");
 		mapping.print();
 				
@@ -224,11 +215,23 @@ public class DataMovement {
 						current_partition = db.getPartition(current_partition_id);
 						current_node_id = data.getData_nodeId();			
 						
-						dst_partition_id = keyMap.get(data.getData_hmetisClusterId());
-						dst_partition = db.getPartition(dst_partition_id);
-						dst_node_id = dst_partition.getPartition_nodeId();
+						switch(type) {
+						case "hgr":
+							dst_partition_id = keyMap.get(data.getData_hmetisClusterId());
+							data.setData_hmetisClusterId(-1);
+							break;
+						case "chg":
+							dst_partition_id = keyMap.get(data.getData_chmetisClusterId());
+							data.setData_chmetisClusterId(-1);
+							break;
+						case "gr":
+							dst_partition_id = keyMap.get(data.getData_metisClusterId());
+							data.setData_metisClusterId(-1);
+							break;
+						}
 						
-						data.setData_hmetisClusterId(-1);						
+						dst_partition = db.getPartition(dst_partition_id);
+						dst_node_id = dst_partition.getPartition_nodeId();												
 						
 						if(dst_partition_id != current_partition_id) { // Data needs to be moved					
 							if(data.isData_isRoaming()) { // Data is already Roaming
@@ -270,7 +273,7 @@ public class DataMovement {
 			workload.setWrl_hg_intraNodeDataMovements(this.getIntra_node_data_movements());
 			workload.setWrl_hg_interNodeDataMovements(this.getInter_node_data_movements());
 			break;
-		case "chgr":
+		case "chg":
 			workload.setWrl_chg_intraNodeDataMovements(this.getIntra_node_data_movements());
 			workload.setWrl_chg_interNodeDataMovements(this.getInter_node_data_movements());
 			break;
@@ -292,7 +295,7 @@ public class DataMovement {
 			workload.hg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_hg_intraNodeDataMovements());
 			workload.hg_CalculateInterNodeDataMovementPercentage(workload.getWrl_hg_interNodeDataMovements());
 			break;
-		case "chgr":			
+		case "chg":			
 			workload.chg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_chg_intraNodeDataMovements());
 			workload.chg_CalculateInterNodeDataMovementPercentage(workload.getWrl_chg_interNodeDataMovements());
 			break;

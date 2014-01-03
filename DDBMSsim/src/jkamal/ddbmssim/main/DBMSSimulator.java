@@ -23,12 +23,12 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 public class DBMSSimulator {	
 	public final static int DB_SERVERS = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-	public final static int DATA_OBJECTS = 50; // 10GB Data (in Size)
+	public final static int DATA_OBJECTS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
 	public final static int TRANSACTION_NUMS = 10;
 	public final static int SIMULATION_RUN_NUMBERS = 3;
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
 	
 	public final static String HMETIS = "hmetis";
 	public final static String METIS = "pmetis";
@@ -91,6 +91,10 @@ public class DBMSSimulator {
 		Database hgr_bs_db = new Database(db);
 		Database hgr_s1_db = new Database(db);
 		Database hgr_s2_db = new Database(db);
+		// For Compressed HyperGraph Partitioning
+		Database chg_bs_db = new Database(db);
+		Database chg_s1_db = new Database(db);
+		Database chg_s2_db = new Database(db);
 		// For Graph Partitioning
 		Database gr_bs_db = new Database(db);
 		Database gr_s1_db = new Database(db);
@@ -103,6 +107,12 @@ public class DBMSSimulator {
 		PrintWriter hgr_s2_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_s2_db_log");
 		PrintWriter hgr_partition_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_partition_log");
 		PrintWriter hgr_workload_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_workload_log");
+		// For HyperGraph Partitioning		
+		PrintWriter chg_bs_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_bs_db_log");
+		PrintWriter chg_s1_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_s1_db_log");
+		PrintWriter chg_s2_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_s2_db_log");
+		PrintWriter chg_partition_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_partition_log");
+		PrintWriter chg_workload_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_workload_log");
 		// For Graph Partitioning		
 		PrintWriter gr_bs_db_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_bs_db_log");
 		PrintWriter gr_s1_db_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_s1_db_log");
@@ -117,8 +127,20 @@ public class DBMSSimulator {
 			
 			//==============================================================================================
 			// Run hMetis HyperGraph Partitioning
-			HGraphMinCut hgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size()); 		
+			HGraphMinCut hgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "hgr"); 		
 			hgraphMinCut.runHMetis();
+
+			// Wait for 5 seconds to ensure that the Part files have been generated properly
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}			
+			
+			//==============================================================================================
+			// Run hMetis HyperGraph Partitioning
+			HGraphMinCut chgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "chg"); 		
+			chgraphMinCut.runHMetis();
 			
 			//==============================================================================================
 			// Run Metis Graph Partitioning							
@@ -136,6 +158,7 @@ public class DBMSSimulator {
 			// Logging
 			sim_logger.setData_movement(false);
 			collectLog(sim_logger, hgr_bs_db, workload, hgr_bs_db_log, hgr_workload_log, hgr_partition_log, "hgr");
+			collectLog(sim_logger, chg_bs_db, workload, chg_bs_db_log, chg_workload_log, chg_partition_log, "chg");
 			collectLog(sim_logger, gr_bs_db, workload, gr_bs_db_log, gr_workload_log, gr_partition_log, "gr");
 			
 			System.out.println("[ACT] Replaying Workload Capture using Base Strategy ...");
@@ -143,17 +166,22 @@ public class DBMSSimulator {
 			
 			// Read Part file and assign corresponding Data cluster Id			
 			cluster_id_mapper.processPartFile(hgr_bs_db, workload, hgr_bs_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "hgr");			
+			cluster_id_mapper.processPartFile(chg_bs_db, workload, chg_bs_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "chg");
 			cluster_id_mapper.processPartFile(gr_bs_db, workload, gr_bs_db.getDb_partitions().size(), METIS_DIR_LOCATION, "gr");
 			
 			// Perform Data Movement following One(Cluster)-to-One(Partition) and Many(Cluster)-to-One(Partition)
 			System.out.println("[ACT] Base Strategy[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) Peer | Using Hypergraph Partitioning");
 			data_movement.baseStrategy(hgr_bs_db, workload, "hgr");
 			System.out.println("=======================================================================================================================");
+			System.out.println("[ACT] Base Strategy[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) Peer | Using Compressed Hypergraph Partitioning");
+			data_movement.baseStrategy(chg_bs_db, workload, "chg");
+			System.out.println("=======================================================================================================================");
 			System.out.println("[ACT] Base Strategy[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) Peer | Using Graph Partitioning");
 			data_movement.baseStrategy(gr_bs_db, workload, "gr");
 			
 			sim_logger.setData_movement(true);
 			collectLog(sim_logger, hgr_bs_db, workload, hgr_bs_db_log, hgr_workload_log, hgr_partition_log, "hgr");
+			collectLog(sim_logger, chg_bs_db, workload, chg_bs_db_log, chg_workload_log, chg_partition_log, "chg");
 			collectLog(sim_logger, gr_bs_db, workload, gr_bs_db_log, gr_workload_log, gr_partition_log, "gr");
 			
 			System.out.println("***********************************************************************************************************************");
@@ -169,6 +197,7 @@ public class DBMSSimulator {
 			// Logging
 			sim_logger.setData_movement(false);
 			collectLog(sim_logger, hgr_s1_db, workload, hgr_s1_db_log, hgr_workload_log, hgr_partition_log, "hgr");
+			collectLog(sim_logger, chg_s1_db, workload, chg_s1_db_log, chg_workload_log, chg_partition_log, "chg");
 			collectLog(sim_logger, gr_s1_db, workload, gr_s1_db_log, gr_workload_log, gr_partition_log, "gr");
 			
 			System.out.println("[ACT] Replaying Workload Capture using Strategy-1 ...");
@@ -186,6 +215,7 @@ public class DBMSSimulator {
 			
 			sim_logger.setData_movement(true);
 			collectLog(sim_logger, hgr_s1_db, workload, hgr_s1_db_log, hgr_workload_log, hgr_partition_log, "hgr");
+			collectLog(sim_logger, chg_s1_db, workload, chg_s1_db_log, chg_workload_log, chg_partition_log, "chg");
 			collectLog(sim_logger, gr_s1_db, workload, gr_s1_db_log, gr_workload_log, gr_partition_log, "gr");
 			
 			System.out.println("***********************************************************************************************************************");
@@ -201,6 +231,7 @@ public class DBMSSimulator {
 			// Logging
 			sim_logger.setData_movement(false);
 			collectLog(sim_logger, hgr_s2_db, workload, hgr_s2_db_log, hgr_workload_log, hgr_partition_log, "hgr");
+			collectLog(sim_logger, chg_s2_db, workload, chg_s2_db_log, chg_workload_log, chg_partition_log, "chg");
 			collectLog(sim_logger, gr_s2_db, workload, gr_s2_db_log, hgr_workload_log, gr_partition_log, "gr");
 			
 			System.out.println("[ACT] Replaying Workload Capture using Strategy-2 ...");
@@ -218,6 +249,7 @@ public class DBMSSimulator {
 			
 			sim_logger.setData_movement(true);
 			collectLog(sim_logger, hgr_s2_db, workload, hgr_s2_db_log, hgr_workload_log, hgr_partition_log, "hgr");
+			collectLog(sim_logger, chg_s2_db, workload, chg_s2_db_log, chg_workload_log, chg_partition_log, "chg");
 			collectLog(sim_logger, gr_s2_db, workload, gr_s2_db_log, gr_workload_log, gr_partition_log, "gr");
 			
 			System.out.println("***********************************************************************************************************************");

@@ -28,6 +28,9 @@ public class ClusterIdMapper {
 		case "hgr":
 			wrl_file_name = workload.getWrl_hGraphWorkloadFile();
 			break;
+		case "chg":
+			wrl_file_name = workload.getWrl_chGraphWorkloadFile();
+			break;
 		case "gr":
 			wrl_file_name = workload.getWrl_graphWorkloadFile();
 			break;
@@ -56,12 +59,30 @@ public class ClusterIdMapper {
 					
 					if(!dataSet.contains(data_id)) {
 						int shadow_id = workload.getWrl_dataId_shadowId_map().get(data.getData_id());
-						int cluster_id = keyMap.get(shadow_id)+1;
-						//System.out.println("@debug >> "+data.toString()+" | S="+shadow_id+" | C="+cluster_id);
+						int cluster_id = -1;
+						int virtual_id = data.getData_virtual_node_id();
 						
-						data.setData_hmetisClusterId(cluster_id);
-						workload.getWrl_hg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
+						switch(type) {
+						case "hgr":
+							cluster_id = keyMap.get(shadow_id)+1;
+							data.setData_hmetisClusterId(cluster_id);
+							workload.getWrl_hg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
+							break;
+						case "chg":
+							cluster_id = keyMap.get(virtual_id);
+							data.setData_chmetisClusterId(cluster_id);
+							workload.getWrl_chg_virtualDataId_clusterId_map().put(data.getData_virtual_node_id(), cluster_id);
+							workload.getWrl_chg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
+							break;
+						case "gr":
+							cluster_id = keyMap.get(shadow_id)+1;
+							data.setData_metisClusterId(cluster_id);
+							workload.getWrl_gr_dataId_clusterId_map().put(data.getData_id(), cluster_id);
+							break;
+						}						
 
+						//System.out.println("@debug >> "+data.toString()+" | S="+shadow_id+" | C="+cluster_id+" | V="+virtual_id);
+						
 						data.setData_shadowId(-1);
 						data.setData_hasShadowId(false);
 						

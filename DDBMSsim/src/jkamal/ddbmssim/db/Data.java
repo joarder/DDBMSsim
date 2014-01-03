@@ -25,7 +25,7 @@ public class Data implements Comparable<Data> {
 	private double data_normalised_cumulative_probability;
 	
 	// Transaction Attributes
-	private Set<Integer> data_transaction_involved;
+	private Set<Integer> data_transactions_involved;
 	
 	// HyperGraph and Graph Partitioning Attributes
 	private int data_hmetis_cluster_id;
@@ -33,6 +33,7 @@ public class Data implements Comparable<Data> {
 	private int data_metis_cluster_id;
 	private int data_shadow_id;
 	private boolean data_hasShadowId;
+	private int data_virtual_node_id;
 	
 	// Partition Attributes		
 	private int data_partition_id;			// Currently residing (Roaming/Home) Partition Id
@@ -58,13 +59,14 @@ public class Data implements Comparable<Data> {
 		this.setData_cumulativeProbability(0.0);
 		this.setData_normalisedCumulativeProbability(0.0);
 				
-		this.setData_transaction_involved(new TreeSet<Integer>());
+		this.setData_transactions_involved(new TreeSet<Integer>());
 		
 		this.setData_hmetisClusterId(-1);
-		this.setData_chmetis_cluster_id(-1);
+		this.setData_chmetisClusterId(-1);
 		this.setData_metisClusterId(-1);
 		this.setData_shadowId(-1);
 		this.setData_hasShadowId(false);
+		this.setData_virtual_node_id(-1);
 		
 		this.setData_partitionId(pid); // default partition id = -1 means undefined.
 		this.setData_homePartitionId(pid);
@@ -91,15 +93,16 @@ public class Data implements Comparable<Data> {
 		this.setData_normalisedCumulativeProbability(data.getData_normalisedCumulativeProbability());
 		
 		Set<Integer> clone_data_transaction_involved = new TreeSet<Integer>();
-		for(Integer tr_id : data.getData_transaction_involved()) {
+		for(Integer tr_id : data.getData_transactions_involved()) {
 			clone_data_transaction_involved.add(tr_id);
 		}
-		this.setData_transaction_involved(clone_data_transaction_involved);
+		this.setData_transactions_involved(clone_data_transaction_involved);
 		
 		this.setData_hmetisClusterId(data.getData_hmetisClusterId());
-		this.setData_chmetis_cluster_id(data.getData_chmetis_cluster_id());
+		this.setData_chmetisClusterId(data.getData_chmetisClusterId());
 		this.setData_shadowId(data.getData_shadowId());
 		this.setData_hasShadowId(data.isData_hasShadowId());
+		this.setData_virtual_node_id(data.getData_virtual_node_id());
 				
 		this.setData_partitionId(data.getData_partitionId());				
 		this.setData_homePartitionId(data.getData_homePartitionId());
@@ -190,13 +193,13 @@ public class Data implements Comparable<Data> {
 		this.data_normalised_cumulative_probability = data_normalised_cdf;
 	}
 
-	public Set<Integer> getData_transaction_involved() {
-		return data_transaction_involved;
+	public Set<Integer> getData_transactions_involved() {
+		return data_transactions_involved;
 	}
 
-	public void setData_transaction_involved(
+	public void setData_transactions_involved(
 			Set<Integer> data_transaction_involved) {
-		this.data_transaction_involved = data_transaction_involved;
+		this.data_transactions_involved = data_transaction_involved;
 	}
 
 	public boolean isData_isRoaming() {
@@ -255,6 +258,14 @@ public class Data implements Comparable<Data> {
 		this.data_hasShadowId = data_hasShadowId;
 	}
 	
+	public int getData_virtual_node_id() {
+		return data_virtual_node_id;
+	}
+
+	public void setData_virtual_node_id(int data_virtual_node_id) {
+		this.data_virtual_node_id = data_virtual_node_id;
+	}
+
 	public int getData_hmetisClusterId() {
 		return data_hmetis_cluster_id;
 	}
@@ -263,11 +274,11 @@ public class Data implements Comparable<Data> {
 		this.data_hmetis_cluster_id = data_hmetis_cluster_id;
 	}
 
-	public int getData_chmetis_cluster_id() {
+	public int getData_chmetisClusterId() {
 		return data_chmetis_cluster_id;
 	}
 
-	public void setData_chmetis_cluster_id(int data_chmetis_cluster_id) {
+	public void setData_chmetisClusterId(int data_chmetis_cluster_id) {
 		this.data_chmetis_cluster_id = data_chmetis_cluster_id;
 	}
 

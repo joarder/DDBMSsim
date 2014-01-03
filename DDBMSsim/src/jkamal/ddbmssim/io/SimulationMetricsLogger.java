@@ -148,8 +148,8 @@ public class SimulationMetricsLogger {
 				
 				this.logData(workload, partition, data, writer);
 				
-				if(data.getData_transaction_involved().size() != 0) {					
-					for(Integer transaction_id : data.getData_transaction_involved()) {
+				if(data.getData_transactions_involved().size() != 0) {					
+					for(Integer transaction_id : data.getData_transactions_involved()) {
 						Transaction transaction = workload.getTransaction(transaction_id);
 						
 						if(transaction != null) {
@@ -204,7 +204,7 @@ public class SimulationMetricsLogger {
 				writer.println();
 			}
 			break;
-		case "chgr":
+		case "chg":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");

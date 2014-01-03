@@ -26,17 +26,31 @@ public class HGraphMinCut {
 	private String exec_name = null;
 	private String num_partitions = null;		
 	private List<String> arg_list = new ArrayList<String>();
+	
 	private String hgraph_file = null;
-	private String fixfile = null;
-
+	private String hgr_fixfile = null;
+	private String chgraph_file = null;
+	private String chg_fixfile = null;
+	
 	//public HGraphMinCut(File dir, String hgraph_exec, String hgraph_file, String fix_file, int num_partitions) {
-	public HGraphMinCut(Workload workload, String hgraph_exec, int partition_numbers) {
+	public HGraphMinCut(Workload workload, String hgraph_exec, int partition_numbers, String type) {
 		this.exec_dir = new File(DBMSSimulator.hMETIS_DIR_LOCATION);
 		this.exec_name = hgraph_exec;
 		this.num_partitions = Integer.toString(partition_numbers);
-		this.setHgraph_file(workload.getWrl_id()+"-"+workload.getWrl_hGraphWorkloadFile());
-		System.out.println("@ - "+this.getHgraph_file());
-		this.setFixfile(workload.getWrl_hGraphFixFile());		
+		
+		switch(type) {
+		case "hgr":
+			this.setHgraph_file(workload.getWrl_id()+"-"+workload.getWrl_hGraphWorkloadFile());			
+			this.setHgr_fixfile(workload.getWrl_hGraphFixFile());
+			System.out.println("@ - "+this.getHgraph_file());
+			break;
+			
+		case "chg":
+			this.setChgraph_file(workload.getWrl_id()+"-"+workload.getWrl_chGraphWorkloadFile());
+			this.setChg_fixfile(workload.getWrl_chGraphFixFile());
+			System.out.println("@ - "+this.getChgraph_file());
+			break;
+		}		
 		
 		switch(this.exec_name) {
 		case "shmetis":		
@@ -44,7 +58,16 @@ public class HGraphMinCut {
 			this.arg_list.add("/c");
 			this.arg_list.add("start");
 			this.arg_list.add(this.exec_name);		// Executable name
-			this.arg_list.add(this.getHgraph_file());			// HGraphFile
+			
+			switch(type) {
+			case "hgr":
+				this.arg_list.add(this.getHgraph_file());			// HGraphFile			
+				break;
+			case "chg":
+				this.arg_list.add(this.getChgraph_file());			// HGraphFile
+				break;
+			}
+			
 			this.arg_list.add(this.num_partitions);	// Nparts
 			this.arg_list.add("1"); 				// UBfactor(1-49)
 			break;
@@ -54,8 +77,18 @@ public class HGraphMinCut {
 			this.arg_list.add("/c");
 			this.arg_list.add("start");
 			this.arg_list.add(this.exec_name);		// Executable name
-			this.arg_list.add(this.getHgraph_file());			// HGraphFile
-			//this.arg_list.add(this.getFixfile());				// FixFile
+			
+			switch(type) {
+			case "hgr":
+				this.arg_list.add(this.getHgraph_file());			// HGraphFile
+				//this.arg_list.add(this.getHgr_fixfile());				// FixFile
+				break;
+			case "chg":
+				this.arg_list.add(this.getChgraph_file());			// HGraphFile
+				//this.arg_list.add(this.getChg_fixfile());				// FixFile
+				break;
+			}
+			
 			this.arg_list.add(this.num_partitions);	// Nparts
 			this.arg_list.add("1");					// UBfactor(1-49)
 			this.arg_list.add("10");				// Nruns(>=1)
@@ -71,7 +104,16 @@ public class HGraphMinCut {
 			this.arg_list.add("/c");
 			this.arg_list.add("start");
 			this.arg_list.add(this.exec_name);		// Executable name
-			this.arg_list.add(this.getHgraph_file());			// HGraphFile
+			
+			switch(type) {
+			case "hgr":
+				this.arg_list.add(this.getHgraph_file());			// HGraphFile			
+				break;
+			case "chg":
+				this.arg_list.add(this.getChgraph_file());			// HGraphFile
+				break;
+			}
+			
 			this.arg_list.add(this.num_partitions);	// Nparts
 			this.arg_list.add("5");					// UBfactor(>=5)
 			this.arg_list.add("10");				// Nruns(>=1)
@@ -91,12 +133,28 @@ public class HGraphMinCut {
 		this.hgraph_file = hgraph_file;
 	}
 		
-	public String getFixfile() {
-		return fixfile;
+	public String getHgr_fixfile() {
+		return hgr_fixfile;
 	}
 
-	public void setFixfile(String fixfile) {
-		this.fixfile = fixfile;
+	public void setHgr_fixfile(String fixfile) {
+		this.hgr_fixfile = fixfile;
+	}
+
+	public String getChgraph_file() {
+		return chgraph_file;
+	}
+
+	public void setChgraph_file(String chgraph_file) {
+		this.chgraph_file = chgraph_file;
+	}
+
+	public String getChg_fixfile() {
+		return chg_fixfile;
+	}
+
+	public void setChg_fixfile(String chg_fixfile) {
+		this.chg_fixfile = chg_fixfile;
 	}
 
 	public void runHMetis() throws IOException {

@@ -80,7 +80,7 @@ public class TransactionGenerator {
 						else 
 							data = db.search(data_id);*/
 						data = db.search(data_id);							
-						data.getData_transaction_involved().add(global_tr_id);																														
+						data.getData_transactions_involved().add(global_tr_id);																														
 						
 						trDataSet.add(data_id);						
 					}					
