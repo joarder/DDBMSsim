@@ -179,28 +179,78 @@ public class SimulationMetricsLogger {
 		writer.print(data.getData_frequency()+" ");		
 	}
 	
-	public void logWorkload(Database db, Workload workload, PrintWriter writer) {		
-		if(!this.isData_movement()) {
-			writer.print(workload.getWrl_id()+" ");			
-			writer.print(workload.getMessage()+" ");
-			
-			writer.print(workload.getWrl_DtNumbers()+" ");
-			writer.print(workload.getWrl_DtImpact()+" ");																		
-		} else {					
-			//writer.print(workload.getWrl_data_movement_strategy()+" ");
-			writer.print(workload.getMessage()+" ");
-			
-			writer.print(workload.getWrl_DtNumbers()+" ");
-			writer.print(workload.getWrl_DtImpact()+" ");								
-			
-			writer.print(workload.getWrl_totalDataObjects()+" ");
-			writer.print(workload.getWrl_intraNodeDataMovements()+" ");
-			writer.print(workload.getWrl_percentageIntraNodeDataMovement()+" ");
-			writer.print(workload.getWrl_interNodeDataMovements()+" ");
-			writer.print(workload.getWrl_percentageInterNodeDataMovement());
-			
-			writer.println();			
-		}				
+	public void logWorkload(Database db, Workload workload, PrintWriter writer, String type) {
+		switch(type) {
+		case "hgr":
+			if(!this.isData_movement()) {
+				writer.print(workload.getWrl_id()+" ");			
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
+			} else {					
+				//writer.print(workload.getWrl_data_movement_strategy()+" ");
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
+				
+				writer.print(workload.getWrl_totalDataObjects()+" ");
+				writer.print(workload.getWrl_hg_intraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_hg_percentageIntraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_hg_interNodeDataMovements()+" ");
+				writer.print(workload.getWrl_hg_percentageInterNodeDataMovements());
+				
+				writer.println();
+			}
+			break;
+		case "chgr":
+			if(!this.isData_movement()) {
+				writer.print(workload.getWrl_id()+" ");			
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
+			} else {					
+				//writer.print(workload.getWrl_data_movement_strategy()+" ");
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
+				
+				writer.print(workload.getWrl_totalDataObjects()+" ");
+				writer.print(workload.getWrl_chg_intraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_chg_percentageIntraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_chg_interNodeDataMovements()+" ");
+				writer.print(workload.getWrl_chg_percentageInterNodeDataMovements());
+				
+				writer.println();
+			}
+			break;			
+		case "gr":
+			if(!this.isData_movement()) {
+				writer.print(workload.getWrl_id()+" ");			
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
+			} else {					
+				//writer.print(workload.getWrl_data_movement_strategy()+" ");
+				writer.print(workload.getMessage()+" ");
+				
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
+				
+				writer.print(workload.getWrl_totalDataObjects()+" ");
+				writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_gr_percentageIntraNodeDataMovements()+" ");
+				writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");
+				writer.print(workload.getWrl_gr_percentageInterNodeDataMovements());
+				
+				writer.println();
+			}
+			break;
+		}			
 	}
 	
 	public void logPartition(Database db, Workload workload, PrintWriter prWriter) {		

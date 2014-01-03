@@ -15,19 +15,29 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
-import jkamal.ddbmssim.main.DBMSSimulator;
 
-public class HGraphClusters {	
-	public HGraphClusters() { }
+public class ClusterIdMapper {	
+	public ClusterIdMapper() { }
 	
-	public void readPartFile(Database db, Workload workload, int partition_numbers) throws IOException {		
+	public void processPartFile(Database db, Workload workload, int partition_numbers, String dir, String type) throws IOException {		
 		Map<Integer, Integer> keyMap = new TreeMap<Integer, Integer>();		
-		String wrl_fileName = workload.getWrl_hGraphWorkloadFile();		
-		String part_file = wrl_fileName+".part."+partition_numbers;	
-		File part = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"+workload.getWrl_id()+"-"+part_file);		
-		int key = 1;
+		String wrl_file_name = null;
+		String part_file_name = null;
 		
-		Scanner scanner = new Scanner(part);
+		switch(type) {
+		case "hgr":
+			wrl_file_name = workload.getWrl_hGraphWorkloadFile();
+			break;
+		case "gr":
+			wrl_file_name = workload.getWrl_graphWorkloadFile();
+			break;
+		}
+		
+		part_file_name = wrl_file_name+".part."+partition_numbers;	
+		File part_file = new File(dir+"\\"+workload.getWrl_id()+"-"+part_file_name);		
+		
+		int key = 1;		
+		Scanner scanner = new Scanner(part_file);
 		try {
 			while(scanner.hasNextLine()) {
 				int cluster_id = Integer.valueOf(scanner.nextLine());								

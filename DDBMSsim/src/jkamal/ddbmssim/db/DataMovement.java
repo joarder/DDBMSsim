@@ -50,11 +50,13 @@ public class DataMovement {
 		this.setInter_node_data_movements(++inter);
 	}
 
-	public void baseStrategy(Database db, Workload workload) {
-		workload.setWrl_interNodeDataMovements(0);
-		workload.setWrl_intraNodeDataMovements(0);
+	public void baseStrategy(Database db, Workload workload, String type) {
+		workload.setWrl_hg_interNodeDataMovements(0);
+		workload.setWrl_hg_intraNodeDataMovements(0);
 		
-		this.metricsGeneration(db, workload);
+		this.setIntra_node_data_movements(0);
+		this.setInter_node_data_movements(0);
+		this.metricsGeneration(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
@@ -71,19 +73,21 @@ public class DataMovement {
 		}
 		
 		// Perform Actual Data Movement
-		this.move(db, workload, keyMap);
+		this.move(db, workload, keyMap, type);
 		workload.setWrl_hasDataMoved(true);					
 		workload.setMessage("bs");
 				
-		this.metricsGeneration(db, workload);		
-		workload.show(db);		
+		this.metricsGeneration(db, workload, type);		
+		workload.show(db, type);		
 	}
 	
-	public void strategy1(Database db, Workload workload) {
-		workload.setWrl_interNodeDataMovements(0);
-		workload.setWrl_intraNodeDataMovements(0);
-		
-		this.metricsGeneration(db, workload);
+	public void strategy1(Database db, Workload workload, String type) {
+		workload.setWrl_hg_interNodeDataMovements(0);
+		workload.setWrl_hg_intraNodeDataMovements(0);
+
+		this.setIntra_node_data_movements(0);
+		this.setInter_node_data_movements(0);
+		this.metricsGeneration(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
@@ -102,19 +106,21 @@ public class DataMovement {
 		}
 		
 		// Perform Actual Data Movement
-		this.move(db, workload, keyMap);
+		this.move(db, workload, keyMap, type);
 		workload.setWrl_hasDataMoved(true);
 		workload.setMessage("s1");
 		
-		this.metricsGeneration(db, workload);
-		workload.show(db);		
+		this.metricsGeneration(db, workload, type);
+		workload.show(db, type);		
 	}
 	
-	public void strategy2(Database db, Workload workload) {	
-		workload.setWrl_interNodeDataMovements(0);
-		workload.setWrl_intraNodeDataMovements(0);
-		
-		this.metricsGeneration(db, workload);
+	public void strategy2(Database db, Workload workload, String type) {	
+		workload.setWrl_hg_interNodeDataMovements(0);
+		workload.setWrl_hg_intraNodeDataMovements(0);
+
+		this.setIntra_node_data_movements(0);
+		this.setInter_node_data_movements(0);
+		this.metricsGeneration(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
@@ -152,12 +158,12 @@ public class DataMovement {
 		}
 	
 		// Perform Actual Data Movement	
-		this.move(db, workload, keyMap);
+		this.move(db, workload, keyMap, type);
 		workload.setWrl_hasDataMoved(true);				
 		workload.setMessage("s2");
 
-		this.metricsGeneration(db, workload);			
-		workload.show(db);
+		this.metricsGeneration(db, workload, type);			
+		workload.show(db, type);
 	}
 	
 	private void updateData(Data data, int dst_partition_id, int dst_node_id, boolean roaming) {		
@@ -192,7 +198,7 @@ public class DataMovement {
 	}
 	
 	// Perform Actual Data Movement
-	private void move(Database db, Workload workload, Map<Integer, Integer> keyMap) {
+	private void move(Database db, Workload workload, Map<Integer, Integer> keyMap, String type) {
 		Partition home_partition = null;
 		Partition current_partition = null;
 		Partition dst_partition = null;
@@ -259,15 +265,41 @@ public class DataMovement {
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction-Type		
 		
-		workload.setWrl_intraNodeDataMovements(this.getIntra_node_data_movements());
-		workload.setWrl_interNodeDataMovements(this.getInter_node_data_movements());
+		switch(type) {
+		case "hgr":
+			workload.setWrl_hg_intraNodeDataMovements(this.getIntra_node_data_movements());
+			workload.setWrl_hg_interNodeDataMovements(this.getInter_node_data_movements());
+			break;
+		case "chgr":
+			workload.setWrl_chg_intraNodeDataMovements(this.getIntra_node_data_movements());
+			workload.setWrl_chg_interNodeDataMovements(this.getInter_node_data_movements());
+			break;
+		case "gr":
+			workload.setWrl_gr_intraNodeDataMovements(this.getIntra_node_data_movements());
+			workload.setWrl_gr_interNodeDataMovements(this.getInter_node_data_movements());
+			break;
+		}
+		
 	}
 	
-	public void metricsGeneration(Database db, Workload workload) {
+	public void metricsGeneration(Database db, Workload workload, String type) {
 		// Calculating Various Metrics
 		workload.calculateDTPercentage();
 		workload.calculateDTImapct(db);
-		workload.calculateIntraNodeDataMovementPercentage(workload.getWrl_intraNodeDataMovements());
-		workload.calculateInterNodeDataMovementPercentage(workload.getWrl_interNodeDataMovements());
+		
+		switch(type) {
+		case "hgr":			
+			workload.hg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_hg_intraNodeDataMovements());
+			workload.hg_CalculateInterNodeDataMovementPercentage(workload.getWrl_hg_interNodeDataMovements());
+			break;
+		case "chgr":			
+			workload.chg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_chg_intraNodeDataMovements());
+			workload.chg_CalculateInterNodeDataMovementPercentage(workload.getWrl_chg_interNodeDataMovements());
+			break;
+		case "gr":
+			workload.gr_CalculateIntraNodeDataMovementPercentage(workload.getWrl_gr_intraNodeDataMovements());
+			workload.gr_CalculateInterNodeDataMovementPercentage(workload.getWrl_gr_interNodeDataMovements());
+			break;
+		}
 	}
 }

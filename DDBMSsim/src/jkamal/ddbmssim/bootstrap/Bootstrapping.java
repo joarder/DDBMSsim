@@ -33,6 +33,10 @@ public class Bootstrapping {
 		int data_nums = 0;
 		int global_data = 0;
 		
+		double[] pk_array = {0.2, 0.3, 0.1, 0.1, 0.3};
+		int pk = 1;
+		int pk_range = (int)((int) DATA_OBJECTS * pk_array[pk-1]);
+		
 		// i -- partition
 		for(int partition_id = 1; partition_id <= partition_nums; partition_id++) {	
 			if(node_id > dbs.getDbs_nodes().size())
@@ -51,7 +55,16 @@ public class Bootstrapping {
 			for(int k = 1; k <= data_nums && data_id <= DATA_OBJECTS; k++) {
 				// Create a new Data Item within the Partition
 				data = new Data(data_id, partition_id, node_id, false);
-				partition.getPartition_dataSet().add(data);												
+				partition.getPartition_dataSet().add(data);
+				
+				// Assigning Primary Key for each Row (Data)				
+				if(pk_range == 0) {
+					++pk;
+					pk_range = (int)((int) DATA_OBJECTS * pk_array[pk-1]);
+				}				
+				
+				data.setData_pk(("pk-"+pk));
+				--pk_range;
 				
 				// Put an entry into the Partition Data lookup table
 				partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_id());

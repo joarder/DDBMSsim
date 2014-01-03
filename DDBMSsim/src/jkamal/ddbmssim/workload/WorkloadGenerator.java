@@ -130,9 +130,11 @@ public class WorkloadGenerator {
 			this.assignShadowDataId(db, workload);			
 			this.generateHGraphWorkloadFile(db, workload);
 			this.generateHGraphFixFile(db, workload);
+			this.generateCHGraphWorkloadFile(db, workload);
+			this.generateCHGraphFixFile(db, workload);
 			this.generateGraphWorkloadFile(db, workload);
 			
-			workload.show(db);
+			workload.show(db, "");
 			
 			// Clone the Workload
 			Workload cloneWorkload = new Workload(workload);			
@@ -438,8 +440,8 @@ public class WorkloadGenerator {
 		String content = "";
 		int edges = 0; // Total number of edges need to be determined
 		int vertices = workload.getWrl_totalDataObjects();		
-		int hasVertexWeight = 0;
-		int hasEdgeWeight = 0;
+		int hasVertexWeight = 1;
+		int hasEdgeWeight = 1;
 		int new_line = vertices;
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
@@ -452,22 +454,22 @@ public class WorkloadGenerator {
 											
 						if(!dataSet.contains(trData.getData_id())) {
 							dataSet.add(trData.getData_id());
-							//String str = Integer.toString(trData.getData_weight())+" ";
-							String str = "";
+							String str = Integer.toString(trData.getData_weight())+" ";
+							//String str = Integer.toString(trData.getData_shadowId())+"-";
+							//String str = "";
+							dataIdSet = new TreeSet<Integer>();
 							
 							if(trData.getData_transaction_involved().size() != 0) {					
 								for(Integer transaction_id : trData.getData_transaction_involved()) {
 									Transaction tr = workload.getTransaction(transaction_id);
 									
-									if(tr != null) {// && tr.getTr_id()!= transaction.getTr_id()) {
-										dataIdSet = new TreeSet<Integer>();
-										
+									if(tr != null) {
 										for(int trInvolvedDataId : tr.getTr_dataSet()) {
 											trInvolvedData = db.search(trInvolvedDataId);													
 											
 											if(!dataIdSet.contains(trInvolvedDataId) && trInvolvedData.getData_id() != trData.getData_id()) {
 												str += Integer.toString(trInvolvedData.getData_shadowId())+" ";							
-												//str += tr.getTr_weight()+" ";
+												str += tr.getTr_weight()+" ";
 												
 												++edges;
 												
@@ -497,8 +499,8 @@ public class WorkloadGenerator {
 
 			try {
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
-				//writer.write(vertices+" "+edges+" "+hasVertexWeight+""+hasEdgeWeight+"\n"+content);
-				writer.write(vertices+" "+edges+"\n"+content);
+				writer.write(vertices+" "+(edges/2)+" "+hasVertexWeight+""+hasEdgeWeight+"\n"+content);
+				//writer.write(vertices+" "+(edges/2)+"\n"+content);
 			} catch(IOException e) {
 				e.printStackTrace();
 			}finally {
@@ -509,6 +511,147 @@ public class WorkloadGenerator {
 		}
 	}
 	
+	private int simpleHash(int x, int nums) {
+		return (x % nums);
+	} 
+	
+	// Generates Workload File for (Compressed) Hypergraph partitioning
+	public void generateCHGraphWorkloadFile(Database db, Workload workload) {
+		
+		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {
+				if(transaction.getTr_class() != "green") {
+					
+				}
+			}
+		}
+		
+		
+		File workloadFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
+				+workload.getWrl_id()+"-"+workload.getWrl_chGraphWorkloadFile());
+		
+		Data trData = null;
+		int hyper_edges = workload.getWrl_totalTransactions();
+		int vertices = workload.getWrl_totalDataObjects();
+		int hasTransactionWeight = 1;
+		int hasDataWeight = 1;						
+		
+		try {
+			workloadFile.createNewFile();
+			Writer writer = null;
+			try {
+				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
+				writer.write(hyper_edges+" "+vertices+" "+hasTransactionWeight+""+hasDataWeight+"\n");
+				
+				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+					for(Transaction transaction : entry.getValue()) {
+						if(transaction.getTr_class() != "green") {
+							writer.write(transaction.getTr_weight()+" ");
+							
+							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
+							while(data.hasNext()) {
+								trData = db.search(data.next());
+								
+								writer.write(Integer.toString(trData.getData_shadowId()));							
+								
+								if(data.hasNext())
+									writer.write(" "); 
+							} // end -- while() loop
+							
+							writer.write("\n");						
+						} // end -- if()-Transaction Class
+					} // end -- for()-Transaction
+				} // end -- for()-Transaction-Types
+
+				// Writing Data Weight
+				Set<Integer> uniqueDataSet = new TreeSet<Integer>();
+				int newline = 0;
+				
+				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+					for(Transaction transaction : entry.getValue()) {
+						if(transaction.getTr_class() != "green") {
+							
+							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();							
+							
+							while(data.hasNext()) {
+								trData = db.search(data.next());								
+								
+								if(!uniqueDataSet.contains(trData.getData_shadowId())) {
+									++newline;
+									
+									writer.write(Integer.toString(trData.getData_weight()));																			
+									
+									if(newline != vertices)
+										writer.write("\n");										
+									
+									uniqueDataSet.add(trData.getData_shadowId());
+								}
+							}							
+						}
+					}
+				}
+				
+			} catch(IOException e) {
+				e.printStackTrace();
+			}finally {
+				writer.close();
+			}
+		} catch (IOException e) {		
+			e.printStackTrace();
+		}										
+	}
+	
+	public void generateCHGraphFixFile(Database db, Workload workload) {
+		File fixFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
+				+workload.getWrl_id()+"-"+workload.getWrl_chGraphFixFile());
+		
+		Data trData = null;
+		
+		try {
+			fixFile.createNewFile();
+			Writer writer = null;
+			try {
+				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fixFile), "utf-8"));
+				
+				Set<Integer> uniqueDataSet = new TreeSet<Integer>();
+				int newline = 0;
+				
+				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+					for(Transaction transaction : entry.getValue()) {
+						if(transaction.getTr_class() != "green") {							
+							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();							
+							
+							while(data.hasNext()) {
+								trData = db.search(data.next());								
+								
+								if(!uniqueDataSet.contains(trData.getData_shadowId())) {
+									++newline;
+									
+									if(trData.isData_isMoveable())									
+										writer.write(Integer.toString(trData.getData_partitionId()));
+									else
+										writer.write(Integer.toString(-1));
+									
+									if(newline != workload.getWrl_totalDataObjects())
+										writer.write("\n");										
+									
+									uniqueDataSet.add(trData.getData_shadowId());
+								}
+							}
+						}
+					}					
+				}
+			} catch(IOException e) {
+				e.printStackTrace();
+			}finally {
+				writer.close();
+			}
+		} catch (IOException e) {		
+			e.printStackTrace();
+		}		
+	}
+	
+	// Printing the Workload contents
 	public void print(Workload workload) {
 		System.out.print("[MSG] Total "+workload.getWrl_totalTransactions()+" transactions of "
 				+workload.getWrl_transactionTypes()+" types having a distribution of ");

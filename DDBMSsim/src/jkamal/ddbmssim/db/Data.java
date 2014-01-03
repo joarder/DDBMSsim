@@ -16,6 +16,7 @@ public class Data implements Comparable<Data> {
 	private float data_size;
 	private int data_frequency;
 	private int data_weight;
+	private String data_pk;
 	private boolean data_isMoveable;
 	
 	// Workload Attributes
@@ -28,6 +29,7 @@ public class Data implements Comparable<Data> {
 	
 	// HyperGraph and Graph Partitioning Attributes
 	private int data_hmetis_cluster_id;
+	private int data_chmetis_cluster_id;
 	private int data_metis_cluster_id;
 	private int data_shadow_id;
 	private boolean data_hasShadowId;
@@ -49,6 +51,7 @@ public class Data implements Comparable<Data> {
 		this.setData_size(1); // 1.0 = 1 MegaBytes
 		this.setData_frequency(0);
 		this.setData_weight(0);
+		this.setData_pk("pk");
 		this.setData_isMoveable(false);	
 		
 		this.setData_ranking(0);
@@ -58,6 +61,7 @@ public class Data implements Comparable<Data> {
 		this.setData_transaction_involved(new TreeSet<Integer>());
 		
 		this.setData_hmetisClusterId(-1);
+		this.setData_chmetis_cluster_id(-1);
 		this.setData_metisClusterId(-1);
 		this.setData_shadowId(-1);
 		this.setData_hasShadowId(false);
@@ -79,6 +83,7 @@ public class Data implements Comparable<Data> {
 		this.setData_size(data.getData_size());
 		this.setData_frequency(data.getData_frequency());
 		this.setData_weight(data.getData_weight());
+		this.setData_pk(data.getData_pk());
 		this.setData_isMoveable(data.isData_isMoveable());		
 		
 		this.setData_ranking(data.getData_ranking());
@@ -92,6 +97,7 @@ public class Data implements Comparable<Data> {
 		this.setData_transaction_involved(clone_data_transaction_involved);
 		
 		this.setData_hmetisClusterId(data.getData_hmetisClusterId());
+		this.setData_chmetis_cluster_id(data.getData_chmetis_cluster_id());
 		this.setData_shadowId(data.getData_shadowId());
 		this.setData_hasShadowId(data.isData_hasShadowId());
 				
@@ -150,6 +156,14 @@ public class Data implements Comparable<Data> {
 
 	public void setData_size(float data_size) {
 		this.data_size = data_size;
+	}
+
+	public String getData_pk() {
+		return data_pk;
+	}
+
+	public void setData_pk(String data_pk) {
+		this.data_pk = data_pk;
 	}
 
 	public int getData_ranking() {
@@ -249,6 +263,14 @@ public class Data implements Comparable<Data> {
 		this.data_hmetis_cluster_id = data_hmetis_cluster_id;
 	}
 
+	public int getData_chmetis_cluster_id() {
+		return data_chmetis_cluster_id;
+	}
+
+	public void setData_chmetis_cluster_id(int data_chmetis_cluster_id) {
+		this.data_chmetis_cluster_id = data_chmetis_cluster_id;
+	}
+
 	public int getData_metisClusterId() {
 		return data_metis_cluster_id;
 	}
@@ -285,7 +307,7 @@ public class Data implements Comparable<Data> {
 					+"|P"+this.data_partition_id+"("+this.data_home_partition_id
 					+")/N"+this.data_node_id+"("+this.data_home_node_id+"))");// @C("+this.data_hmetis_cluster_id+") @h("+this.data_shadow_hmetis_id+")");
 		else
-			return (this.data_label+"("+this.getData_weight()+"/"+this.getData_ranking()+"/"+this.getData_frequency()
+			return (this.data_label+"|"+this.data_pk+"("+this.getData_weight()+"/"+this.getData_ranking()+"/"+this.getData_frequency()
 					+"|P"+this.data_partition_id
 					+"/N"+this.data_node_id+")");// @C("+this.data_hmetis_cluster_id+") //@h("+this.data_shadow_hmetis_id+")");
 	}
