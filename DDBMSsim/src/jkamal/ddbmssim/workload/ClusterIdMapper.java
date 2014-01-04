@@ -69,7 +69,7 @@ public class ClusterIdMapper {
 							workload.getWrl_hg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
 							break;
 						case "chg":
-							cluster_id = keyMap.get(virtual_id);
+							cluster_id = keyMap.get(virtual_id)+1;
 							data.setData_chmetisClusterId(cluster_id);
 							workload.getWrl_chg_virtualDataId_clusterId_map().put(data.getData_virtual_node_id(), cluster_id);
 							workload.getWrl_chg_dataId_clusterId_map().put(data.getData_id(), cluster_id);

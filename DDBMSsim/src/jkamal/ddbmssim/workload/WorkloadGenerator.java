@@ -526,8 +526,8 @@ public class WorkloadGenerator {
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		Set<Integer> virtual_dataSet = new TreeSet<Integer>();		
 		
-		System.out.println("@debug >> Red = "+workload.getWrl_tr_red()+" | Orange = "+workload.getWrl_tr_orange()
-				+" | div = "+workload.getWrl_totalDataObjects()/2);
+		//System.out.println("@debug >> Red = "+workload.getWrl_tr_red()+" | Orange = "+workload.getWrl_tr_orange()
+				//+" | div = "+workload.getWrl_totalDataObjects()/2);
 
 		// Creating Virtual Nodes
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
@@ -570,15 +570,15 @@ public class WorkloadGenerator {
 		}
 		
 		//Check -- Found OK
-		for(Entry<Integer, Set<Integer>> entry : virtual_vertexMap.entrySet()) {
+		//for(Entry<Integer, Set<Integer>> entry : virtual_vertexMap.entrySet()) {
 			//System.out.print(" vid = "+entry.getKey()+" {");
 			
-			for(Integer j : entry.getValue()) {
+			//for(Integer j : entry.getValue()) {
 				//System.out.print(j+", ");
-			}
+			//}
 			
 			//System.out.print("}\n");
-		}
+		//}
 		//Check -- Found OK
 		//for(Entry<Integer, Integer> entry : virtual_vertexWeightMap.entrySet())
 			//System.out.println(" vid = "+entry.getKey()+" | weight = "+entry.getValue());
@@ -628,14 +628,16 @@ public class WorkloadGenerator {
 							}
 						
 						
-							if(!virtual_edge_weight) {
-								virtual_edgeWeightMap.put(virtual_edge_id, combined_weight);
-								virtual_edge_weight = true;
-							} else {
+							if(virtual_edge_weight) {
+								System.out.println("@debug >> ### v-eid = "+virtual_edge_id);
 								int weight = virtual_edgeWeightMap.get(virtual_edge_id);
 								weight += combined_weight;
-								virtual_edgeWeightMap.remove(virtual_edge_id);
+								//virtual_edgeWeightMap.remove(virtual_edge_id);
 								virtual_edgeWeightMap.put(virtual_edge_id, weight);
+							} else {
+								virtual_edgeWeightMap.put(virtual_edge_id, combined_weight);
+								System.out.println("@debug >> *** v-eid = "+virtual_edge_id);
+								virtual_edge_weight = true;
 							}
 						//}
 					}
@@ -655,15 +657,15 @@ public class WorkloadGenerator {
 		}			
 		
 		//Check -- Found OK
-		for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
+		//for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
 			//System.out.print(" eid = "+entry.getKey()+"{");
 			
-			for(Integer j : entry.getValue()) {
+			//for(Integer j : entry.getValue()) {
 				//System.out.print(j+", ");
-			}
+			//}
 			
 			//System.out.print("}\n");
-		}
+		//}
 		//Check -- Found OK
 		//for(Entry<Integer, Integer> entry : virtual_edgeWeightMap.entrySet())
 			//System.out.println(" eid = "+entry.getKey()+" | weight = "+entry.getValue());

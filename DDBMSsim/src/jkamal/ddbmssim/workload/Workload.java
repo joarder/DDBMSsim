@@ -103,8 +103,8 @@ public class Workload implements Comparable<Workload> {
 		
 		this.setWrl_hGraphWorkloadFile("hgr-workload.txt");
 		this.setWrl_hGraphFixFile("hgr-fixfile.txt");		
-		this.setWrl_chGraphWorkloadFile("chgr-workload.txt");
-		this.setWrl_chGraphFixFile("chgr-fixfile.txt");
+		this.setWrl_chGraphWorkloadFile("chg-workload.txt");
+		this.setWrl_chGraphFixFile("chg-fixfile.txt");
 		this.setWrl_graphWorkloadFile("gr-workload.txt");
 		
 		this.setWrl_distributedTransactions(0);
@@ -741,14 +741,14 @@ public class Workload implements Comparable<Workload> {
 	public void gr_CalculateIntraNodeDataMovementPercentage(int intra_node_movements) {
 		double percentage = ((double)intra_node_movements/this.getWrl_totalDataObjects())*100.0;
 		percentage = Math.round(percentage*100.0)/100.0;
-		this.setWrl_hg_percentageIntraNodeDataMovements(percentage);
+		this.setWrl_gr_percentageIntraNodeDataMovements(percentage);
 	}
 	
 	public void gr_CalculateInterNodeDataMovementPercentage(int inter_node_movements) {
 		int counts = this.getWrl_totalDataObjects();		
 		double percentage = ((double)inter_node_movements/counts)*100.0;
 		percentage = Math.round(percentage*100.0)/100.0;
-		this.setWrl_hg_percentageInterNodeDataMovements(percentage);
+		this.setWrl_gr_percentageInterNodeDataMovements(percentage);
 	}	
 
 	public String getMessage() {
@@ -832,11 +832,8 @@ public class Workload implements Comparable<Workload> {
 		this.calculateDTPercentage();	
 		this.calculateDTImapct(db);
 		
-		System.out.println("      # Distributed Transactions: "+this.getWrl_distributedTransactions()
-				+" ("+this.getWrl_percentageDistributedTransactions()+"% of " 
-				+"Total "+this.getWrl_totalTransactions()+" Workload Transactions)");
-		System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_impactOfDistributedTransactions()
-				+" (for a particular workload round)");
+		System.out.println("      # Distributed Transactions: "+this.getWrl_distributedTransactions()+" ("+this.getWrl_percentageDistributedTransactions()+"%)");
+		System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_impactOfDistributedTransactions());
 		
 		switch(type) {
 		case "hgr":

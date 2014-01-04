@@ -27,8 +27,8 @@ public class DBMSSimulator {
 	public final static int TRANSACTION_NUMS = 10;
 	public final static int SIMULATION_RUN_NUMBERS = 3;
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
 	
 	public final static String HMETIS = "hmetis";
 	public final static String METIS = "pmetis";
@@ -60,9 +60,9 @@ public class DBMSSimulator {
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
 		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size
-		Database db = new Database(0, "test-db", 0, "Range", 0.01);
+		//Database db = new Database(0, "test-db", 0, "Range", 0.01);
 		//Database db = new Database(0, "test-db", 0, "Range", 0.1);
-		//Database db = new Database(0, "testdb", 0, "Range", 1);
+		Database db = new Database(0, "testdb", 0, "Range", 1);
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
 		// Perform Bootstrapping through synthetic Data generation and placing it into appropriate Partition
@@ -138,9 +138,16 @@ public class DBMSSimulator {
 			}			
 			
 			//==============================================================================================
-			// Run hMetis HyperGraph Partitioning
+			// Run hMetis HyperGraph Partitioning for Compressed Hypergraph
 			HGraphMinCut chgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "chg"); 		
 			chgraphMinCut.runHMetis();
+
+			// Wait for 5 seconds to ensure that the Part files have been generated properly
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			
 			//==============================================================================================
 			// Run Metis Graph Partitioning							
@@ -205,10 +212,14 @@ public class DBMSSimulator {
 			
 			// Read Part file and assign corresponding Data cluster Id			
 			cluster_id_mapper.processPartFile(hgr_s1_db, workload, hgr_s1_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "hgr");
+			cluster_id_mapper.processPartFile(chg_s1_db, workload, chg_s1_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "chg");
 			cluster_id_mapper.processPartFile(gr_s1_db, workload, gr_s1_db.getDb_partitions().size(), METIS_DIR_LOCATION, "gr");
 			
 			System.out.println("[ACT] Strategy-1[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) [Column Max] | Using Hypergraph Partitioning");
 			data_movement.strategy1(hgr_s1_db, workload, "hgr");
+			System.out.println("=======================================================================================================================");
+			System.out.println("[ACT] Strategy-1[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) [Column Max] | Using Compressed Hypergraph Partitioning");
+			data_movement.strategy1(chg_s1_db, workload, "chg");
 			System.out.println("=======================================================================================================================");
 			System.out.println("[ACT] Strategy-1[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) [Column Max] | Using Graph Partitioning");
 			data_movement.strategy1(gr_s1_db, workload, "gr");
@@ -239,10 +250,14 @@ public class DBMSSimulator {
 
 			// Read Part file and assign corresponding Data cluster Id			
 			cluster_id_mapper.processPartFile(hgr_s2_db, workload, hgr_s2_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "hgr");
+			cluster_id_mapper.processPartFile(chg_s2_db, workload, chg_s2_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "chg");
 			cluster_id_mapper.processPartFile(gr_s2_db, workload, gr_s2_db.getDb_partitions().size(), METIS_DIR_LOCATION, "gr");
 			
 			System.out.println("[ACT] Strategy-2[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Unique Partition) [Sub Matrix Max] | Using Hypergraph Partitioning");			
 			data_movement.strategy2(hgr_s2_db, workload, "hgr");
+			System.out.println("=======================================================================================================================");
+			System.out.println("[ACT] Strategy-2[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Unique Partition) [Sub Matrix Max] | Using Compressed Hypergraph Partitioning");			
+			data_movement.strategy2(chg_s2_db, workload, "chg");
 			System.out.println("=======================================================================================================================");
 			System.out.println("[ACT] Strategy-2[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Unique Partition) [Sub Matrix Max] | Using Graph Partitioning");
 			data_movement.strategy2(gr_s2_db, workload, "gr");
