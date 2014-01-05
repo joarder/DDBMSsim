@@ -627,16 +627,23 @@ public class WorkloadGenerator {
 								//System.out.println("@debug >> "+tr.toString()+" | combined_weight = "+combined_weight);
 							}
 						
-						
-							if(virtual_edge_weight) {
-								System.out.println("@debug >> ### v-eid = "+virtual_edge_id);
+							//Check
+							//System.out.println("%% Map Show %%");
+							//for(Entry<Integer, Integer> entry1 : virtual_edgeWeightMap.entrySet())
+								//System.out.println(" eid = "+entry1.getKey()+" | weight == "+entry1.getValue());
+							
+							//System.out.println("%%");
+							
+							if(virtual_edge_weight) {								
+								//System.out.println("@debug >> Before v-eid = "+virtual_edge_id);
 								int weight = virtual_edgeWeightMap.get(virtual_edge_id);
 								weight += combined_weight;
-								//virtual_edgeWeightMap.remove(virtual_edge_id);
+								virtual_edgeWeightMap.remove(virtual_edge_id);
 								virtual_edgeWeightMap.put(virtual_edge_id, weight);
+								//System.out.println("@debug >> After v-eid = "+virtual_edge_id+" | w = "+weight);
 							} else {
 								virtual_edgeWeightMap.put(virtual_edge_id, combined_weight);
-								System.out.println("@debug >> *** v-eid = "+virtual_edge_id);
+								//System.out.println("@debug >> *** v-eid = "+virtual_edge_id+" | cw = "+combined_weight);
 								virtual_edge_weight = true;
 							}
 						//}
@@ -648,6 +655,7 @@ public class WorkloadGenerator {
 					edgeSet.remove(virtual_edge_id);
 					virtual_edgeMap.remove(virtual_edge_id);
 					virtual_edgeWeightMap.remove(virtual_edge_id);
+					virtual_edge_weight = false;
 					//System.out.println("*** >> Removed v-eid = "+virtual_edge_id);
 				} else {
 					++virtual_edge_id;
