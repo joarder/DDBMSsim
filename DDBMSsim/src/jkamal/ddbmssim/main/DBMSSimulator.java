@@ -27,8 +27,8 @@ public class DBMSSimulator {
 	public final static int TRANSACTION_NUMS = 1000;
 	public final static int SIMULATION_RUN_NUMBERS = 24;
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
 	
 	public final static String HMETIS = "hmetis";
 	public final static String METIS = "pmetis";
@@ -59,7 +59,7 @@ public class DBMSSimulator {
 		DatabaseServer dbs = new DatabaseServer(0, "test-dbs", DB_SERVERS);		
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
-		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size
+		//Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size
 		//Database db = new Database(0, "test-db", 0, "Range", 0.01);
 		//Database db = new Database(0, "test-db", 0, "Range", 0.1);
 		Database db = new Database(0, "testdb", 0, "Range", 1);
@@ -107,7 +107,7 @@ public class DBMSSimulator {
 		PrintWriter hgr_s2_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_s2_db_log");
 		PrintWriter hgr_partition_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_partition_log");
 		PrintWriter hgr_workload_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_workload_log");
-		// For HyperGraph Partitioning		
+		// For Compressed HyperGraph Partitioning		
 		PrintWriter chg_bs_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_bs_db_log");
 		PrintWriter chg_s1_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_s1_db_log");
 		PrintWriter chg_s2_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_s2_db_log");
@@ -124,6 +124,8 @@ public class DBMSSimulator {
 		while(simulation_run != SIMULATION_RUN_NUMBERS) {			
 			Workload workload = workloadGenerator.getWorkload_map().get(simulation_run);			
 			workload.setMessage("in");
+			//workload.calculateDTImapct(db);
+			//workload.calculateDTPercentage();
 			
 			//==============================================================================================
 			// Run hMetis HyperGraph Partitioning
@@ -202,6 +204,7 @@ public class DBMSSimulator {
 			
 		//=== Strategy-1
 			// Logging
+			workload.setMessage("in");
 			sim_logger.setData_movement(false);
 			collectLog(sim_logger, hgr_s1_db, workload, hgr_s1_db_log, hgr_workload_log, hgr_partition_log, "hgr");
 			collectLog(sim_logger, chg_s1_db, workload, chg_s1_db_log, chg_workload_log, chg_partition_log, "chg");
@@ -240,10 +243,11 @@ public class DBMSSimulator {
 			
 		//=== Strategy-2
 			// Logging
+			workload.setMessage("in");
 			sim_logger.setData_movement(false);
 			collectLog(sim_logger, hgr_s2_db, workload, hgr_s2_db_log, hgr_workload_log, hgr_partition_log, "hgr");
 			collectLog(sim_logger, chg_s2_db, workload, chg_s2_db_log, chg_workload_log, chg_partition_log, "chg");
-			collectLog(sim_logger, gr_s2_db, workload, gr_s2_db_log, hgr_workload_log, gr_partition_log, "gr");
+			collectLog(sim_logger, gr_s2_db, workload, gr_s2_db_log, gr_workload_log, gr_partition_log, "gr");
 			
 			System.out.println("[ACT] Replaying Workload Capture using Strategy-2 ...");
 			System.out.println("***********************************************************************************************************************");
@@ -286,6 +290,12 @@ public class DBMSSimulator {
 		hgr_workload_log.flush();
 		hgr_partition_log.flush();
 		
+		chg_bs_db_log.flush();
+		chg_s1_db_log.flush();
+		chg_s2_db_log.flush();
+		chg_workload_log.flush();
+		chg_partition_log.flush();
+		
 		gr_bs_db_log.flush();
 		gr_s1_db_log.flush();
 		gr_s2_db_log.flush();
@@ -297,6 +307,12 @@ public class DBMSSimulator {
 		hgr_s2_db_log.close();
 		hgr_workload_log.close();
 		hgr_partition_log.close();
+				
+		chg_bs_db_log.close();
+		chg_s1_db_log.close();
+		chg_s2_db_log.close();
+		chg_workload_log.close();
+		chg_partition_log.close();
 		
 		gr_bs_db_log.close();
 		gr_s1_db_log.close();

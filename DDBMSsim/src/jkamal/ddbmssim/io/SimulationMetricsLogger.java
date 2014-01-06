@@ -204,6 +204,7 @@ public class SimulationMetricsLogger {
 				writer.println();
 			}
 			break;
+			
 		case "chg":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
@@ -226,7 +227,8 @@ public class SimulationMetricsLogger {
 				
 				writer.println();
 			}
-			break;			
+			break;	
+			
 		case "gr":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
