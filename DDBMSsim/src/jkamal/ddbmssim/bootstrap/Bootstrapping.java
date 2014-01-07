@@ -35,9 +35,9 @@ public class Bootstrapping {
 		
 		// TPC-C Database table (9) row counts in different scale
 		//double[] pk_array = {0.19, 1.92, 1.92, 19.2, 57.69, 5.76, 5.76, 1.73, 5.76};
-		//int[] pk_array = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
+		int[] pk_array = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
 		//int[] pk_array = {1, 10, 10, 100, 300, 30, 30, 30, 9}; // 520
-		int[] pk_array = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
+		//int[] pk_array = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
 		int pk = 1;
 		//int pk_range = (int) (Math.ceil(DATA_OBJECTS * pk_array[pk-1]) / 100);
 		int pk_range = pk_array[pk-1];

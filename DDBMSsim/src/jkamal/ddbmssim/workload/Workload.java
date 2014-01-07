@@ -689,6 +689,7 @@ public class Workload implements Comparable<Workload> {
 		//double dt_impact = (double) total_impact/this.getWrl_totalTransaction();
 		double dt_impact = (double) total_impact/total_trFreq;
 		dt_impact = Math.round(dt_impact * 100.0)/100.0;
+		
 		this.setWrl_impactOfDistributedTransactions(dt_impact);
 	}
 
@@ -705,6 +706,7 @@ public class Workload implements Comparable<Workload> {
 				
 		double percentage = ((double)counts/(double)this.getWrl_totalTransactions())*100.0;
 		percentage = Math.round(percentage * 100.0)/100.0;
+		
 		this.setWrl_distributedTransactions(counts);
 		this.setWrl_percentageDistributedTransactions(percentage);	
 	}
@@ -873,6 +875,9 @@ public class Workload implements Comparable<Workload> {
 			}
 			
 			db.show();		
+			break;
+		
+		default:
 			break;
 		}
 	}

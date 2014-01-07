@@ -127,11 +127,14 @@ public class WorkloadGenerator {
 			workloadClassifier.classifyTransactions(db, workload);
 			
 			// Assign Shadow HMetis Data Id and generate workload and fix files
-			this.assignShadowDataId(db, workload);			
+			this.assignShadowDataId(db, workload);	
+			
 			this.generateHGraphWorkloadFile(db, workload);
 			this.generateHGraphFixFile(db, workload);
+			
 			this.generateCHGraphWorkloadFile(db, workload);
 			this.generateCHGraphFixFile(db, workload);
+			
 			this.generateGraphWorkloadFile(db, workload);
 			
 			workload.show(db, "");
