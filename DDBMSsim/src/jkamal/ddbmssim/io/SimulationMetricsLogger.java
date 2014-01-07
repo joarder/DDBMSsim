@@ -186,11 +186,17 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
+				workload.calculateDTImapct(db);
+				workload.calculateDTPercentage();
+				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
 				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
 			} else {					
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
+				
+				workload.calculateDTImapct(db);
+				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
 				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
@@ -210,11 +216,17 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
+				workload.calculateDTImapct(db);
+				workload.calculateDTPercentage();
+				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
 				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
 			} else {					
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
+				
+				workload.calculateDTImapct(db);
+				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
 				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
@@ -234,11 +246,17 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
+				workload.calculateDTImapct(db);
+				workload.calculateDTPercentage();
+				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
 				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
 			} else {					
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
+				
+				workload.calculateDTImapct(db);
+				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
 				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
