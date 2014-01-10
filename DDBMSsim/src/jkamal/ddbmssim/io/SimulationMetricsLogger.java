@@ -172,11 +172,7 @@ public class SimulationMetricsLogger {
 		writer.print("W"+workload.getWrl_id()+" ");
 		writer.print("D"+data.getData_id()+" ");
 		writer.print("N"+data.getData_nodeId()+" ");
-		writer.print("P"+partition.getPartition_id()+" ");
-		
-		writer.print(data.getData_weight()+" ");
-		writer.print(data.getData_ranking()+" ");
-		writer.print(data.getData_frequency()+" ");		
+		writer.print("P"+partition.getPartition_id()+" ");		
 	}
 	
 	public void logWorkload(Database db, Workload workload, PrintWriter writer, String type) {

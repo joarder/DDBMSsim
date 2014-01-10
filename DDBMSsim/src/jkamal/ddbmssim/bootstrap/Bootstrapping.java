@@ -28,9 +28,9 @@ public class Bootstrapping {
 		ArrayList<Data> dataList;
 		Data data;												
 		int node_id = 1; //1
-		int partition_nums = (int) Math.ceil((double) DATA_OBJECTS/(db.getDb_partition_size() * 0.8));
+		int partition_nums = (int) Math.ceil((double) DATA_OBJECTS/(db.getDb_partitionSize() * 0.8));
 		int data_id = 1; //0
-		int data_nums = 0;
+		int partition_data_numbers = 0;
 		int global_data = 0;
 		
 		// TPC-C Database table (9) row counts in different scale
@@ -38,9 +38,10 @@ public class Bootstrapping {
 		int[] pk_array = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
 		//int[] pk_array = {1, 10, 10, 100, 300, 30, 30, 30, 9}; // 520
 		//int[] pk_array = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
+		
 		int pk = 1;
-		//int pk_range = (int) (Math.ceil(DATA_OBJECTS * pk_array[pk-1]) / 100);
 		int pk_range = pk_array[pk-1];
+		//int pk_range = (int) (Math.ceil(DATA_OBJECTS * pk_array[pk-1]) / 100);		
 		
 		// i -- partition
 		for(int partition_id = 1; partition_id <= partition_nums; partition_id++) {	
@@ -48,16 +49,16 @@ public class Bootstrapping {
 				node_id = 1;
 			
 			// Create a new Partition and attach it to the Database			
-			partition = new Partition(partition_id, String.valueOf(partition_id), node_id, db.getDb_partition_size());
+			partition = new Partition(partition_id, String.valueOf(partition_id), node_id, db.getDb_partitionSize());
 			
 			db.getDb_partitions().add(partition);
-			data_nums = (int) ((int)(partition.getPartition_capacity())*0.8);						
+			partition_data_numbers = (int) ((int)(partition.getPartition_capacity())*0.8);						
 			
 			System.out.print("[ACT] Creating Partition "+partition.getPartition_label());			
 			
 			// Create an ArrayList for placing into the Routing Table for each i-th Partition entry
 			dataList = new ArrayList<Data>();																											
-			for(int k = 1; k <= data_nums && data_id <= DATA_OBJECTS; k++) {
+			for(int k = 1; k <= partition_data_numbers && data_id <= DATA_OBJECTS; k++) {
 				// Create a new Data Item within the Partition
 				data = new Data(data_id, partition_id, node_id, false);
 				partition.getPartition_dataSet().add(data);
@@ -92,7 +93,7 @@ public class Bootstrapping {
 			System.out.println();
 			
 			++node_id;
-		} // end -- for						
+		} // end -- for	
 			
 		// Add node-partitions map entries
 		for(Node n : dbs.getDbs_nodes()) {

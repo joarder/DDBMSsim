@@ -10,21 +10,27 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
+import jkamal.ddbmssim.main.DBMSSimulator;
+
 public class Database {
 	private int db_id;
 	private String db_name;
 	private int db_tenant;	
-	private int db_partition_size;
+	private int db_data_numbers;
+	private int db_partition_size;	
 	private Set<Partition> db_partitions;		
-	private Map<Integer, Set<Integer>> db_nodes;		
+	private Map<Integer, Set<Integer>> db_nodes;
+	private double[] db_normalised_cumalitive_zipf_probability;
 	
 	public Database(int id, String name, int tenant_id, String model, double partition_size) {
 		this.setDb_id(id);
 		this.setDb_name(name);
 		this.setDb_tenant(tenant_id);
-		this.setDb_partition_size((int)(partition_size * 1000)); // Partition Size Range (1 ~ 1000 GB), 1 GB = 1000 Data Objects of equal size
+		this.setDb_dataNumbers(DBMSSimulator.DATA_OBJECTS);
+		this.setDb_partitionSize((int)(partition_size * 1000)); // Partition Size Range (1 ~ 1000 GB), 1 GB = 1000 Data Objects of equal size
 		this.setDb_partitions(new TreeSet<Partition>());
 		this.setDb_nodes(new TreeMap<Integer, Set<Integer>>());
+		this.setDb_normalisedCumalitiveZipfProbabilityArray(new double[this.getDb_dataNumbers()]);
 	}	
 	
 	// Copy Constructor
@@ -32,7 +38,8 @@ public class Database {
 		this.setDb_id(db.getDb_id());
 		this.setDb_name(db.getDb_name());
 		this.setDb_tenant(db.getDb_tenant());		
-		this.setDb_partition_size(db.getDb_partition_size());
+		this.setDb_dataNumbers(db.getDb_dataNumbers());
+		this.setDb_partitionSize(db.getDb_partitionSize());		
 		
 		Set<Partition> cloneDbPartitions = new TreeSet<Partition>();
 		Partition clonePartition;
@@ -53,6 +60,15 @@ public class Database {
 			clone_db_nodes.put(entry.getKey(), clone_partitions);
 		}
 		this.setDb_nodes(clone_db_nodes);
+		
+		double[] clone_db_normalised_cumalitive_zipf_probability = new double[db.getDb_dataNumbers()];
+		int i = 0;
+		for(double d : db.getDb_normalisedCumalitiveZipfProbabilityArray()) {
+			clone_db_normalised_cumalitive_zipf_probability[i] = d;
+			++i;
+		}
+		this.setDb_normalisedCumalitiveZipfProbabilityArray(clone_db_normalised_cumalitive_zipf_probability);
+		
 	}
 
 	public int getDb_id() {
@@ -87,7 +103,14 @@ public class Database {
 		this.db_partitions = db_partitions;
 	}
 	
-	
+	public int getDb_dataNumbers() {
+		return db_data_numbers;
+	}
+
+	public void setDb_dataNumbers(int db_data) {
+		this.db_data_numbers = db_data;
+	}
+
 	public Map<Integer, Set<Integer>> getDb_nodes() {
 		return db_nodes;
 	}
@@ -96,12 +119,21 @@ public class Database {
 		this.db_nodes = db_nodes;
 	}
 
-	public int getDb_partition_size() {
+	public int getDb_partitionSize() {
 		return db_partition_size;
 	}
 
-	public void setDb_partition_size(int db_partition_size) {
+	public void setDb_partitionSize(int db_partition_size) {
 		this.db_partition_size = db_partition_size;
+	}
+
+	public double[] getDb_normalisedCumalitiveZipfProbabilityArray() {
+		return db_normalised_cumalitive_zipf_probability;
+	}
+
+	public void setDb_normalisedCumalitiveZipfProbabilityArray(
+			double[] db_normalised_cumalitive_zipf_probability) {
+		this.db_normalised_cumalitive_zipf_probability = db_normalised_cumalitive_zipf_probability;
 	}
 
 	public boolean insert() {
@@ -161,6 +193,29 @@ public class Database {
 		}
 		
 		return node_partitions;
+	}
+	
+	public int getRandomData(double rand) {
+		int data_id = -1;
+		
+		for(int i = 0; i < this.getDb_normalisedCumalitiveZipfProbabilityArray().length; i++) {
+			double d_i = this.getDb_normalisedCumalitiveZipfProbabilityArray()[i];
+			double d_i1 = this.getDb_normalisedCumalitiveZipfProbabilityArray()[i+1];
+			
+			if(d_i <= rand && rand < d_i1){
+				Data data_i = this.search(i+1);
+				Data data_i1 = this.search(i+2);
+				
+				if(data_i.getData_zipfProbability() > data_i1.getData_zipfProbability())
+					return (i+1);
+				else
+					return (i+2);
+			}
+			else if(d_i > rand)
+				return 1;			
+		}
+		
+		return data_id;
 	}
 	
 	public void show() {		

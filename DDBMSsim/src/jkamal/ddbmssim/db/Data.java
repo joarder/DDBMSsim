@@ -20,9 +20,9 @@ public class Data implements Comparable<Data> {
 	private boolean data_isMoveable;
 	
 	// Workload Attributes
-	private int data_ranking;
-	private double data_cumulative_probability;
-	private double data_normalised_cumulative_probability;
+	private double data_zipf_probability;
+	private double data_cumulative_zipf_probability;
+	private double data_normalised_cumulative_zipf_probability;
 	
 	// Transaction Attributes
 	private Set<Integer> data_transactions_involved;
@@ -55,9 +55,9 @@ public class Data implements Comparable<Data> {
 		this.setData_pk("pk");
 		this.setData_isMoveable(false);	
 		
-		this.setData_ranking(0);
-		this.setData_cumulativeProbability(0.0);
-		this.setData_normalisedCumulativeProbability(0.0);
+		this.setData_zipfProbability(0.0);
+		this.setData_cumulativeZipfProbability(0.0);
+		this.setData_normalisedCumulativeZipfProbability(0.0);
 				
 		this.setData_transactions_involved(new TreeSet<Integer>());
 		
@@ -88,9 +88,9 @@ public class Data implements Comparable<Data> {
 		this.setData_pk(data.getData_pk());
 		this.setData_isMoveable(data.isData_isMoveable());		
 		
-		this.setData_ranking(data.getData_ranking());
-		this.setData_cumulativeProbability(data.getData_cumulativeProbability());
-		this.setData_normalisedCumulativeProbability(data.getData_normalisedCumulativeProbability());
+		this.setData_zipfProbability(data.getData_zipfProbability());
+		this.setData_cumulativeZipfProbability(data.getData_cumulativeZipfProbability());
+		this.setData_normalisedCumulativeZipfProbability(data.getData_normalisedCumulativeZipfProbability());
 		
 		Set<Integer> clone_data_transaction_involved = new TreeSet<Integer>();
 		for(Integer tr_id : data.getData_transactions_involved()) {
@@ -169,28 +169,28 @@ public class Data implements Comparable<Data> {
 		this.data_pk = data_pk;
 	}
 
-	public int getData_ranking() {
-		return data_ranking;
+	public double getData_zipfProbability() {
+		return data_zipf_probability;
 	}
 
-	public void setData_ranking(int data_ranking) {
-		this.data_ranking = data_ranking;
+	public void setData_zipfProbability(double data_zipf_probability) {
+		this.data_zipf_probability = data_zipf_probability;
 	}
 
-	public double getData_cumulativeProbability() {
-		return data_cumulative_probability;
+	public double getData_cumulativeZipfProbability() {
+		return data_cumulative_zipf_probability;
 	}
 
-	public void setData_cumulativeProbability(double cumulative_probability) {
-		this.data_cumulative_probability = cumulative_probability;
+	public void setData_cumulativeZipfProbability(double cumulative_probability) {
+		this.data_cumulative_zipf_probability = cumulative_probability;
 	}
 
-	public double getData_normalisedCumulativeProbability() {
-		return data_normalised_cumulative_probability;
+	public double getData_normalisedCumulativeZipfProbability() {
+		return data_normalised_cumulative_zipf_probability;
 	}
 
-	public void setData_normalisedCumulativeProbability(double data_normalised_cdf) {
-		this.data_normalised_cumulative_probability = data_normalised_cdf;
+	public void setData_normalisedCumulativeZipfProbability(double data_normalised_cdf) {
+		this.data_normalised_cumulative_zipf_probability = data_normalised_cdf;
 	}
 
 	public Set<Integer> getData_transactions_involved() {
@@ -308,17 +308,17 @@ public class Data implements Comparable<Data> {
 	}
 	
 	public void calculateData_weight() {
-		this.setData_weight(this.getData_frequency() * this.getData_ranking());
+		this.setData_weight(1);
 	}
 
 	@Override
 	public String toString() {		
 		if(this.isData_isRoaming())
-			return (this.data_label+"|"+this.data_pk+"("+this.getData_weight()+"/"+this.getData_ranking()+"/"+this.getData_frequency()
+			return (this.data_label+"|"+this.data_pk
 					+"|P"+this.data_partition_id+"("+this.data_home_partition_id
 					+")/N"+this.data_node_id+"("+this.data_home_node_id+"))");// @C("+this.data_hmetis_cluster_id+") @h("+this.data_shadow_hmetis_id+")");
 		else
-			return (this.data_label+"|"+this.data_pk+"("+this.getData_weight()+"/"+this.getData_ranking()+"/"+this.getData_frequency()
+			return (this.data_label+"|"+this.data_pk
 					+"|P"+this.data_partition_id
 					+"/N"+this.data_node_id+")");// @C("+this.data_hmetis_cluster_id+") //@h("+this.data_shadow_hmetis_id+")");
 	}

@@ -24,12 +24,10 @@ import jkamal.ddbmssim.main.DBMSSimulator;
 import org.apache.commons.lang3.StringUtils;
 
 public class WorkloadGenerator {	
-	private Map<Integer, Workload> workload_map;	
-	private WorkloadDataPreparer workloadDataPreparer;
+	private Map<Integer, Workload> workload_map;
 	
 	public WorkloadGenerator() {
-		this.setWorkload_map(new TreeMap<Integer, Workload>());
-		this.setWorkloadDataPreparer(new WorkloadDataPreparer());
+		this.setWorkload_map(new TreeMap<Integer, Workload>());		
 	}	
 	
 	public Map<Integer, Workload> getWorkload_map() {
@@ -39,15 +37,7 @@ public class WorkloadGenerator {
 	public void setWorkload_map(Map<Integer, Workload> workload_map) {
 		this.workload_map = workload_map;
 	}
-
-	public WorkloadDataPreparer getWorkloadDataPreparer() {
-		return workloadDataPreparer;
-	}
-
-	public void setWorkloadDataPreparer(WorkloadDataPreparer workloadDataPreparer) {
-		this.workloadDataPreparer = workloadDataPreparer;
-	}
-
+	
 	// Workload Initialisation
 	public Workload workloadInitialisation(Database db, String workload_name, int workload_id) {
 		// Workload Details : http://oltpbenchmark.com/wiki/index.php?title=Workloads
@@ -68,15 +58,12 @@ public class WorkloadGenerator {
 	}
 	
 	// Generates Workloads for the entire simulation
-	public void generateWorkloads(DatabaseServer dbs, Database db) throws IOException {
+	public void generateWorkloads(DatabaseServer dbs, Database db, int simulation_run_numbers) throws IOException {
 		Workload workload = null;
 		TransactionClassifier workloadClassifier = new TransactionClassifier();
 		int workload_id = 0;
 		
-		// Prepare Workload Data based on Zipfian Ranking with Normalised Cumulative Probability
-		this.getWorkloadDataPreparer().prepareWorkloadData(db);
-		
-		while(workload_id != DBMSSimulator.SIMULATION_RUN_NUMBERS) {
+		while(workload_id != simulation_run_numbers) {
 			if(workload_id != 0) {
 				workload = new Workload(this.getWorkload_map().get(workload_id -1));
 				workload.setWrl_id(workload_id);
