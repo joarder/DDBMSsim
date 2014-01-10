@@ -130,6 +130,14 @@ public class DataPreprocessor {
 	    	}
 	    	
 	    	//System.out.println(">> NC = "+normalised_carry_fwd);
-	    }	    
+	    }
+	    
+	    // Assign Data Weight here
+	    while(iterator.hasNext()) {
+	    	partition = iterator.next();	    		 	    	
+	    	for(Data data : partition.getPartition_dataSet()) {	    		
+	    	
+	    	}	    	
+	    }
 	}
 }
