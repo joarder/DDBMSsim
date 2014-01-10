@@ -118,10 +118,10 @@ public class WorkloadDataPreparer {
 	    		data.setData_normalisedCumulativeProbability(
 	    				Math.round( this.getZipf_norm_cumulative_probability_map().get(data.getData_id()) * 100.0)/100.0);	    		
 	    		
-	    		/*System.out.println(data.getData_id()+" "
+	    		System.out.println(data.getData_id()+" "
 	    				+data.getData_ranking()+" "
 	    				+data.getData_cumulativeProbability()+" "
-	    				+data.getData_normalisedCumulativeProbability());*/
+	    				+data.getData_normalisedCumulativeProbability());
 	    		
 	    		d_start = (data.getData_id() + 1);
 	    	}	    
