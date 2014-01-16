@@ -22,11 +22,11 @@ import jkamal.ddbmssim.workload.Workload;
 import jkamal.ddbmssim.workload.WorkloadGenerator;
 
 public class DBMSSimulator {	
-	public final static int DB_SERVERS = 3;
+	public final static int DB_NODES = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-	public final static int DATA_OBJECTS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
-	public final static int TRANSACTION_NUMS = 10;
-	public final static int SIMULATION_RUN_NUMBERS = 2;
+	public final static int DATA_ROWS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
+	public final static int TRANSACTIONS = 10;
+	public final static int SIMULATION_RUNS = 2;
 	
 	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
 	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
@@ -57,7 +57,7 @@ public class DBMSSimulator {
 		random_data = new RandomDataGenerator();				
 		
 		// Database Server and Tenant Database Creation
-		DatabaseServer dbs = new DatabaseServer(0, "test-dbs", DB_SERVERS);		
+		DatabaseServer dbs = new DatabaseServer(0, "test-dbs", DB_NODES);		
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
 		//Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size
@@ -68,10 +68,10 @@ public class DBMSSimulator {
 		
 		// Perform Bootstrapping through synthetic Data generation and placing it into appropriate Partition
 		System.out.println("[ACT] Started Bootstrapping Process ...");
-		System.out.println("[ACT] Generating "+ DATA_OBJECTS +" synthetic data items ...");
+		System.out.println("[ACT] Generating "+ DATA_ROWS +" synthetic data items ...");
 
 		Bootstrapping bootstrapping = new Bootstrapping();
-		bootstrapping.bootstrapping(dbs, db, DATA_OBJECTS);
+		bootstrapping.bootstrapping(dbs, db, DATA_ROWS);
 		System.out.println("[MSG] Data creation and placement into partitions done.");
 		
 		// Printing out details after data loading
@@ -85,7 +85,7 @@ public class DBMSSimulator {
 		//==============================================================================================
 		// Workload generation for the entire simulation		
 		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
-		workloadGenerator.generateWorkloads(dbs, db, DBMSSimulator.SIMULATION_RUN_NUMBERS);		
+		workloadGenerator.generateWorkloads(dbs, db, DBMSSimulator.SIMULATION_RUNS);		
 		
 		//==============================================================================================
 		// Hypergraph/Compressed Hypergraph/Graph Partitioning and Data Movement		
@@ -126,7 +126,7 @@ public class DBMSSimulator {
 		PrintWriter gr_workload_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_workload_log");		
 		
 		int simulation_run = 0;	
-		while(simulation_run != SIMULATION_RUN_NUMBERS) {			
+		while(simulation_run != SIMULATION_RUNS) {			
 			Workload workload = workloadGenerator.getWorkload_map().get(simulation_run);			
 			workload.setMessage("in");
 			//workload.calculateDTImapct(db);

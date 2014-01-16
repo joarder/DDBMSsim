@@ -26,7 +26,7 @@ public class Database {
 		this.setDb_id(id);
 		this.setDb_name(name);
 		this.setDb_tenant(tenant_id);
-		this.setDb_dataNumbers(DBMSSimulator.DATA_OBJECTS);
+		this.setDb_dataNumbers(DBMSSimulator.DATA_ROWS);
 		this.setDb_partitionSize((int)(partition_size * 1000)); // Partition Size Range (1 ~ 1000 GB), 1 GB = 1000 Data Objects of equal size
 		this.setDb_partitions(new TreeSet<Partition>());
 		this.setDb_nodes(new TreeMap<Integer, Set<Integer>>());

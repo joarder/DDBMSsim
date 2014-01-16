@@ -99,9 +99,9 @@ public class WorkloadGenerator {
 			} else {
 				// === Workload Generation Round 0 ===
 				workload = this.workloadInitialisation(db, DBMSSimulator.WORKLOAD_TYPE, workload_id);				
-				workload.setWrl_initTotalTransactions(DBMSSimulator.TRANSACTION_NUMS);				
+				workload.setWrl_initTotalTransactions(DBMSSimulator.TRANSACTIONS);				
 				workload.setWrl_transactionProp(transactionPropGen(workload.getWrl_transactionTypes(), 
-						DBMSSimulator.TRANSACTION_NUMS));
+						DBMSSimulator.TRANSACTIONS));
 				
 				// Generating New Workload Transactions						
 				TransactionGenerator transactionGenerator = new TransactionGenerator();
