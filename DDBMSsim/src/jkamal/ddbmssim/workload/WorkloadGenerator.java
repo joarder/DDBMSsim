@@ -113,6 +113,9 @@ public class WorkloadGenerator {
 			// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
 			workloadClassifier.classifyTransactions(db, workload);
 			
+			// Workload Sampling
+			Workload sampled_worklaod = this.workloadSampling(db, workload);
+			
 			// Assign Shadow HMetis Data Id and generate workload and fix files
 			this.assignShadowDataId(db, workload);	
 			
@@ -132,6 +135,26 @@ public class WorkloadGenerator {
 
 			++workload_id;
 		}
+	}
+	
+	// Workload Sampling
+	private Workload workloadSampling(Database db, Workload workload) {
+		Workload sampled_workload = new Workload(workload);
+		
+		System.out.println();
+		for(Entry<Integer, ArrayList<Transaction>> entry : sampled_workload.getWrl_transactionMap().entrySet()) {			
+			for(Transaction transaction : entry.getValue()) {
+				System.out.print(transaction.getTr_id()+" { ");
+				
+				for(Integer data : transaction.getTr_dataSet()) {
+					System.out.print(data+", ");
+				}
+				
+				System.out.print("}\n");
+			} // end -- for()-Transaction			
+		} // end -- for()-Transaction Types
+		
+		return sampled_workload;
 	}
 	
 	// Refresh Workload Transactions and Data

@@ -25,7 +25,7 @@ public class DBMSSimulator {
 	public final static int DB_NODES = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
 	public final static int DATA_ROWS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
-	public final static int TRANSACTIONS = 10;
+	public final static int TRANSACTIONS = 50;
 	public final static int SIMULATION_RUNS = 2;
 	
 	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
