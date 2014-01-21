@@ -59,7 +59,7 @@ public class DataMovement {
 		MappingTable mappingTable = new MappingTable();		
 		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
-				"      (First Row: Pre-Partition Id, First Col: Cluster Id, Elements: Data Occurance Counts)");
+				"      (Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts)");
 		mapping.print();
 		
 		// Create Key-Value (Destination PID-Cluster ID) Mappings from Mapping Matrix
@@ -87,7 +87,7 @@ public class DataMovement {
 		MappingTable mappingTable = new MappingTable();		
 		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
-				"   [First Row: Pre-Partition Id, First Col: Cluster Id, Elements: Data Occurance Counts]");
+				"   [Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts]");
 		mapping.print();
 		
 		// Create Key-Value (Destination PID-Cluster ID) Mappings from Mapping Matrix
@@ -116,7 +116,7 @@ public class DataMovement {
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
 		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
-		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n   [First Row: Pre-Partition Id, First Col: Cluster Id, Elements: Data Occurance Counts]");
+		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n   [Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts]");
 		mapping.print();
 				
 		// Step-1 :: Max Movement Matrix Formation
@@ -288,7 +288,7 @@ public class DataMovement {
 	public void metricsGeneration(Database db, Workload workload, String type) {
 		// Calculating Various Metrics
 		workload.calculateDTPercentage();
-		workload.calculateDTImapct(db);
+		//workload.calculateDTImapct(db);
 		
 		switch(type) {
 		case "hgr":			

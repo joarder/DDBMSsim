@@ -132,9 +132,14 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_frequency(++tr_frequency);
 	}
 	
-	public void calculateTr_weight() {
-		this.setTr_weight(this.getTr_frequency() * this.getTr_ranking());
+	public void decTr_frequency() {
+		int tr_frequency = this.getTr_frequency();
+		this.setTr_frequency(--tr_frequency);
 	}
+	
+	/*public void calculateTr_weight() {
+		this.setTr_weight(this.getTr_frequency() * this.getTr_ranking());
+	}*/
 	
 	// This function will calculate the Node and Partition Span Cost for the representative Transaction
 	public void generateTransactionCost(Database db) {
@@ -193,7 +198,7 @@ public class Transaction implements Comparable<Transaction> {
 	// Prints out all of the contents of the representative Transaction
 	public void show(Database db) {
 		System.out.print(" "+this.getTr_label()+"("+this.getTr_dtCost()+")["
-				+this.getTr_weight()+"/"+this.getTr_ranking()+"/"+this.getTr_frequency()
+				+this.getTr_frequency()
 				+"|Data("+this.getTr_dataSet().size()+")]");
 		
 		System.out.print("{");
@@ -210,7 +215,7 @@ public class Transaction implements Comparable<Transaction> {
 	@Override
 	public String toString() {	
 		return (this.getTr_label()+"("+this.getTr_dtCost()+")["
-				+this.getTr_weight()+"/"+this.getTr_ranking()+"/"+this.getTr_frequency()
+				+this.getTr_frequency()
 				+"|Data("+this.getTr_dataSet().size()+")]");
 	}
 

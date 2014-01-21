@@ -12,6 +12,7 @@ import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.DatabaseServer;
 import jkamal.ddbmssim.db.Node;
 import jkamal.ddbmssim.db.Partition;
+import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class Bootstrapping {
 	public Bootstrapping() {}
@@ -32,15 +33,10 @@ public class Bootstrapping {
 		int data_id = 1; //0
 		int partition_data_numbers = 0;
 		int global_data = 0;
-		
-		// TPC-C Database table (9) row counts in different scale
-		//double[] pk_array = {0.19, 1.92, 1.92, 19.2, 57.69, 5.76, 5.76, 1.73, 5.76};
-		int[] pk_array = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
-		//int[] pk_array = {1, 10, 10, 100, 300, 30, 30, 30, 9}; // 520
-		//int[] pk_array = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
+		int pos = 0;
 		
 		int pk = 1;
-		int pk_range = pk_array[pk-1];
+		int pk_range = DBMSSimulator.PK_ARRAY[pk-1];
 		//int pk_range = (int) (Math.ceil(DATA_OBJECTS * pk_array[pk-1]) / 100);		
 		
 		// i -- partition
@@ -66,11 +62,13 @@ public class Bootstrapping {
 				// Assigning Primary Key for each Row (Data)				
 				if(pk_range == 0) {
 					++pk;
+					++pos;
 					//pk_range = (int)((int) DATA_OBJECTS * pk_array[pk-1]);
-					pk_range = pk_array[pk-1];
+					pk_range = DBMSSimulator.PK_ARRAY[pk-1];
 				}				
 				
 				data.setData_pk(("pk-"+pk));
+				data.setData_size(DBMSSimulator.DATA_ROW_SIZE[pos]);
 				--pk_range;
 				
 				// Put an entry into the Partition Data lookup table

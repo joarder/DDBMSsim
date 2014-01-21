@@ -13,8 +13,8 @@ public class Data implements Comparable<Data> {
 	private int data_id;
 	private String data_label;
 	private String data_value;
-	private float data_size;
-	private int data_frequency;
+	private double data_size;
+	//private int data_frequency;
 	private int data_weight;
 	private String data_pk;
 	private boolean data_isMoveable;
@@ -49,9 +49,9 @@ public class Data implements Comparable<Data> {
 		this.setData_id(id); // default data id = -1 means undefined.
 		this.setData_label("d"+id);
 		this.setData_value(this.getData_label());
-		this.setData_size(1); // 1.0 = 1 MegaBytes
-		this.setData_frequency(0);
-		this.setData_weight(0);
+		this.setData_size(0); // Values in MegaBytes
+		//this.setData_frequency(0);
+		this.setData_weight(1);
 		this.setData_pk("pk");
 		this.setData_isMoveable(false);	
 		
@@ -83,7 +83,7 @@ public class Data implements Comparable<Data> {
 		this.setData_label(data.getData_label());
 		this.setData_value(data.getData_value());
 		this.setData_size(data.getData_size());
-		this.setData_frequency(data.getData_frequency());
+		//this.setData_frequency(data.getData_frequency());
 		this.setData_weight(data.getData_weight());
 		this.setData_pk(data.getData_pk());
 		this.setData_isMoveable(data.isData_isMoveable());		
@@ -133,13 +133,13 @@ public class Data implements Comparable<Data> {
 		return data_value;
 	}
 
-	public int getData_frequency() {
+	/*public int getData_frequency() {
 		return data_frequency;
 	}
 
 	public void setData_frequency(int data_frequency) {
 		this.data_frequency = data_frequency;
-	}
+	}*/
 
 	public int getData_weight() {
 		return data_weight;
@@ -153,11 +153,11 @@ public class Data implements Comparable<Data> {
 		this.data_value = data_value;
 	}
 
-	public float getData_size() {
+	public double getData_size() {
 		return data_size;
 	}
 
-	public void setData_size(float data_size) {
+	public void setData_size(double data_size) {
 		this.data_size = data_size;
 	}
 
@@ -298,18 +298,18 @@ public class Data implements Comparable<Data> {
 		this.data_isMoveable = data_isMoveable;
 	}
 	
-	public void incData_frequency(int data_frequency) {	
+	/*public void incData_frequency(int data_frequency) {	
 		this.setData_frequency(++data_frequency);
 	}
 	
 	public void incData_frequency() {
 		int data_frequency = this.getData_frequency();
 		this.setData_frequency(++data_frequency);
-	}
+	}*/
 	
-	public void calculateData_weight() {
+	/*public void calculateData_weight() {
 		this.setData_weight(1);
-	}
+	}*/
 
 	@Override
 	public String toString() {		

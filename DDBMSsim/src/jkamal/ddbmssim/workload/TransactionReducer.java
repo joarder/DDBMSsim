@@ -4,71 +4,91 @@
 
 package jkamal.ddbmssim.workload;
 
-import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
-import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class TransactionReducer {
 	public TransactionReducer() {}
 	
 	// This function will reduce the required number of Transactions for a specific Workload with a specific Database
-	public void reduceTransaction(Database db, Workload workload) {
-		ArrayList<Transaction> transactionList = null;
-		Set<Integer> random_transactions = null;
-		int size = 0;
-		
+	public int reduceTransaction(Database db, Workload workload) {	
+		int old_tr = 0;
 		verifyTransactionDeathProportions(workload);
 		
+		//int transaction_id_tracker = 1;		 
 		// i -- Transaction types
 		for(int i = 0; i < workload.getWrl_transactionTypes(); i++) {
-			size = workload.getWrl_transactionDeathProportions()[i];			
+			int tr_nums = workload.getWrl_transactionProportions()[i];
+			int dying_tr_nums = workload.getWrl_transactionDeathProportions()[i];
+						
+			int[] tr_array = new int[tr_nums];
+			//System.out.print("\n");
+			for(int j = 0; j < tr_nums; j++) {
+				tr_array[j] = workload.getWrl_transactionMap().get(i).get(j).getTr_id();
+				//System.out.print(tr_array[j]+", ");
+			}
+			//System.out.print("\n");
 			
-			//System.out.println("@ "+size+" >> i = "+i);
+			//System.out.println("@ "+dying_tr_nums+" dying from "+tr_nums+" >> i = "+i);
 			
-			if(size != 0) {
-				transactionList = workload.getWrl_transactionMap().get(i);
-				random_transactions = this.randomTransactions(size);
+			Set<Integer> unique = new TreeSet<Integer>();			
+			for(int k = 0; k < dying_tr_nums; k++) {
+				int val = this.getRandom(tr_array);
 				
-				//System.out.println("* "+random_transactions.size());
-				
-				for(int j : random_transactions) {
-					//System.out.println("> "+j+" T"+transactionList.get(j).getTr_id());
-					this.releaseData(db, transactionList.get(j));
-					transactionList.remove(j); // removing index
-					
-					workload.decWrl_totalTransactions();				
-					workload.decWrl_transactionProportions(i);
+				if(!unique.contains(val)) {
+					unique.add(val);
+					//System.out.println("@ Random pick up val = "+val);
+					//System.out.print(val+", ");
+				} else {
+					--k;
 				}
-			}		
+			}
+			//System.out.print("\n");
+			
+			if(tr_nums != 0)				
+				workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), unique, i);
+				//workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), 
+						//this.getRandomTransactions(dying_tr_nums, tr_nums, transaction_id_tracker, workload), i);				
+			
+			//transaction_id_tracker += tr_nums;
+			old_tr += dying_tr_nums; 
 			//System.out.println("@debug >> total TR = "+workload.getWrl_totalTransaction());
-		} // end -- i		
+		} // end -- i
+		
+		return old_tr;
 	}
 	
-	public void releaseData(Database db, Transaction transaction) {
-		for(Integer data_id : transaction.getTr_dataSet()) {
-			Data data = db.search(data_id);			
-			data.getData_transactions_involved().remove((Object)transaction.getTr_id()); // removing object
-			
-			//Data dbData = db.search(data.getData_id());
-			//dbData.getData_transaction_involved().remove((Object)transaction.getTr_id()); // removing object
-		}
+	private int getRandom(int[] array) {
+	    int rnd = new Random().nextInt(array.length);
+	    return array[rnd];
 	}
 	
 	// Randomly selects Transactions for deletion
-	public Set<Integer> randomTransactions(int nums) {
+	/*private Set<Integer> getRandomTransactions(int dying_tr_nums, int tr_nums, int tr_id_tracker, Workload workload) {
 		Set<Integer> random_transactions = new TreeSet<Integer>();
 		DBMSSimulator.random_data.reSeed(0);
 		
-		for(int i = 0; i < nums; i++)
-			random_transactions.add((int) DBMSSimulator.random_data.nextUniform(0, nums));
+		for(int i = 0; i < dying_tr_nums; i++) {
+			int tr_id = (int) DBMSSimulator.random_data.nextUniform(1, tr_nums);
+			tr_id += tr_id_tracker;
+			
+			//System.out.println("@debug >> Randomly picked up T"+tr_id);
+			
+			if(random_transactions.contains(tr_id) || workload.search(tr_id) == null) {
+				//System.out.println("@debug >> Choosing another random transaction ...");
+				--i;
+			} else {
+				random_transactions.add(tr_id);
+				System.out.println("@ Removing "+tr_id);
+			}
+		}
 		
 		return random_transactions;
-	}
+	}*/
 	
-	public void verifyTransactionDeathProportions(Workload workload) {
+	private void verifyTransactionDeathProportions(Workload workload) {
 		int difference = 0;
 		int transactionProportions[] = workload.getWrl_transactionProportions();
 		int deathProportions[] = workload.getWrl_transactionDeathProportions();
