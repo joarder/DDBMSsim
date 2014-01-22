@@ -6,6 +6,8 @@ package jkamal.ddbmssim.workload;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
@@ -88,6 +90,15 @@ public class TransactionClassifier {
 		int value = this.getGreen_tr();
 		this.setGreen_tr(++value);
 	}
+	
+	/*private void decGreen_tr() {
+		int value = this.getGreen_tr();
+		this.setGreen_tr(--value);
+	}*/
+	
+	private void decGreen_tr(int value) {		
+		this.setGreen_tr(--value);
+	}
 
 	private void incOrage_tr() {
 		int value = this.getOrange_tr();
@@ -125,8 +136,11 @@ public class TransactionClassifier {
 		int orange_data = 0;
 		int green_data = 0;
 		//System.out.println(">> "+workload.getWrl_totalTransactions());
+
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
+			Set<Integer> unique = new TreeSet<Integer>();
+			
+			for(Transaction transaction : entry.getValue()) {				
 				orange_data = 0;
 				green_data = 0;
 				
@@ -155,6 +169,11 @@ public class TransactionClassifier {
 					if(transaction.getTr_dataSet().size() == green_data) { 
 						transaction.setTr_class("green");
 						this.incGreen_tr();
+						
+						if(!unique.contains(transaction.getTr_id()))
+							unique.add(transaction.getTr_id());
+						
+						//System.out.println("@ Added T"+transaction.getTr_id());
 					}
 					
 					if(orange_data > 0) {
@@ -162,6 +181,13 @@ public class TransactionClassifier {
 						this.incOrage_tr();
 					}
 				}				
+			}
+			
+			// Removing Green Transactions from the Workload
+			if(unique.size() > 0) {
+				workload.removeTransactions(db, entry.getValue(), unique, entry.getKey());	
+				//this.decGreen_tr(unique.size());
+				//unique.removeAll(unique);
 			}
 		}
 		

@@ -85,7 +85,8 @@ public class Bootstrapping {
 			partition.getCurrentLoad();
 			
 			// Adding partition to the Node
-			dbs.getDbs_node(node_id).getNode_partitions().add(partition);			
+			dbs.getDbs_node(node_id).getNode_partitions().add(partition);
+			dbs.getDbs_node(node_id).incNode_totalData(global_data);
 
 			System.out.print(" and placing it into node N"+partition.getPartition_nodeId());
 			System.out.println();

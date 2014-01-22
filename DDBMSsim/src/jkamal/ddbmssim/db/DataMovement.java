@@ -50,10 +50,31 @@ public class DataMovement {
 		this.setInter_node_data_movements(++inter);
 	}
 
-	public void baseStrategy(Database db, Workload workload, String type) {
+	private void setEnvironment(Database db, Workload workload, String type) {
+		workload.calculateDistributedTransactions();
 		this.setIntra_node_data_movements(0);
-		this.setInter_node_data_movements(0);
-		this.metricsGeneration(db, workload, type);
+		this.setInter_node_data_movements(0);		
+				
+		for(Node node : db.getDb_dbs().getDbs_nodes()) {
+			node.setNode_inflow(0);
+			node.setNode_outflow(0);
+		}
+		
+		for(Partition partition : db.getDb_partitions()) {
+			partition.setPartition_inflow(0);
+			partition.setPartition_outflow(0);
+		}
+	}
+	
+	private void wrappingUp(boolean movement, String message, Database db, Workload workload, String type) {
+		workload.setWrl_hasDataMoved(true);					
+		workload.setMessage(message);				
+		workload.calculateDistributedTransactions();		
+		workload.show(db, type);
+	}
+	
+	public void baseStrategy(Database db, Workload workload, String type) {
+		this.setEnvironment(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
@@ -70,18 +91,12 @@ public class DataMovement {
 		}
 		
 		// Perform Actual Data Movement
-		this.move(db, workload, keyMap, type);
-		workload.setWrl_hasDataMoved(true);					
-		workload.setMessage("bs");
-				
-		this.metricsGeneration(db, workload, type);		
-		workload.show(db, type);		
+		this.move(db, workload, keyMap, type);		
+		this.wrappingUp(true, "bs", db, workload, type);
 	}
 	
 	public void strategy1(Database db, Workload workload, String type) {
-		this.setIntra_node_data_movements(0);
-		this.setInter_node_data_movements(0);
-		this.metricsGeneration(db, workload, type);
+		this.setEnvironment(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
@@ -101,17 +116,11 @@ public class DataMovement {
 		
 		// Perform Actual Data Movement
 		this.move(db, workload, keyMap, type);
-		workload.setWrl_hasDataMoved(true);
-		workload.setMessage("s1");
-		
-		this.metricsGeneration(db, workload, type);
-		workload.show(db, type);		
+		this.wrappingUp(true, "s1", db, workload, type);		
 	}
 	
 	public void strategy2(Database db, Workload workload, String type) {	
-		this.setIntra_node_data_movements(0);
-		this.setInter_node_data_movements(0);
-		this.metricsGeneration(db, workload, type);
+		this.setEnvironment(db, workload, type);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
@@ -150,11 +159,7 @@ public class DataMovement {
 	
 		// Perform Actual Data Movement	
 		this.move(db, workload, keyMap, type);
-		workload.setWrl_hasDataMoved(true);				
-		workload.setMessage("s2");
-
-		this.metricsGeneration(db, workload, type);			
-		workload.show(db, type);
+		this.wrappingUp(true, "s2", db, workload, type);
 	}
 	
 	private void updateData(Data data, int dst_partition_id, int dst_node_id, boolean roaming) {		
@@ -167,26 +172,58 @@ public class DataMovement {
 			data.setData_isRoaming(false);
 	}
 	
-	private void updatePartition(Database db, Data data, int current_partition_id, int dst_partition_id) {					
+	/*private void updatePartition(Database db, Data data, int dst_partition_id, int current_partition_id) {					
 		Partition current_partition = db.getPartition(current_partition_id);
 		Partition dst_partition = db.getPartition(dst_partition_id);
 		Partition home_partition = db.getPartition(data.getData_homePartitionId());
 		
 		// Actual Movement
+		System.out.println(">> "+dst_partition.toString());
 		dst_partition.getPartition_dataSet().add(data);		
+		System.out.println(dst_partition.toString());
+		
+		System.out.println(data.toString());
+		
+		System.out.println(">> "+current_partition.toString());
 		current_partition.getPartition_dataSet().remove(data);
+		System.out.println(current_partition.toString());
 		
 		// Update Lookup Table
 		home_partition.getPartition_dataLookupTable().remove(data.getData_id());
 		home_partition.getPartition_dataLookupTable().put(data.getData_id(), dst_partition_id);						
+	}*/
+	
+	private void updatePartition(Database db, Data data, int current_partition_id, int dst_partition_id) {                                        
+        Partition current_partition = db.getPartition(current_partition_id);
+        Partition dst_partition = db.getPartition(dst_partition_id);
+        Partition home_partition = db.getPartition(data.getData_homePartitionId());
+        
+        // Actual Movement
+        dst_partition.getPartition_dataSet().add(data);                
+        current_partition.getPartition_dataSet().remove(data);
+        
+        // Update Lookup Table
+        home_partition.getPartition_dataLookupTable().remove(data.getData_id());
+        home_partition.getPartition_dataLookupTable().put(data.getData_id(), dst_partition_id);                                                
 	}
 	
-	private void updateMovementCounts(int dst_node_id, int current_node_id) {
-		if(dst_node_id != current_node_id)
+	private void updateMovementCounts(Database db, int dst_node_id, int current_node_id, int dst_partition_id, int current_partition_id) {
+		if(dst_node_id != current_node_id) {
 			this.incInter_node_data_movements();
-		else
+			
+			db.getDb_dbs().getDbs_node(dst_node_id).incNode_totalData();
+			db.getDb_dbs().getDbs_node(current_node_id).decNode_totalData();
+			
+			db.getDb_dbs().getDbs_node(dst_node_id).incNode_inflow();
+			db.getDb_dbs().getDbs_node(current_node_id).incNode_outflow();
+			
+		} else {
 			this.incIntra_node_data_movements();
-	}
+			
+			db.getPartition(dst_partition_id).incPartition_inflow();
+			db.getPartition(current_partition_id).incPartition_outflow();
+		}
+	}		
 	
 	// Perform Actual Data Movement
 	private void move(Database db, Workload workload, Map<Integer, Integer> keyMap, String type) {
@@ -237,8 +274,9 @@ public class DataMovement {
 							if(data.isData_isRoaming()) { // Data is already Roaming
 								if(dst_partition_id == home_partition_id) {
 									this.updateData(data, dst_partition_id, dst_node_id, false);
+									//this.updatePartition(db, data, dst_partition_id, current_partition_id);
 									this.updatePartition(db, data, current_partition_id, dst_partition_id);
-									this.updateMovementCounts(dst_node_id, current_node_id);
+									this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);
 									
 									current_partition.decPartition_foreign_data();
 									home_partition.decPartition_roaming_data();
@@ -247,8 +285,9 @@ public class DataMovement {
 									// Nothing to do									
 								} else {
 									this.updateData(data, dst_partition_id, dst_node_id, true);
+									//this.updatePartition(db, data, current_partition_id, dst_partition_id);
 									this.updatePartition(db, data, current_partition_id, dst_partition_id);
-									this.updateMovementCounts(dst_node_id, current_node_id);
+									this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);
 									
 									dst_partition.incPartition_foreign_data();
 									current_partition.decPartition_foreign_data();
@@ -256,8 +295,9 @@ public class DataMovement {
 								}
 							} else {
 								this.updateData(data, dst_partition_id, dst_node_id, true);
+								//this.updatePartition(db, data, current_partition_id, dst_partition_id);
 								this.updatePartition(db, data, current_partition_id, dst_partition_id);
-								this.updateMovementCounts(dst_node_id, current_node_id);
+								this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);
 								
 								dst_partition.incPartition_foreign_data();								
 								home_partition.incPartition_roaming_data();
@@ -283,26 +323,5 @@ public class DataMovement {
 			break;
 		}
 		
-	}
-	
-	public void metricsGeneration(Database db, Workload workload, String type) {
-		// Calculating Various Metrics
-		workload.calculateDTPercentage();
-		//workload.calculateDTImapct(db);
-		
-		switch(type) {
-		case "hgr":			
-			workload.hg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_hg_intraNodeDataMovements());
-			workload.hg_CalculateInterNodeDataMovementPercentage(workload.getWrl_hg_interNodeDataMovements());
-			break;
-		case "chg":			
-			workload.chg_CalculateIntraNodeDataMovementPercentage(workload.getWrl_chg_intraNodeDataMovements());
-			workload.chg_CalculateInterNodeDataMovementPercentage(workload.getWrl_chg_interNodeDataMovements());
-			break;
-		case "gr":
-			workload.gr_CalculateIntraNodeDataMovementPercentage(workload.getWrl_gr_intraNodeDataMovements());
-			workload.gr_CalculateInterNodeDataMovementPercentage(workload.getWrl_gr_interNodeDataMovements());
-			break;
-		}
 	}
 }

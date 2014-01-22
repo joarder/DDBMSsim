@@ -15,11 +15,18 @@ public class Node implements Comparable<Node> {
 	private Set<Partition> node_partitions;
 	private static int NODE_MAX_CAPACITY = 10; // 1000GB = 1TB -- 1000 Partitions // 1TB Data (in Size) Or, equivalently 1000 Partitions can be stored in a single node.
 	
+	private int node_inflow;
+	private int node_outflow;
+	
+	private int node_total_data;
+	
 	public Node(int id, int label) {
 		this.setNode_id(id);
 		this.setNode_label("N"+label);		
 		this.setNode_partitions(new TreeSet<Partition>());
-		//Node.setNODE_MAX_CAPACITY(10); 		
+		this.setNode_inflow(0);
+		this.setNode_outflow(0);
+		this.setNode_total_data(0);
 	}
 
 	public int getNode_id() {
@@ -54,6 +61,84 @@ public class Node implements Comparable<Node> {
 		this.node_partitions = node_partitions;
 	}
 	
+	public int getNode_inflow() {
+		return node_inflow;
+	}
+
+	public void setNode_inflow(int node_inflow) {
+		this.node_inflow = node_inflow;
+	}
+
+	public int getNode_outflow() {
+		return node_outflow;
+	}
+
+	public void setNode_outflow(int node_outflow) {
+		this.node_outflow = node_outflow;
+	}
+
+	public int getNode_total_data() {
+		return node_total_data;
+	}
+
+	public void setNode_total_data(int node_total_data) {
+		this.node_total_data = node_total_data;
+	}
+	
+	public void incNode_totalData(int val){		
+		this.setNode_total_data((this.getNode_total_data() + val));
+	}
+	
+	public void decNode_totalData(int val){		
+		this.setNode_total_data((this.getNode_total_data() - val));
+	}
+	
+	public void incNode_totalData(){		
+		int val = this.getNode_total_data();
+		this.setNode_total_data(++val);
+	}
+	
+	public void decNode_totalData(){
+		int val = this.getNode_total_data();
+		this.setNode_total_data(--val);
+	}
+		
+	public void incNode_inflow(int val){		
+		this.setNode_inflow((this.getNode_inflow() + val));
+	}
+	
+	public void decNode_inflow(int val){		
+		this.setNode_inflow((this.getNode_inflow() - val));
+	}
+	
+	public void incNode_inflow(){		
+		int val = this.getNode_inflow();
+		this.setNode_inflow(++val);
+	}
+	
+	public void decNode_inflow(){
+		int val = this.getNode_inflow();
+		this.setNode_inflow(--val);
+	}
+	
+	public void incNode_outflow(int val){		
+		this.setNode_outflow((this.getNode_outflow() + val));
+	}
+	
+	public void decNode_outflow(int val){		
+		this.setNode_outflow((this.getNode_outflow() - val));
+	}
+	
+	public void incNode_outflow(){		
+		int val = this.getNode_outflow();
+		this.setNode_outflow(++val);
+	}
+	
+	public void decNode_outflow(){
+		int val = this.getNode_outflow();
+		this.setNode_outflow(--val);
+	}
+
 	@Override
 	public int compareTo(Node node) {		
 		int compare = ((int)this.node_id < (int)node.node_id) ? -1: ((int)this.node_id > (int)node.node_id) ? 1:0;

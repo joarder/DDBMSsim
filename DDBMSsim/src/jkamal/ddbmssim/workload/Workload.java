@@ -694,7 +694,7 @@ public class Workload implements Comparable<Workload> {
 	}*/
 
 	// Calculate the percentage of Distributed Transactions within the Workload (before and after the Data movements)
-	public void calculateDTPercentage() {
+	public void calculateDistributedTransactions() {
 		int counts = 0; 
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
@@ -775,7 +775,10 @@ public class Workload implements Comparable<Workload> {
 	
 	public void removeTransactions(Database db, ArrayList<Transaction> transactionList, Set<Integer> removed_transactions, int i) {
 		for(int j : removed_transactions) {
+			//System.out.println("@ j = "+j+" size="+transactionList.size());
 			Transaction tr = this.search(j);			
+			
+			//System.out.println("@ Found T"+tr.getTr_id());
 			
 			this.releaseInvolvedTransactionsFromData(db, tr);
 			transactionList.remove(tr); // Removing Object
@@ -788,13 +791,12 @@ public class Workload implements Comparable<Workload> {
 	}
 	
 	
-	public void releaseInvolvedTransactionsFromData(Database db, Transaction transaction) {		
-		int tr_id = transaction.getTr_id();
-		System.out.println("@ Removing T"+tr_id);
+	public void releaseInvolvedTransactionsFromData(Database db, Transaction transaction) {			
+		//System.out.println("@ Removing T"+transaction.getTr_id());
 		for(Integer data_id : transaction.getTr_dataSet()) {
 			Data data = db.search(data_id);			
-			//System.out.println("@ Removing T"+tr_id+" | d"+data.getData_id());
-			data.getData_transactions_involved().remove(tr_id); // removing object
+			//System.out.println("@ Removing T"+transaction.getTr_id()+" | d"+data.getData_id());
+			data.getData_transactions_involved().remove((Object) transaction.getTr_id()); // removing object
 		}
 	}
 	
@@ -822,13 +824,13 @@ public class Workload implements Comparable<Workload> {
 			for(Transaction transaction : entry.getValue()) {
 				transaction.generateTransactionCost(db);
 				System.out.print("     ");
-				transaction.show(db);
+				//transaction.show(db);
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction Types						
 				
 		System.out.println("      -----------------------------------------------------------------------------------------------------------------");
 		
-		this.calculateDTPercentage();	
+		this.calculateDistributedTransactions();	
 		//this.calculateDTImapct(db);
 		
 		System.out.println("      # Distributed Transactions: "+this.getWrl_distributedTransactions()+" ("+this.getWrl_percentageDistributedTransactions()+"%)");

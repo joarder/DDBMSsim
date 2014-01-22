@@ -26,6 +26,9 @@ public class Partition implements Comparable<Partition> {
 	private double partition_current_load;
 	private boolean partition_overloaded;
 	
+	private int partition_inflow;
+	private int partition_outflow;
+	
 	public Partition(int partiton_id, String partition_label, int node_id, int partition_capacity) {
 		this.setPartition_id(partiton_id);
 		this.setPartition_label("P"+partition_label);
@@ -41,6 +44,9 @@ public class Partition implements Comparable<Partition> {
 		
 		this.setPartition_current_load(0.0);
 		this.setPartition_overloaded(false);
+		
+		this.setPartition_inflow(0);
+		this.setPartition_outflow(0);		
 	}	
 
 	// Copy Constructor
@@ -70,6 +76,9 @@ public class Partition implements Comparable<Partition> {
 		
 		this.setPartition_current_load(partition.getPartition_current_load());
 		this.setPartition_overloaded(partition.isPartition_overloaded());
+		
+		this.setPartition_inflow(this.getPartition_inflow());
+		this.setPartition_outflow(this.getPartition_outflow());
 	}	
 
 	public int getPartition_id() {
@@ -158,6 +167,58 @@ public class Partition implements Comparable<Partition> {
 
 	public void setPartition_overloaded(boolean partition_overloaded) {
 		this.partition_overloaded = partition_overloaded;
+	}
+	
+	public int getPartition_inflow() {
+		return partition_inflow;
+	}
+
+	public void setPartition_inflow(int partition_inflow) {
+		this.partition_inflow = partition_inflow;
+	}
+
+	public int getPartition_outflow() {
+		return partition_outflow;
+	}
+
+	public void setPartition_outflow(int partition_outflow) {
+		this.partition_outflow = partition_outflow;
+	}
+	
+	public void incPartition_inflow(int val){		
+		this.setPartition_inflow((this.getPartition_inflow() + val));
+	}
+	
+	public void decPartition_inflow(int val){		
+		this.setPartition_inflow((this.getPartition_inflow() - val));
+	}
+	
+	public void incPartition_inflow(){		
+		int val = this.getPartition_inflow();
+		this.setPartition_inflow(++val);
+	}
+	
+	public void decPartition_inflow(){
+		int val = this.getPartition_inflow();
+		this.setPartition_inflow(--val);
+	}
+
+	public void incPartition_outflow(int val){		
+		this.setPartition_outflow((this.getPartition_outflow() + val));
+	}
+	
+	public void decPartition_outflow(int val){		
+		this.setPartition_outflow((this.getPartition_outflow() - val));
+	}
+	
+	public void incPartition_outflow(){		
+		int val = this.getPartition_outflow();
+		this.setPartition_outflow(++val);
+	}
+	
+	public void decPartition_outflow(){
+		int val = this.getPartition_outflow();
+		this.setPartition_outflow(--val);
 	}
 	
 	// Returns the current Partition Id for a queried Data Id
@@ -262,7 +323,7 @@ public class Partition implements Comparable<Partition> {
 		}
 		
 		Partition partition = (Partition) object;
-		return (getPartition_label().equals(partition.getPartition_label()));
+		return (this.getPartition_label().equals(partition.getPartition_label()));
 	}
 
 	@Override

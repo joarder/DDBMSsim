@@ -25,9 +25,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class WorkloadGenerator {	
 	private Map<Integer, Workload> workload_map;
+	private Map<Integer, Workload> sampled_workload_map;
 	
 	public WorkloadGenerator() {
-		this.setWorkload_map(new TreeMap<Integer, Workload>());		
+		this.setWorkload_map(new TreeMap<Integer, Workload>());
+		this.setSampled_workload_map(new TreeMap<Integer, Workload>());	
 	}	
 	
 	public Map<Integer, Workload> getWorkload_map() {
@@ -36,6 +38,14 @@ public class WorkloadGenerator {
 
 	public void setWorkload_map(Map<Integer, Workload> workload_map) {
 		this.workload_map = workload_map;
+	}
+	
+	public Map<Integer, Workload> getSampled_workload_map() {
+		return sampled_workload_map;
+	}
+
+	public void setSampled_workload_map(Map<Integer, Workload> workload_map) {
+		this.sampled_workload_map = workload_map;
 	}
 	
 	// Workload Initialisation
@@ -70,9 +80,17 @@ public class WorkloadGenerator {
 				workload.setWrl_id(workload_id);
 				workload.setWrl_label("W"+workload_id);
 				
-				// === Death Management === 	
+				System.out.println("[MSG] Total "+workload.getWrl_totalTransactions()+" transactions are present in the workload.");
+				
+				// Setting Death Rate
 				workload.setWrl_transactionDying((int) ((int) workload.getWrl_totalTransactions() * 0.5));				
-				workload.setWrl_transactionDeathRate(0.5); // fixed rate	
+				workload.setWrl_transactionDeathRate(0.5); // fixed rate
+
+				// Setting Birth Rate
+				workload.setWrl_transactionBorning((int) ((int) workload.getWrl_totalTransactions() * 0.5));
+				workload.setWrl_transactionBirthRate(0.5); // fixed rate
+				
+				// === Death Management === 						
 				workload.setWrl_transactionDeathProp(transactionPropGen(workload.getWrl_transactionTypes(), 
 						workload.getWrl_transactionDying()));
 				
@@ -82,10 +100,8 @@ public class WorkloadGenerator {
 				
 				System.out.println("[ACT] Varying current workload by reducing "+old_tr+" old transactions ...");
 				this.print(workload);
-				//workload.show(db, "");
-				// === Birth Management ===				
-				workload.setWrl_transactionBorning((int) ((int) workload.getWrl_totalTransactions() * 0.5));
-				workload.setWrl_transactionBirthRate(0.5); // fixed rate
+
+				// === Birth Management ===								
 				workload.setWrl_transactionBirthProp(transactionPropGen(workload.getWrl_transactionTypes(), 
 						workload.getWrl_transactionBorning()));
 				
@@ -95,7 +111,7 @@ public class WorkloadGenerator {
 				
 				System.out.println("[ACT] Varying current workload by generating "+new_tr+" new transactions ...");
 				this.print(workload);
-				//workload.show(db, "");
+				
 				this.refreshWorkload(db, workload);
 			} else {
 				// === Workload Generation Round 0 ===
@@ -115,6 +131,10 @@ public class WorkloadGenerator {
 				
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);
+			
+			// Clone the Workload
+			//Workload cloned_workload = new Workload(workload);
+			//this.getWorkload_map().put(workload_id, cloned_workload);
 			
 			// Workload Sampling
 			System.out.println("[ACT] Starting workload sampling to remove duplicate transactions ...");
@@ -138,8 +158,11 @@ public class WorkloadGenerator {
 			
 			sampled_workload.show(db, "");
 			
-			// Clone the Workload
-			Workload cloned_workload = new Workload(sampled_workload);			
+			// Clone the Sampled Workload
+			//Workload cloned_sampled_workload = new Workload(sampled_workload);
+			//this.getSampled_workload_map().put(workload_id, cloned_sampled_workload);	
+			
+			Workload cloned_workload = new Workload(sampled_workload);
 			this.getWorkload_map().put(workload_id, cloned_workload);
 
 			++workload_id;
@@ -153,27 +176,17 @@ public class WorkloadGenerator {
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {		
 			Set<Integer> removed_transactions = new TreeSet<Integer>();
 			for(Transaction transaction : entry.getValue()) {
-				//System.out.print(transaction.getTr_id()+" { ");
-				
-				//for(Integer data : transaction.getTr_dataSet())
-					//System.out.print(data+", ");
-				
-				//System.out.print("}\n");
-								
 				for(Transaction tr : entry.getValue()) {
 					if(transaction.getTr_id() != tr.getTr_id()) {						
 						if(transaction.getTr_dataSet().equals(tr.getTr_dataSet()) 
 								&& tr.getTr_frequency() == 1) {
 							
 							transaction.incTr_frequency();
-							removed_transactions.add(tr.getTr_id());
-							//System.out.println("@ Removing "+tr.getTr_id());
+							removed_transactions.add(tr.getTr_id());				
 							++removed_count;
 						}
 					}
 				}
-				
-				
 			} // end -- for()-Transaction
 			
 			removable_transaction_map.put(entry.getKey(), removed_transactions);
@@ -181,24 +194,10 @@ public class WorkloadGenerator {
 		
 		
 		// i -- Transaction types
-		for(int i = 0; i < workload.getWrl_transactionTypes(); i++) {				
-			workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), removable_transaction_map.get(i), i);			
-			//System.out.println("@debug >> total TR = "+workload.getWrl_totalTransactions());
-		} // end -- i						
+		for(int i = 0; i < workload.getWrl_transactionTypes(); i++)
+			workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), removable_transaction_map.get(i), i);						
 		
 		System.out.println("[MSG] Total "+removed_count+" duplicate transactions have been removed from the workload.");
-		
-		/*System.out.println("===============");
-		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {			
-			for(Transaction transaction : entry.getValue()) {
-				System.out.print(transaction.getTr_id()+" { ");
-				
-				for(Integer data : transaction.getTr_dataSet())
-					System.out.print(data+", ");
-				
-				System.out.print("}\n");
-			} // end -- for()-Transaction			
-		} // end -- for()-Transaction Types*/
 		
 		return (new Workload(workload));
 	}
@@ -621,7 +620,7 @@ public class WorkloadGenerator {
 							
 							trData.setData_virtual_node_id(virtual_vertex_id);
 							
-							System.out.println("@debug >> "+trData.toString()+" | hashed at ("+i+") | vid = "+virtual_vertex_id);
+							//System.out.println("@debug >> "+trData.toString()+" | hashed at ("+i+") | vid = "+virtual_vertex_id);
 						}
 					}
 				}
@@ -710,12 +709,14 @@ public class WorkloadGenerator {
 				}
 				
 				//System.out.println("*** >> "+virtual_edge_id);
-				if(virtual_edgeMap.get(virtual_edge_id).size() == 1) {
-					edgeSet.remove(virtual_edge_id);
-					virtual_edgeMap.remove(virtual_edge_id);
-					virtual_edgeWeightMap.remove(virtual_edge_id);
-					virtual_edge_weight = false;
-					//System.out.println("*** >> Removed v-eid = "+virtual_edge_id);
+				if(virtual_edgeMap.get(virtual_edge_id) != null) {
+					if(virtual_edgeMap.get(virtual_edge_id).size() == 1) {
+						edgeSet.remove(virtual_edge_id);
+						virtual_edgeMap.remove(virtual_edge_id);
+						virtual_edgeWeightMap.remove(virtual_edge_id);
+						virtual_edge_weight = false;
+						//System.out.println("*** >> Removed v-eid = "+virtual_edge_id);
+					}
 				} else {
 					++virtual_edge_id;
 					virtual_edge_weight = false;
