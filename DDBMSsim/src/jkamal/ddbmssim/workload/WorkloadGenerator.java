@@ -69,9 +69,14 @@ public class WorkloadGenerator {
 	
 	// Generates Workloads for the entire simulation
 	public void generateWorkloads(DatabaseServer dbs, Database db, int simulation_run_numbers) throws IOException {
+<<<<<<< HEAD
 		Workload workload = null;		
+=======
+		Workload workload = null;
+		TransactionClassifier workloadClassifier = new TransactionClassifier();
+>>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 		int workload_id = 0;
-				
+		
 		while(workload_id != simulation_run_numbers) {
 			System.out.println("[ACT] Starting workload generation for simulation round "+workload_id+"...");
 			if(workload_id != 0) {
@@ -121,12 +126,15 @@ public class WorkloadGenerator {
 				
 				// Generating New Workload Transactions						
 				TransactionGenerator transactionGenerator = new TransactionGenerator();
-				int new_tr = transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());
+				transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());
 				
-				System.out.println("[MSG] "+new_tr+" new transactions have been generated ...");
-				
+<<<<<<< HEAD
 				this.reInitialiseWorkload(db, workload);
 			}						
+=======
+				this.refreshWorkload(db, workload);
+			}						
+>>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 				
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);
@@ -140,25 +148,32 @@ public class WorkloadGenerator {
 			Workload sampled_workload = this.workloadSampling(db, workload);			
 			
 			// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
+<<<<<<< HEAD
 			System.out.println("[ACT] Starting workload classification to identify RED and ORANGE transactions ...");
 			
 			TransactionClassifier transactionClassifier = new TransactionClassifier();
 			int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
 			
 			System.out.println("[MSG] Total "+target_transactions+" transactions have been identified for partitioning.");
+=======
+			workloadClassifier.classifyTransactions(db, workload);
+			
+			// Workload Sampling
+			Workload sampled_worklaod = this.workloadSampling(db, workload);
+>>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 			
 			// Assign Shadow HMetis Data Id and generate workload and fix files
-			this.assignShadowDataId(db, sampled_workload);	
+			this.assignShadowDataId(db, workload);	
 			
-			this.generateHGraphWorkloadFile(db, sampled_workload);
-			this.generateHGraphFixFile(db, sampled_workload);
+			this.generateHGraphWorkloadFile(db, workload);
+			this.generateHGraphFixFile(db, workload);
 			
-			this.generateCHGraphWorkloadFile(db, sampled_workload);
-			this.generateCHGraphFixFile(db, sampled_workload);
+			this.generateCHGraphWorkloadFile(db, workload);
+			this.generateCHGraphFixFile(db, workload);
 			
-			this.generateGraphWorkloadFile(db, sampled_workload);
+			this.generateGraphWorkloadFile(db, workload);
 			
-			sampled_workload.show(db, "");
+			workload.show(db, "");
 			
 			// Clone the Sampled Workload
 			//Workload cloned_sampled_workload = new Workload(sampled_workload);
@@ -172,7 +187,11 @@ public class WorkloadGenerator {
 	}
 	
 	// Workload Sampling
+<<<<<<< HEAD
 	public Workload workloadSampling(Database db, Workload workload) {
+=======
+	private Workload workloadSampling(Database db, Workload workload) {
+>>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 		int removed_count = 0;
 		Map<Integer, Set<Integer>> removable_transaction_map = new TreeMap<Integer, Set<Integer>>();		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {		
@@ -194,26 +213,31 @@ public class WorkloadGenerator {
 			removable_transaction_map.put(entry.getKey(), removed_transactions);
 		} // end -- for()-Transaction Types
 		
-		
 		// i -- Transaction types
 		for(int i = 0; i < workload.getWrl_transactionTypes(); i++)
 			workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), removable_transaction_map.get(i), i);						
 		
 		System.out.println("[MSG] Total "+removed_count+" duplicate transactions have been removed from the workload.");
 		
-		return (new Workload(workload));
+		return sampled_workload;
 	}
 	
+<<<<<<< HEAD
 	// Reinitialise Workload Transactions and Data
 	public void reInitialiseWorkload(Database db, Workload workload) {
 		//Map<Integer, Integer> dataFrequencyTracker = new TreeMap<Integer, Integer>();		
+=======
+	// Refresh Workload Transactions and Data
+	public void refreshWorkload(Database db, Workload workload) {
+		Map<Integer, Integer> dataFrequencyTracker = new TreeMap<Integer, Integer>();		
+>>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 		Map<Integer, Set<Integer>> dataInvolvedTransactionsTracker = new TreeMap<Integer, Set<Integer>>();
 		Set<Integer> involvedTransactions = null;
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				transaction.setTr_frequency(1); // resetting Transaction frequency				
-				//transaction.calculateTr_weight();
+				transaction.calculateTr_weight();
 				transaction.generateTransactionCost(db);								
 				
 				for(Integer data_id : transaction.getTr_dataSet()) {
@@ -232,7 +256,26 @@ public class WorkloadGenerator {
 						int toBeRemovedTransaction = iterator.next();
 						data.getData_transactions_involved().remove((Object)toBeRemovedTransaction);					
 					}
+<<<<<<< HEAD
 					 
+=======
+					
+					// Refresh Data Frequency and recalculate Weight
+					if(!dataFrequencyTracker.containsKey(data.getData_id())) {
+						data.setData_frequency(1);
+						data.calculateData_weight();
+						
+						dataFrequencyTracker.put(data.getData_id(), data.getData_frequency());
+					} else {
+						data.incData_frequency(dataFrequencyTracker.get(data.getData_id()));
+						data.calculateData_weight();
+						
+						dataFrequencyTracker.remove(data.getData_id());
+						dataFrequencyTracker.put(data.getData_id(), data.getData_frequency());
+					}
+					
+					// 
+>>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 					if(!dataInvolvedTransactionsTracker.containsKey(data.getData_id())) {
 						involvedTransactions = new TreeSet<Integer>();
 						involvedTransactions.add(transaction.getTr_id());
@@ -244,14 +287,14 @@ public class WorkloadGenerator {
 			}
 		}
 		
-		// Refresh the whole Workload with the updated Data Transactions involved
+		// Refresh the whole Workload with the updated Data frequency
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				for(Integer data_id : transaction.getTr_dataSet()) {
 					Data data = db.search(data_id);
 					
-					//data.setData_frequency(dataFrequencyTracker.get(data.getData_id()));
-					//data.calculateData_weight();
+					data.setData_frequency(dataFrequencyTracker.get(data.getData_id()));
+					data.calculateData_weight();
 					
 					Set<Integer> dataTransactions = new TreeSet<Integer>();
 					dataTransactions = dataInvolvedTransactionsTracker.get(data.getData_id());
@@ -278,7 +321,7 @@ public class WorkloadGenerator {
 				proportionArray[i] = rankArray[begin];
 				++ begin;
 			}			
-			//System.out.println("@debug >> TR-"+(i+1)+" | Counts = "+proportionArray[i]);
+			//System.out.println("@debug >> TR-"+(i+1)+" | Counts = "+propArray[i]);
 		}
 		
 		return proportionArray;
@@ -366,7 +409,7 @@ public class WorkloadGenerator {
 				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 					for(Transaction transaction : entry.getValue()) {
 						if(transaction.getTr_class() != "green") {
-							writer.write(transaction.getTr_frequency()+" ");
+							writer.write(transaction.getTr_weight()+" ");
 							
 							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
 							while(data.hasNext()) {
@@ -514,7 +557,7 @@ public class WorkloadGenerator {
 											
 											if(!dataIdSet.contains(trInvolvedDataId) && trInvolvedData.getData_id() != trData.getData_id()) {
 												str += Integer.toString(trInvolvedData.getData_shadowId())+" ";							
-												str += tr.getTr_frequency()+" ";
+												str += tr.getTr_weight()+" ";
 												
 												++edges;
 												
@@ -668,7 +711,7 @@ public class WorkloadGenerator {
 							int combined_weight = 0;
 							for(Integer involved_tr_id : trData.getData_transactions_involved()) {
 								tr = workload.search(involved_tr_id);
-								combined_weight += tr.getTr_frequency();
+								combined_weight += tr.getTr_weight();
 								//System.out.println("@debug >> "+tr.toString()+" | combined_weight = "+combined_weight);
 							}
 						
@@ -743,8 +786,7 @@ public class WorkloadGenerator {
 				writer.write(compressed_hyper_edges+" "+compressed_vertices+" "+hasTransactionWeight+""+hasDataWeight+"\n");
 				
 				for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
-					//writer.write(virtual_edgeWeightMap.get(entry.getKey())+" ");
-					writer.write(Integer.toString(1)+" ");
+					writer.write(virtual_edgeWeightMap.get(entry.getKey())+" ");
 							
 					Iterator<Integer> virtual_id_itr =  entry.getValue().iterator();
 					while(virtual_id_itr.hasNext()) {						
@@ -761,13 +803,12 @@ public class WorkloadGenerator {
 				int newline = 0;
 				
 				for(Entry<Integer, Integer> entry : virtual_vertexWeightMap.entrySet()) {
-					//writer.write(Integer.toString(entry.getValue()));																			
-					writer.write(Integer.toString(1));	
-					
-					if(newline != (virtual_vertexWeightMap.size()-1))
-						writer.write("\n");
+						writer.write(Integer.toString(entry.getValue()));																			
 						
-					++newline;
+						if(newline != (virtual_vertexWeightMap.size()-1))
+							writer.write("\n");
+						
+						++newline;
 				}
 				
 			} catch(IOException e) {
