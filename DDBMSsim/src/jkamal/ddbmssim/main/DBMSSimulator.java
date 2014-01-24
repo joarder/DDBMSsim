@@ -8,6 +8,11 @@ package jkamal.ddbmssim.main;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.apache.commons.math3.random.RandomDataGenerator;
 import jkamal.ddbmssim.db.DataMovement;
 import jkamal.ddbmssim.db.Database;
@@ -18,24 +23,25 @@ import jkamal.ddbmssim.bootstrap.Bootstrapping;
 import jkamal.ddbmssim.io.SimulationMetricsLogger;
 import jkamal.ddbmssim.workload.ClusterIdMapper;
 import jkamal.ddbmssim.workload.DataPreprocessor;
+import jkamal.ddbmssim.workload.TransactionClassifier;
 import jkamal.ddbmssim.workload.Workload;
 import jkamal.ddbmssim.workload.WorkloadGenerator;
 
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-	public final static int DATA_ROWS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
-	public final static int TRANSACTIONS = 100;
-	public final static int SIMULATION_RUNS = 2;
-	public final static double PARTITION_SIZE = 0.01; // 1; 0.1; 0.01
+	public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
+	public final static int TRANSACTIONS = 1000;
+	public final static int SIMULATION_RUNS = 24;
+	public final static double PARTITION_SIZE = 1; // 1; 0.1; 0.01
 	
 	// TPC-C Database table (9) row counts in different scale
 	//double[] pk_array = {0.19, 1.92, 1.92, 19.2, 57.69, 5.76, 5.76, 1.73, 5.76};
 	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 72 (9*8) Equal sized tables
 	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 48 (6*8) Equal sized tables
-	public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
+	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
 	//public final static int[] PK_ARRAY = {1, 10, 10, 100, 300, 30, 30, 30, 9}; // 520
-	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
+	public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
 	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //4,800 (9*800) Equal sized tables
 	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //7,200 (6*800) Equal sized tables
 
@@ -107,6 +113,21 @@ public class DBMSSimulator {
 		ClusterIdMapper cluster_id_mapper = new ClusterIdMapper();		
 		DataMovement data_movement = new DataMovement();
 
+		String[] db_names = {"hgr", "chg", "gr"};
+		String[] strategy_names = {"bs", "s1", "s2"};
+		String[] dir_names = {"hMETIS_DIR_LOCATION", "hMETIS_DIR_LOCATION", "METIS_DIR_LOCATION"};
+		
+		// Create 9 databases under 3 partitioning schemes and 3 data movement strategies
+		Map<Integer, Set<Database>> db_map = new TreeMap<Integer, Set<Database>>();
+		for(int i = 0; i < 3; ++i) {
+			Set<Database> db_set = new TreeSet<Database>();
+			for(int j = 0; j < 3; ++j) {
+				Database clone_db = new Database(db);
+				db_set.add(clone_db);				
+			}
+			db_map.put(i, db_set);
+		}
+		
 		// For HyperGraph Partitioning
 		Database hgr_bs_db = new Database(db);
 		Database hgr_s1_db = new Database(db);
@@ -119,6 +140,8 @@ public class DBMSSimulator {
 		Database gr_bs_db = new Database(db);
 		Database gr_s1_db = new Database(db);
 		Database gr_s2_db = new Database(db);
+		
+		
 		
 		SimulationMetricsLogger sim_logger = new SimulationMetricsLogger();
 		// For HyperGraph Partitioning		
@@ -145,11 +168,10 @@ public class DBMSSimulator {
 		
 		int simulation_run = 0;	
 		while(simulation_run != SIMULATION_RUNS) {			
-			//Workload workload = workloadGenerator.getSampled_workload_map().get(simulation_run);			
 			Workload workload = workloadGenerator.getWorkload_map().get(simulation_run);
 			workload.setMessage("in");
-			//workload.calculateDTImapct(db);
-			//workload.calculateDTPercentage();
+			
+			DBMSSimulator.runSimulation(db, workload, workloadGenerator);						
 			
 			//==============================================================================================
 			// Run hMetis HyperGraph Partitioning
@@ -349,6 +371,93 @@ public class DBMSSimulator {
 		gr_workload_log.close();
 		hgr_node_log.close();
 		gr_partition_log.close();
+	}
+	
+	private static void runSimulation(Database db, Workload workload, WorkloadGenerator workloadGenerator) throws IOException{	
+		// Perform workload sampling
+		System.out.println("[ACT] Starting workload sampling to remove duplicate transactions ...");
+		Workload sampled_workload = workloadGenerator.workloadSampling(db, workload);
+		
+		// Perform transaction classification
+		// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
+		write("[ACT] Starting workload classification to identify RED and ORANGE transactions ...", "ACT");		
+		TransactionClassifier transactionClassifier = new TransactionClassifier();
+		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+		write("Total "+target_transactions+" transactions have been identified for partitioning.", "MSG");		
+		
+		// Assign Shadow HMetis Data Id and generate workload and fix files
+		workloadGenerator.assignShadowDataId(db, sampled_workload);
+		
+		// Generate workload and fixfiles for partitioning
+		workloadGenerator.generateHGraphWorkloadFile(db, sampled_workload);
+		workloadGenerator.generateHGraphFixFile(db, sampled_workload);
+		
+		workloadGenerator.generateCHGraphWorkloadFile(db, sampled_workload);
+		workloadGenerator.generateCHGraphFixFile(db, sampled_workload);
+		
+		workloadGenerator.generateGraphWorkloadFile(db, sampled_workload);
+		
+		sampled_workload.show(db, "");
+		
+		// Perform hypergraph/graph/compressed hypergraph partitioning
+		
+		
+		// Perform data movement
+		
+		
+		// Perform log collection
+		
+	}
+	
+	private void runPartitioner(Database db, Workload workload, String type) throws IOException {
+		
+		switch(type) {
+		case "hgr":
+			// Run hMetis HyperGraph Partitioning
+			HGraphMinCut hgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "hgr"); 		
+			hgraphMinCut.runHMetis();
+
+			// Wait for 5 seconds to ensure that the Part files have been generated properly
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			break;
+			
+		case "chg":
+			HGraphMinCut chgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "chg"); 		
+			chgraphMinCut.runHMetis();
+
+			// Wait for 5 seconds to ensure that the Part files have been generated properly
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			break;
+			
+		case "gr":
+			//==============================================================================================
+			// Run Metis Graph Partitioning							
+			GraphMinCut graphMinCut = new GraphMinCut(workload, METIS, db.getDb_partitions().size()); 		
+			graphMinCut.runMetis();
+			
+			// Wait for 5 seconds to ensure that the Part files have been generated properly
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			break;
+		}
+	}
+	
+	private static void write(String content, String type) {
+		System.out.println("["+type+" "+content);
 	}
 	
 	private static void collectLog(SimulationMetricsLogger logger, Database db, Workload workload

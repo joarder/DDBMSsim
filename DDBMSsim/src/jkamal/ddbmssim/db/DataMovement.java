@@ -172,27 +172,6 @@ public class DataMovement {
 			data.setData_isRoaming(false);
 	}
 	
-	/*private void updatePartition(Database db, Data data, int dst_partition_id, int current_partition_id) {					
-		Partition current_partition = db.getPartition(current_partition_id);
-		Partition dst_partition = db.getPartition(dst_partition_id);
-		Partition home_partition = db.getPartition(data.getData_homePartitionId());
-		
-		// Actual Movement
-		System.out.println(">> "+dst_partition.toString());
-		dst_partition.getPartition_dataSet().add(data);		
-		System.out.println(dst_partition.toString());
-		
-		System.out.println(data.toString());
-		
-		System.out.println(">> "+current_partition.toString());
-		current_partition.getPartition_dataSet().remove(data);
-		System.out.println(current_partition.toString());
-		
-		// Update Lookup Table
-		home_partition.getPartition_dataLookupTable().remove(data.getData_id());
-		home_partition.getPartition_dataLookupTable().put(data.getData_id(), dst_partition_id);						
-	}*/
-	
 	private void updatePartition(Database db, Data data, int current_partition_id, int dst_partition_id) {                                        
         Partition current_partition = db.getPartition(current_partition_id);
         Partition dst_partition = db.getPartition(dst_partition_id);
@@ -274,7 +253,6 @@ public class DataMovement {
 							if(data.isData_isRoaming()) { // Data is already Roaming
 								if(dst_partition_id == home_partition_id) {
 									this.updateData(data, dst_partition_id, dst_node_id, false);
-									//this.updatePartition(db, data, dst_partition_id, current_partition_id);
 									this.updatePartition(db, data, current_partition_id, dst_partition_id);
 									this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);
 									
@@ -285,7 +263,6 @@ public class DataMovement {
 									// Nothing to do									
 								} else {
 									this.updateData(data, dst_partition_id, dst_node_id, true);
-									//this.updatePartition(db, data, current_partition_id, dst_partition_id);
 									this.updatePartition(db, data, current_partition_id, dst_partition_id);
 									this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);
 									
@@ -295,7 +272,6 @@ public class DataMovement {
 								}
 							} else {
 								this.updateData(data, dst_partition_id, dst_node_id, true);
-								//this.updatePartition(db, data, current_partition_id, dst_partition_id);
 								this.updatePartition(db, data, current_partition_id, dst_partition_id);
 								this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);
 								
@@ -305,6 +281,8 @@ public class DataMovement {
 						}
 					}									
 				} // end -- for()-Data
+				// Resetting Transaction frequency
+				transaction.setTr_frequency(1);
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction-Type		
 		

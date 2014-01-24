@@ -69,8 +69,7 @@ public class WorkloadGenerator {
 	
 	// Generates Workloads for the entire simulation
 	public void generateWorkloads(DatabaseServer dbs, Database db, int simulation_run_numbers) throws IOException {
-		Workload workload = null;
-		TransactionClassifier transactionClassifier = new TransactionClassifier();
+		Workload workload = null;		
 		int workload_id = 0;
 				
 		while(workload_id != simulation_run_numbers) {
@@ -112,7 +111,7 @@ public class WorkloadGenerator {
 				System.out.println("[ACT] Varying current workload by generating "+new_tr+" new transactions ...");
 				this.print(workload);
 				
-				this.refreshWorkload(db, workload);
+				this.reInitialiseWorkload(db, workload);
 			} else {
 				// === Workload Generation Round 0 ===
 				workload = this.workloadInitialisation(db, DBMSSimulator.WORKLOAD_TYPE, workload_id);				
@@ -126,7 +125,7 @@ public class WorkloadGenerator {
 				
 				System.out.println("[MSG] "+new_tr+" new transactions have been generated ...");
 				
-				this.refreshWorkload(db, workload);
+				this.reInitialiseWorkload(db, workload);
 			}						
 				
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
@@ -142,7 +141,10 @@ public class WorkloadGenerator {
 			
 			// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
 			System.out.println("[ACT] Starting workload classification to identify RED and ORANGE transactions ...");
+			
+			TransactionClassifier transactionClassifier = new TransactionClassifier();
 			int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+			
 			System.out.println("[MSG] Total "+target_transactions+" transactions have been identified for partitioning.");
 			
 			// Assign Shadow HMetis Data Id and generate workload and fix files
@@ -170,7 +172,7 @@ public class WorkloadGenerator {
 	}
 	
 	// Workload Sampling
-	private Workload workloadSampling(Database db, Workload workload) {
+	public Workload workloadSampling(Database db, Workload workload) {
 		int removed_count = 0;
 		Map<Integer, Set<Integer>> removable_transaction_map = new TreeMap<Integer, Set<Integer>>();		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {		
@@ -202,8 +204,8 @@ public class WorkloadGenerator {
 		return (new Workload(workload));
 	}
 	
-	// Refresh Workload Transactions and Data
-	public void refreshWorkload(Database db, Workload workload) {
+	// Reinitialise Workload Transactions and Data
+	public void reInitialiseWorkload(Database db, Workload workload) {
 		//Map<Integer, Integer> dataFrequencyTracker = new TreeMap<Integer, Integer>();		
 		Map<Integer, Set<Integer>> dataInvolvedTransactionsTracker = new TreeMap<Integer, Set<Integer>>();
 		Set<Integer> involvedTransactions = null;
@@ -228,24 +230,9 @@ public class WorkloadGenerator {
 					Iterator<Integer> iterator = toBeRemovedTransactionSet.iterator();
 					while(iterator.hasNext()) {
 						int toBeRemovedTransaction = iterator.next();
-						data.getData_transactions_involved().remove((Object)toBeRemovedTransaction); // removing object					
+						data.getData_transactions_involved().remove((Object)toBeRemovedTransaction);					
 					}
-					
-					/*// Refresh Data Frequency and recalculate Weight
-					if(!dataFrequencyTracker.containsKey(data.getData_id())) {
-						data.setData_frequency(1);
-						data.calculateData_weight();
-						
-						dataFrequencyTracker.put(data.getData_id(), data.getData_frequency());
-					} else {
-						data.incData_frequency(dataFrequencyTracker.get(data.getData_id()));
-						data.calculateData_weight();
-						
-						dataFrequencyTracker.remove(data.getData_id());
-						dataFrequencyTracker.put(data.getData_id(), data.getData_frequency());
-					}*/
-					
-					// 
+					 
 					if(!dataInvolvedTransactionsTracker.containsKey(data.getData_id())) {
 						involvedTransactions = new TreeSet<Integer>();
 						involvedTransactions.add(transaction.getTr_id());

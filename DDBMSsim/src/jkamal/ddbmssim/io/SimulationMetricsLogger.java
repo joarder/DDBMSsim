@@ -180,7 +180,7 @@ public class SimulationMetricsLogger {
 		case "hgr":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
-				writer.print(workload.getMessage()+" ");				
+				writer.print("hgr ");				
 				writer.print(workload.getWrl_distributedTransactions()+" ");																		
 			} else {					
 				writer.print(workload.getMessage()+" ");								
@@ -194,7 +194,7 @@ public class SimulationMetricsLogger {
 		case "chg":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
-				writer.print(workload.getMessage()+" ");				
+				writer.print("chg ");				
 				writer.print(workload.getWrl_distributedTransactions()+" ");																		
 			} else {					
 				writer.print(workload.getMessage()+" ");				
@@ -208,7 +208,7 @@ public class SimulationMetricsLogger {
 		case "gr":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
-				writer.print(workload.getMessage()+" ");				
+				writer.print("gr ");				
 				writer.print(workload.getWrl_distributedTransactions()+" ");																		
 			} else {					
 				writer.print(workload.getMessage()+" ");				
