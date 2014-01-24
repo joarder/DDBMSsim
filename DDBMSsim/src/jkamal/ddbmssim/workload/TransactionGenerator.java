@@ -30,7 +30,7 @@ public class TransactionGenerator {
 	}
 
 	// Generates the required number of Transactions for a specific Workload with a specific Database
-	public void generateTransaction(Database db, Workload workload, int global_tr_id) {				
+	public int generateTransaction(Database db, Workload workload, int global_tr_id) {				
 		ArrayList<Transaction> transactionList;
 		Transaction transaction;		
 		Set<Integer> trDataSet;
@@ -39,6 +39,7 @@ public class TransactionGenerator {
 		Double rand = 0.0;
 		int[] prop;
 		int data_id = 0;
+		int new_tr = 0;
 		
 		//Selecting Transaction Prop
 		if(workload.getWrl_id() != 0)
@@ -78,13 +79,14 @@ public class TransactionGenerator {
 						
 						trDataSet.add(data_id);
 						
-						System.out.println("@ >> "+data_id+" | "+data.getData_normalisedCumulativeZipfProbability()+" | rand = "+rand);
+						//System.out.println(data_id+" | P"+data.getData_partitionId()+" | "+data.getData_normalisedCumulativeZipfProbability()+" | rand = "+rand);
 					}					
 				} // end--k for() loop
 																
 				transaction = new Transaction(global_tr_id, trDataSet);				
 				transaction.setTr_ranking(i+1);
 				workload.incWrl_totalTransaction();
+				++new_tr;
 				
 				if(workload.getWrl_transactionMap().containsKey(i)) {
 					workload.getWrl_transactionMap().get(i).add(transaction);
@@ -98,5 +100,7 @@ public class TransactionGenerator {
 			else 				
 				workload.incWrl_transactionProportions(i, typedTransactions);									
 		} // end--i for() loop
+		
+		return new_tr;
 	}	
 }

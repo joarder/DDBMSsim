@@ -94,7 +94,7 @@ public class TransactionClassifier {
 		this.setOrange_tr(++value);
 	}
 
-	private void incRed_tr_data() {
+	/*private void incRed_tr_data() {
 		int value = this.getRed_tr_data();
 		this.setRed_tr_data(++value);
 	}
@@ -107,10 +107,10 @@ public class TransactionClassifier {
 	private void incOrange_tr_data() {
 		int value = this.getOrange_tr_data();
 		this.setOrange_tr_data(++value);
-	}
+	}*/
 	
 	// Method to perform transaction classification for a particular database Workload
-	public void classifyTransactions(Database db, Workload workload) {
+	public int classifyTransactions(Database db, Workload workload) {
 		workload.setWrl_tr_red(0);
 		workload.setWrl_tr_green(0);
 		workload.setWrl_tr_orange(0);
@@ -124,7 +124,7 @@ public class TransactionClassifier {
 		
 		int orange_data = 0;
 		int green_data = 0;
-		
+		//System.out.println(">> "+workload.getWrl_totalTransactions());
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				orange_data = 0;
@@ -166,7 +166,12 @@ public class TransactionClassifier {
 		}
 		
 		workload.setWrl_tr_red(this.getRed_tr());
+		System.out.println("[OUT] Classified "+this.getRed_tr()+" transactions as RED !!!");
 		workload.setWrl_tr_green(this.getGreen_tr());
+		System.out.println("[OUT] Classified "+this.getGreen_tr()+" transactions as GREEN !!!");
 		workload.setWrl_tr_orange(this.getOrange_tr());		
+		System.out.println("[OUT] Classified "+this.getOrange_tr()+" transactions as ORANGE !!!");
+		
+		return (this.getRed_tr()+this.getOrange_tr());
 	}
 }

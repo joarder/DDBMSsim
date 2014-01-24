@@ -64,6 +64,7 @@ public class WorkloadGenerator {
 		int workload_id = 0;
 		
 		while(workload_id != simulation_run_numbers) {
+			System.out.println("[ACT] Starting workload generation for simulation round "+workload_id+"...");
 			if(workload_id != 0) {
 				workload = new Workload(this.getWorkload_map().get(workload_id -1));
 				workload.setWrl_id(workload_id);
@@ -71,30 +72,30 @@ public class WorkloadGenerator {
 				
 				// === Death Management === 	
 				workload.setWrl_transactionDying((int) ((int) workload.getWrl_totalTransactions() * 0.5));				
-				workload.setWrl_transactionDeathRate(0.5);	
+				workload.setWrl_transactionDeathRate(0.5); // fixed rate	
 				workload.setWrl_transactionDeathProp(transactionPropGen(workload.getWrl_transactionTypes(), 
 						workload.getWrl_transactionDying()));
 				
 				// Reducing Old Workload Transactions			
 				TransactionReducer transactionReducer = new TransactionReducer();
-				transactionReducer.reduceTransaction(db, workload);
+				int old_tr = transactionReducer.reduceTransaction(db, workload);
 				
-				System.out.println("[ACT] Varying current workload by reducing old transactions ...");
+				System.out.println("[ACT] Varying current workload by reducing "+old_tr+" old transactions ...");
 				this.print(workload);
-				
+				//workload.show(db, "");
 				// === Birth Management ===				
 				workload.setWrl_transactionBorning((int) ((int) workload.getWrl_totalTransactions() * 0.5));
-				workload.setWrl_transactionBirthRate(0.5);
+				workload.setWrl_transactionBirthRate(0.5); // fixed rate
 				workload.setWrl_transactionBirthProp(transactionPropGen(workload.getWrl_transactionTypes(), 
 						workload.getWrl_transactionBorning()));
 				
 				// Generating New Workload Transactions						
 				TransactionGenerator transactionGenerator = new TransactionGenerator();
-				transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());	
+				int new_tr = transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());	
 				
-				System.out.println("[ACT] Varying current workload by generating new transactions ...");
+				System.out.println("[ACT] Varying current workload by generating "+new_tr+" new transactions ...");
 				this.print(workload);
-				
+				//workload.show(db, "");
 				this.refreshWorkload(db, workload);
 			} else {
 				// === Workload Generation Round 0 ===

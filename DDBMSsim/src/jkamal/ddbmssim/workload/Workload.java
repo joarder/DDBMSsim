@@ -6,8 +6,8 @@ package jkamal.ddbmssim.workload;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import jkamal.ddbmssim.db.Data;
@@ -674,7 +674,7 @@ public class Workload implements Comparable<Workload> {
 	}
 
 	// Calculate DT Impacts for the Workload
-	public void calculateDTImapct(Database db) {
+	/*public void calculateDTImapct(Database db) {
 		int total_impact = 0;
 		int total_trFreq = 0;
 		
@@ -691,7 +691,7 @@ public class Workload implements Comparable<Workload> {
 		dt_impact = Math.round(dt_impact * 100.0)/100.0;
 		
 		this.setWrl_impactOfDistributedTransactions(dt_impact);
-	}
+	}*/
 
 	// Calculate the percentage of Distributed Transactions within the Workload (before and after the Data movements)
 	public void calculateDTPercentage() {
@@ -761,35 +761,6 @@ public class Workload implements Comparable<Workload> {
 		this.message = message;
 	}
 		
-	public void removeDuplicates() {
-		List<Transaction> duplicates = new ArrayList<Transaction>();
-		int duplicate = 0;
-		int trType = 0;
-				
-		System.out.println("[ACT] Searching for duplicates in the workload ..."); 
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
-				int tr_id = transaction.getTr_id();
-				
-				if(this.getWrl_transactionMap().entrySet().contains(tr_id)) {
-					duplicates.add(transaction);
-					++duplicate;
-				}
-			}
-		}
-		
-		System.out.println("[OUT] Total "+duplicate+" were transactions found in the workload !!!");
-		
-		int removed = 0;
-		for(Transaction transaction : duplicates) {
-			trType = transaction.getTr_ranking();
-			this.getWrl_transactionMap().get(trType).remove(transaction);
-			++removed;
-		}
-		
-		System.out.println("[OUT] Total "+removed+" duplicate transactions have been removed from the workload.");
-	}
-	
 	public Transaction search(int tr_id) {
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
@@ -799,6 +770,32 @@ public class Workload implements Comparable<Workload> {
 		}
 		
 		return null;
+	}
+	
+	
+	public void removeTransactions(Database db, ArrayList<Transaction> transactionList, Set<Integer> removed_transactions, int i) {
+		for(int j : removed_transactions) {
+			Transaction tr = this.search(j);			
+			
+			this.releaseInvolvedTransactionsFromData(db, tr);
+			transactionList.remove(tr); // Removing Object
+			
+			this.decWrl_totalTransactions();				
+			this.decWrl_transactionProportions(i);
+			//System.out.println(">> Total="+this.getWrl_totalTransactions());
+			//System.out.println(">> i = "+i+" | j = "+j+" | T"+tr.getTr_id());
+		}
+	}
+	
+	
+	public void releaseInvolvedTransactionsFromData(Database db, Transaction transaction) {		
+		int tr_id = transaction.getTr_id();
+		System.out.println("@ Removing T"+tr_id);
+		for(Integer data_id : transaction.getTr_dataSet()) {
+			Data data = db.search(data_id);			
+			//System.out.println("@ Removing T"+tr_id+" | d"+data.getData_id());
+			data.getData_transactions_involved().remove(tr_id); // removing object
+		}
 	}
 	
 	public void printWrl_transactionProp(int[] array) {
@@ -832,20 +829,16 @@ public class Workload implements Comparable<Workload> {
 		System.out.println("      -----------------------------------------------------------------------------------------------------------------");
 		
 		this.calculateDTPercentage();	
-		this.calculateDTImapct(db);
+		//this.calculateDTImapct(db);
 		
 		System.out.println("      # Distributed Transactions: "+this.getWrl_distributedTransactions()+" ("+this.getWrl_percentageDistributedTransactions()+"%)");
-		System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_impactOfDistributedTransactions());
+		//System.out.println("      # Impact of Distributed Transactions: "+this.getWrl_impactOfDistributedTransactions());
 		
 		switch(type) {
 		case "hgr":
 			if(this.isWrl_hasDataMoved()) {
-				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_hg_intraNodeDataMovements()
-						+" ("+this.getWrl_hg_percentageIntraNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
-				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_hg_interNodeDataMovements()
-						+" ("+this.getWrl_hg_percentageInterNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
+				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_hg_intraNodeDataMovements());
+				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_hg_interNodeDataMovements());
 			}
 			
 			db.show();		
@@ -853,12 +846,8 @@ public class Workload implements Comparable<Workload> {
 	
 		case "chg":
 			if(this.isWrl_hasDataMoved()) {
-				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_chg_intraNodeDataMovements()
-						+" ("+this.getWrl_chg_percentageIntraNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
-				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_chg_interNodeDataMovements()
-						+" ("+this.getWrl_chg_percentageInterNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
+				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_chg_intraNodeDataMovements());
+				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_chg_interNodeDataMovements());
 			}
 			
 			db.show();		
@@ -866,12 +855,8 @@ public class Workload implements Comparable<Workload> {
 			
 		case "gr":
 			if(this.isWrl_hasDataMoved()) {
-				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_gr_intraNodeDataMovements()
-						+" ("+this.getWrl_gr_percentageIntraNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
-				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_gr_interNodeDataMovements()
-						+" ("+this.getWrl_gr_percentageInterNodeDataMovements()+"% of "
-						+"Total "+this.getWrl_totalDataObjects()+" Workload Data)");
+				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_gr_intraNodeDataMovements());
+				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_gr_interNodeDataMovements());
 			}
 			
 			db.show();		

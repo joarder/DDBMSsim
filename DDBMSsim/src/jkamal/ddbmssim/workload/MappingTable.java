@@ -63,10 +63,10 @@ public class MappingTable {
 						break;
 					}					
 															
-					//System.out.println("@debug >> "+data.toString()+" | P"+partition_id+" | C"+cluster_id);
-					//System.out.println("@debug >> *"+dbData.toString()+" | P"+partition_id+" | C"+cluster_id);
+					//System.out.println("@debug >> "+data.toString()+" | P"+partition_id+" | C"+cluster_id);					
 					
 					e = mapping[partition_id][cluster_id];
+					//System.out.println("@debug >> Row = "+e.getRow_pos()+"| Col ="+e.getCol_pos());
 					e.setCounts(e.getCounts()+1);
 				} // end -- for()-Data
 			} // end -- for()-Transaction

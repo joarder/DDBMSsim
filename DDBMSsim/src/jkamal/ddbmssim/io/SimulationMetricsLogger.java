@@ -182,7 +182,7 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
-				workload.calculateDTImapct(db);
+				//workload.calculateDTImapct(db);
 				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
@@ -191,7 +191,7 @@ public class SimulationMetricsLogger {
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
 				
-				workload.calculateDTImapct(db);
+				//workload.calculateDTImapct(db);
 				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
@@ -212,7 +212,7 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
-				workload.calculateDTImapct(db);
+				//workload.calculateDTImapct(db);
 				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
@@ -221,7 +221,7 @@ public class SimulationMetricsLogger {
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
 				
-				workload.calculateDTImapct(db);
+				//workload.calculateDTImapct(db);
 				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
@@ -242,7 +242,7 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print(workload.getMessage()+" ");
 				
-				workload.calculateDTImapct(db);
+				//workload.calculateDTImapct(db);
 				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
@@ -251,7 +251,7 @@ public class SimulationMetricsLogger {
 				//writer.print(workload.getWrl_data_movement_strategy()+" ");
 				writer.print(workload.getMessage()+" ");
 				
-				workload.calculateDTImapct(db);
+				//workload.calculateDTImapct(db);
 				workload.calculateDTPercentage();
 				
 				writer.print(workload.getWrl_distributedTransactions()+" ");

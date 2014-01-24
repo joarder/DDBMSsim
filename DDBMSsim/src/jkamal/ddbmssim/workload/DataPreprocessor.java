@@ -11,6 +11,7 @@ import org.apache.commons.math3.distribution.ZipfDistribution;
 import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.Partition;
+import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class DataPreprocessor {	
 	private Map<Integer, Double> zipf_probability_map;
@@ -94,22 +95,24 @@ public class DataPreprocessor {
 		this.data_weight = data_weight;
 	}
 
-	public void preprocess(Database db) {
-		Iterator<Partition> iterator = db.getDb_partitions().iterator();
-	    Partition partition = null;
-	    int partition_size = 0;	  
+	public void preprocess(Database db) {			  
 	    int data_id_tracker = 1;
 	    double normalisation_carry_fwd = 0.0;	    
 	    
+		for(int i = 0; i < DBMSSimulator.PK_ARRAY.length; ++i) {			
+			this.getZipfProbability(0, DBMSSimulator.PK_ARRAY[i], data_id_tracker);
+	    	this.getCumulativeProbability(0, DBMSSimulator.PK_ARRAY[i], data_id_tracker);
+	    	normalisation_carry_fwd = this.getNormalisedCumulativeProbability(DBMSSimulator.PK_ARRAY.length, data_id_tracker, normalisation_carry_fwd);
+	    	
+	    	//System.out.println("@debug >> i = "+i+" | | did = "+data_id_tracker);
+	    	data_id_tracker += DBMSSimulator.PK_ARRAY[i];
+		}
+		
 	    // Iterating each partitions
+		Iterator<Partition> iterator = db.getDb_partitions().iterator();
 	    while(iterator.hasNext()) {
-	    	partition = iterator.next();
-	    	partition_size = partition.getPartition_dataSet().size();
-	    		    	
-	    	this.getZipfProbability(0, partition_size, data_id_tracker);
-	    	this.getCumulativeProbability(0, partition_size, data_id_tracker);
-	    	normalisation_carry_fwd = this.getNormalisedCumulativeProbability(db.getDb_partitions().size(), data_id_tracker, normalisation_carry_fwd);
-	    		 
+	    	Partition partition = iterator.next();
+   		 
 	    	// Iterating each data objects
 	    	for(Data data : partition.getPartition_dataSet()) {	    		
 	    		data.setData_zipfProbability(
@@ -120,24 +123,15 @@ public class DataPreprocessor {
 	    				this.getZipf_norm_cumulative_probability_map().get(data.getData_id()));	    		
 	    		
 	    		db.getDb_normalisedCumalitiveZipfProbabilityArray()[data.getData_id()-1] = data.getData_normalisedCumulativeZipfProbability();
-	    		data_id_tracker = (data.getData_id() + 1);
 	    		
-	    		System.out.println(data.getData_id()+" | "
+	    		/*System.out.println(data.getData_id()+" | "
 				+data.getData_zipfProbability()+" | "
 				+data.getData_cumulativeZipfProbability()+" | "
-				+data.getData_normalisedCumulativeZipfProbability());
+				+data.getData_normalisedCumulativeZipfProbability());*/
 	    		//System.out.println(">> id = "+(data.getData_id()-1)+" | "+db.getDb_normalised_cumalitive_zipf_probability()[data.getData_id()-1]);
 	    	}
 	    	
 	    	//System.out.println(">> NC = "+normalised_carry_fwd);
-	    }
-	    
-	    // Assign Data Weight here
-	    while(iterator.hasNext()) {
-	    	partition = iterator.next();	    		 	    	
-	    	for(Data data : partition.getPartition_dataSet()) {	    		
-	    	
-	    	}	    	
-	    }
+	    }	
 	}
 }
