@@ -12,20 +12,22 @@ import java.util.Map.Entry;
 
 import jkamal.ddbmssim.main.DBMSSimulator;
 
-public class Database {
+public class Database implements Comparable<Database> {
 	private int db_id;
 	private String db_name;
 	private int db_tenant;	
+	private DatabaseServer db_dbs;
 	private int db_data_numbers;
 	private int db_partition_size;	
 	private Set<Partition> db_partitions;		
 	private Map<Integer, Set<Integer>> db_nodes;
 	private double[] db_normalised_cumalitive_zipf_probability;
 	
-	public Database(int id, String name, int tenant_id, String model, double partition_size) {
+	public Database(int id, String name, int tenant_id, DatabaseServer dbs, String model, double partition_size) {
 		this.setDb_id(id);
 		this.setDb_name(name);
 		this.setDb_tenant(tenant_id);
+		this.setDb_dbs(dbs);
 		this.setDb_dataNumbers(DBMSSimulator.DATA_ROWS);
 		this.setDb_partitionSize((int)(partition_size * 1000)); // Partition Size Range (1 ~ 1000 GB), 1 GB = 1000 Data Objects of equal size
 		this.setDb_partitions(new TreeSet<Partition>());
@@ -37,7 +39,8 @@ public class Database {
 	public Database(Database db) {
 		this.setDb_id(db.getDb_id());
 		this.setDb_name(db.getDb_name());
-		this.setDb_tenant(db.getDb_tenant());		
+		this.setDb_tenant(db.getDb_tenant());	
+		this.setDb_dbs(db.getDb_dbs());
 		this.setDb_dataNumbers(db.getDb_dataNumbers());
 		this.setDb_partitionSize(db.getDb_partitionSize());		
 		
@@ -95,6 +98,14 @@ public class Database {
 		this.db_tenant = db_tenant;
 	}
 	
+	public DatabaseServer getDb_dbs() {
+		return db_dbs;
+	}
+
+	public void setDb_dbs(DatabaseServer db_dbs) {
+		this.db_dbs = db_dbs;
+	}
+
 	public Set<Partition> getDb_partitions() {
 		return db_partitions;
 	}
@@ -258,5 +269,31 @@ public class Database {
 			
 			System.out.print("\n");
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return ("Database: "+this.getDb_name()+", Id: "+this.getDb_id()+", Tenant Id: "+this.getDb_tenant());
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		if (!(object instanceof Database)) {
+			return false;
+		}
+		
+		Database db = (Database) object;
+		return (this.getDb_name().equals(db.getDb_name()));
+	}
+
+	@Override
+	public int hashCode() {
+		return (this.getDb_name().hashCode());
+	}
+
+	@Override
+	public int compareTo(Database db) {		
+		return (((int)this.getDb_id() < (int)db.getDb_id()) ? -1: 
+			((int)this.getDb_id() > (int)db.getDb_id()) ? 1:0);		
 	}
 }

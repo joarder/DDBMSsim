@@ -23,14 +23,14 @@ public class SimulationMetricsLogger {
 	private String db_logger;
 	private String workload_logger;
 	private String partition_logger;
-	private boolean data_movement;
+	private boolean has_data_moved;
 	private Map<Integer, String> partitionsBeforeDM;
 	
 	public SimulationMetricsLogger() {
 		this.setDb_logger("db-log.txt");
 		this.setWorkload_logger("workload-log.txt");
 		this.setPartition_logger("partition-log.txt");
-		this.setData_movement(false);
+		this.setData_hasMoved(false);
 		this.setPartitionsBeforeDM(new TreeMap<Integer, String>());
 	}
 	
@@ -59,11 +59,11 @@ public class SimulationMetricsLogger {
 	}
 
 	public boolean isData_movement() {
-		return data_movement;
+		return has_data_moved;
 	}
 
-	public void setData_movement(boolean data_movement) {
-		this.data_movement = data_movement;
+	public void setData_hasMoved(boolean data_movement) {
+		this.has_data_moved = data_movement;
 	}
 
 	public Map<Integer, String> getPartitionsBeforeDM() {
@@ -141,7 +141,7 @@ public class SimulationMetricsLogger {
 			Partition partition = db.getPartition(i);
 			
 			for(Data data : partition.getPartition_dataSet()) {
-				if(!this.data_movement)
+				if(!this.has_data_moved)
 					writer.print("bf ");
 				else 
 					writer.print("af ");
@@ -180,29 +180,13 @@ public class SimulationMetricsLogger {
 		case "hgr":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
-				writer.print(workload.getMessage()+" ");
-				
-				//workload.calculateDTImapct(db);
-				workload.calculateDTPercentage();
-				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
+				writer.print(workload.getMessage()+" ");				
+				writer.print(workload.getWrl_distributedTransactions()+" ");																		
 			} else {					
-				//writer.print(workload.getWrl_data_movement_strategy()+" ");
-				writer.print(workload.getMessage()+" ");
-				
-				//workload.calculateDTImapct(db);
-				workload.calculateDTPercentage();
-				
+				writer.print(workload.getMessage()+" ");								
 				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
-				
-				writer.print(workload.getWrl_totalDataObjects()+" ");
 				writer.print(workload.getWrl_hg_intraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_hg_percentageIntraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_hg_interNodeDataMovements()+" ");
-				writer.print(workload.getWrl_hg_percentageInterNodeDataMovements());
-				
+				writer.print(workload.getWrl_hg_interNodeDataMovements()+" ");				
 				writer.println();
 			}
 			break;
@@ -210,29 +194,13 @@ public class SimulationMetricsLogger {
 		case "chg":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
-				writer.print(workload.getMessage()+" ");
-				
-				//workload.calculateDTImapct(db);
-				workload.calculateDTPercentage();
-				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
+				writer.print(workload.getMessage()+" ");				
+				writer.print(workload.getWrl_distributedTransactions()+" ");																		
 			} else {					
-				//writer.print(workload.getWrl_data_movement_strategy()+" ");
-				writer.print(workload.getMessage()+" ");
-				
-				//workload.calculateDTImapct(db);
-				workload.calculateDTPercentage();
-				
+				writer.print(workload.getMessage()+" ");				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
-				
-				writer.print(workload.getWrl_totalDataObjects()+" ");
 				writer.print(workload.getWrl_chg_intraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_chg_percentageIntraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_chg_interNodeDataMovements()+" ");
-				writer.print(workload.getWrl_chg_percentageInterNodeDataMovements());
-				
+				writer.print(workload.getWrl_chg_interNodeDataMovements()+" ");				
 				writer.println();
 			}
 			break;	
@@ -240,29 +208,13 @@ public class SimulationMetricsLogger {
 		case "gr":
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
-				writer.print(workload.getMessage()+" ");
-				
-				//workload.calculateDTImapct(db);
-				workload.calculateDTPercentage();
-				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");																		
+				writer.print(workload.getMessage()+" ");				
+				writer.print(workload.getWrl_distributedTransactions()+" ");																		
 			} else {					
-				//writer.print(workload.getWrl_data_movement_strategy()+" ");
-				writer.print(workload.getMessage()+" ");
-				
-				//workload.calculateDTImapct(db);
-				workload.calculateDTPercentage();
-				
+				writer.print(workload.getMessage()+" ");				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_impactOfDistributedTransactions()+" ");								
-				
-				writer.print(workload.getWrl_totalDataObjects()+" ");
 				writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_gr_percentageIntraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");
-				writer.print(workload.getWrl_gr_percentageInterNodeDataMovements());
-				
+				writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");				
 				writer.println();
 			}
 			break;
@@ -271,21 +223,46 @@ public class SimulationMetricsLogger {
 	
 	public void logPartition(Database db, Workload workload, PrintWriter prWriter) {		
 		for(Partition partition : db.getDb_partitions()) {
-			if(!this.data_movement)
-				prWriter.print("bf ");
-			else 
-				prWriter.print("af ");
-			
-			prWriter.print("W"+workload.getWrl_id()+" ");
-			prWriter.print(workload.getMessage()+" ");
-			prWriter.print("P"+partition.getPartition_id()+" ");
-			prWriter.print("N"+partition.getPartition_nodeId()+" ");
-			prWriter.print("-L "+partition.getPartition_current_load()+" ");
-			prWriter.print("-H "+partition.getPartition_dataSet().size()+" ");
-			prWriter.print("-R "+partition.getPartition_roaming_data()+" ");
-			prWriter.print("-F "+partition.getPartition_foreign_data());
-			prWriter.println();
+			if(this.isData_movement())// && workload.getWrl_id() == 0)
+				this.writePartitionLog(workload, partition, prWriter);
+			//else
+				//this.writePartitionLog(workload, partition, prWriter);
 		}
+	}
+	
+	private void writePartitionLog(Workload workload,Partition partition, PrintWriter prWriter) {
+		prWriter.print(workload.getWrl_id()+" ");
+		prWriter.print(workload.getMessage()+" ");
+		prWriter.print(partition.getPartition_id()+" ");
+		prWriter.print(partition.getPartition_nodeId()+" ");
+		prWriter.print(partition.getPartition_current_load()+" ");
+		prWriter.print(partition.getPartition_dataSet().size()+" ");
+		prWriter.print(partition.getPartition_roaming_data()+" ");
+		prWriter.print(partition.getPartition_foreign_data()+" ");
+		prWriter.print(partition.getPartition_inflow()+" ");
+		prWriter.print(partition.getPartition_outflow());
+		prWriter.println();
+	} 
+	
+	public void logNode(Database db, Workload workload, PrintWriter prWriter) {
+		//int i = 0;
+		for(Node node : db.getDb_dbs().getDbs_nodes()) {
+			if(this.isData_movement()) //{
+				this.writeNodeLog(workload, node, prWriter);
+				//i = 1;
+			//} else
+				//this.writeNodeLog(workload, node, prWriter);
+		}
+	}
+	
+	private void writeNodeLog(Workload workload, Node node, PrintWriter prWriter) {
+		prWriter.print(workload.getWrl_id()+" ");
+		prWriter.print(workload.getMessage()+" ");
+		prWriter.print(node.getNode_id()+" ");
+		prWriter.print(node.getNode_total_data()+" ");
+		prWriter.print(node.getNode_inflow()+" ");
+		prWriter.print(node.getNode_outflow());
+		prWriter.println();
 	}
 	
 	public void logTransactionProp(Workload workload, PrintWriter prWriter) {
