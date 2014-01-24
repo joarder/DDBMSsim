@@ -69,12 +69,8 @@ public class WorkloadGenerator {
 	
 	// Generates Workloads for the entire simulation
 	public void generateWorkloads(DatabaseServer dbs, Database db, int simulation_run_numbers) throws IOException {
-<<<<<<< HEAD
-		Workload workload = null;		
-=======
 		Workload workload = null;
 		TransactionClassifier workloadClassifier = new TransactionClassifier();
->>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 		int workload_id = 0;
 		
 		while(workload_id != simulation_run_numbers) {
@@ -127,14 +123,8 @@ public class WorkloadGenerator {
 				// Generating New Workload Transactions						
 				TransactionGenerator transactionGenerator = new TransactionGenerator();
 				transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());
-				
-<<<<<<< HEAD
 				this.reInitialiseWorkload(db, workload);
 			}						
-=======
-				this.refreshWorkload(db, workload);
-			}						
->>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 				
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);
@@ -148,19 +138,10 @@ public class WorkloadGenerator {
 			Workload sampled_workload = this.workloadSampling(db, workload);			
 			
 			// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
-<<<<<<< HEAD
-			System.out.println("[ACT] Starting workload classification to identify RED and ORANGE transactions ...");
-			
-			TransactionClassifier transactionClassifier = new TransactionClassifier();
-			int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
-			
-			System.out.println("[MSG] Total "+target_transactions+" transactions have been identified for partitioning.");
-=======
 			workloadClassifier.classifyTransactions(db, workload);
 			
 			// Workload Sampling
 			Workload sampled_worklaod = this.workloadSampling(db, workload);
->>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 			
 			// Assign Shadow HMetis Data Id and generate workload and fix files
 			this.assignShadowDataId(db, workload);	
@@ -187,14 +168,11 @@ public class WorkloadGenerator {
 	}
 	
 	// Workload Sampling
-<<<<<<< HEAD
 	public Workload workloadSampling(Database db, Workload workload) {
-=======
-	private Workload workloadSampling(Database db, Workload workload) {
->>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
+		Workload sampled_workload = new Workload(workload);
 		int removed_count = 0;
 		Map<Integer, Set<Integer>> removable_transaction_map = new TreeMap<Integer, Set<Integer>>();		
-		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {		
+		for(Entry<Integer, ArrayList<Transaction>> entry : sampled_workload.getWrl_transactionMap().entrySet()) {		
 			Set<Integer> removed_transactions = new TreeSet<Integer>();
 			for(Transaction transaction : entry.getValue()) {
 				for(Transaction tr : entry.getValue()) {
@@ -215,29 +193,24 @@ public class WorkloadGenerator {
 		
 		// i -- Transaction types
 		for(int i = 0; i < workload.getWrl_transactionTypes(); i++)
-			workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), removable_transaction_map.get(i), i);						
+			sampled_workload.removeTransactions(db, sampled_workload.getWrl_transactionMap().get(i), removable_transaction_map.get(i), i);						
 		
 		System.out.println("[MSG] Total "+removed_count+" duplicate transactions have been removed from the workload.");
+		
 		
 		return sampled_workload;
 	}
 	
-<<<<<<< HEAD
-	// Reinitialise Workload Transactions and Data
-	public void reInitialiseWorkload(Database db, Workload workload) {
-		//Map<Integer, Integer> dataFrequencyTracker = new TreeMap<Integer, Integer>();		
-=======
 	// Refresh Workload Transactions and Data
-	public void refreshWorkload(Database db, Workload workload) {
+	public void reInitialiseWorkload(Database db, Workload workload) {
 		Map<Integer, Integer> dataFrequencyTracker = new TreeMap<Integer, Integer>();		
->>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 		Map<Integer, Set<Integer>> dataInvolvedTransactionsTracker = new TreeMap<Integer, Set<Integer>>();
 		Set<Integer> involvedTransactions = null;
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				transaction.setTr_frequency(1); // resetting Transaction frequency				
-				transaction.calculateTr_weight();
+				//transaction.calculateTr_weight();
 				transaction.generateTransactionCost(db);								
 				
 				for(Integer data_id : transaction.getTr_dataSet()) {
@@ -256,26 +229,7 @@ public class WorkloadGenerator {
 						int toBeRemovedTransaction = iterator.next();
 						data.getData_transactions_involved().remove((Object)toBeRemovedTransaction);					
 					}
-<<<<<<< HEAD
-					 
-=======
-					
-					// Refresh Data Frequency and recalculate Weight
-					if(!dataFrequencyTracker.containsKey(data.getData_id())) {
-						data.setData_frequency(1);
-						data.calculateData_weight();
-						
-						dataFrequencyTracker.put(data.getData_id(), data.getData_frequency());
-					} else {
-						data.incData_frequency(dataFrequencyTracker.get(data.getData_id()));
-						data.calculateData_weight();
-						
-						dataFrequencyTracker.remove(data.getData_id());
-						dataFrequencyTracker.put(data.getData_id(), data.getData_frequency());
-					}
-					
-					// 
->>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
+
 					if(!dataInvolvedTransactionsTracker.containsKey(data.getData_id())) {
 						involvedTransactions = new TreeSet<Integer>();
 						involvedTransactions.add(transaction.getTr_id());
@@ -283,23 +237,6 @@ public class WorkloadGenerator {
 					} else {
 						dataInvolvedTransactionsTracker.get(data.getData_id()).add(transaction.getTr_id());
 					}
-				}
-			}
-		}
-		
-		// Refresh the whole Workload with the updated Data frequency
-		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
-				for(Integer data_id : transaction.getTr_dataSet()) {
-					Data data = db.search(data_id);
-					
-					data.setData_frequency(dataFrequencyTracker.get(data.getData_id()));
-					data.calculateData_weight();
-					
-					Set<Integer> dataTransactions = new TreeSet<Integer>();
-					dataTransactions = dataInvolvedTransactionsTracker.get(data.getData_id());
-					
-					data.setData_transactions_involved(dataTransactions);
 				}
 			}
 		}

@@ -30,17 +30,10 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-<<<<<<< HEAD
 	public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
 	public final static int TRANSACTIONS = 1000;
 	public final static int SIMULATION_RUNS = 24;
 	public final static double PARTITION_SIZE = 1; // 1; 0.1; 0.01
-=======
-	public final static int DATA_ROWS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
-	public final static int TRANSACTIONS = 100;
-	public final static int SIMULATION_RUNS = 2;
-	public final static double PARTITION_SIZE = 0.01; // 1; 0.1; 0.01
->>>>>>> branch 'master' of https://github.com/joarder/DDBMSsim.git
 	
 	// TPC-C Database table (9) row counts in different scale
 	//double[] pk_array = {0.19, 1.92, 1.92, 19.2, 57.69, 5.76, 5.76, 1.73, 5.76};
