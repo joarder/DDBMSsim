@@ -4,6 +4,7 @@
 
 package jkamal.ddbmssim.db;
 
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -22,6 +23,9 @@ public class Database implements Comparable<Database> {
 	private Set<Partition> db_partitions;		
 	private Map<Integer, Set<Integer>> db_nodes;
 	private double[] db_normalised_cumalitive_zipf_probability;
+	private PrintWriter workload_log;
+	private PrintWriter node_log;
+	private PrintWriter partition_log;
 	
 	public Database(int id, String name, int tenant_id, DatabaseServer dbs, String model, double partition_size) {
 		this.setDb_id(id);
@@ -132,6 +136,30 @@ public class Database implements Comparable<Database> {
 
 	public int getDb_partitionSize() {
 		return db_partition_size;
+	}
+
+	public PrintWriter getWorkload_log() {
+		return workload_log;
+	}
+
+	public void setWorkload_log(PrintWriter workload_log) {
+		this.workload_log = workload_log;
+	}
+
+	public PrintWriter getNode_log() {
+		return node_log;
+	}
+
+	public void setNode_log(PrintWriter node_log) {
+		this.node_log = node_log;
+	}
+
+	public PrintWriter getPartition_log() {
+		return partition_log;
+	}
+
+	public void setPartition_log(PrintWriter partition_log) {
+		this.partition_log = partition_log;
 	}
 
 	public void setDb_partitionSize(int db_partition_size) {

@@ -96,9 +96,9 @@ public class TransactionClassifier {
 		this.setGreen_tr(--value);
 	}*/
 	
-	private void decGreen_tr(int value) {		
+	/*private void decGreen_tr(int value) {		
 		this.setGreen_tr(--value);
-	}
+	}*/
 
 	private void incOrage_tr() {
 		int value = this.getOrange_tr();

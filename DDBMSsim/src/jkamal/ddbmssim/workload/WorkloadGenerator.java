@@ -70,10 +70,10 @@ public class WorkloadGenerator {
 	// Generates Workloads for the entire simulation
 	public void generateWorkloads(DatabaseServer dbs, Database db, int simulation_run_numbers) throws IOException {
 		Workload workload = null;
-		TransactionClassifier workloadClassifier = new TransactionClassifier();
 		int workload_id = 0;
 		
 		while(workload_id != simulation_run_numbers) {
+			System.out.println("--------------------------------------------------------------------------");
 			System.out.println("[ACT] Starting workload generation for simulation round "+workload_id+"...");
 			if(workload_id != 0) {
 				workload = new Workload(this.getWorkload_map().get(workload_id -1));
@@ -110,7 +110,7 @@ public class WorkloadGenerator {
 				int new_tr = transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());	
 				
 				System.out.println("[ACT] Varying current workload by generating "+new_tr+" new transactions ...");
-				this.print(workload);
+				this.print(workload);				
 				
 				this.reInitialiseWorkload(db, workload);
 			} else {
@@ -129,38 +129,10 @@ public class WorkloadGenerator {
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);
 			
+			this.print(workload);
+			
 			// Clone the Workload
-			//Workload cloned_workload = new Workload(workload);
-			//this.getWorkload_map().put(workload_id, cloned_workload);
-			
-			// Workload Sampling
-			System.out.println("[ACT] Starting workload sampling to remove duplicate transactions ...");
-			Workload sampled_workload = this.workloadSampling(db, workload);			
-			
-			// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
-			workloadClassifier.classifyTransactions(db, workload);
-			
-			// Workload Sampling
-			Workload sampled_worklaod = this.workloadSampling(db, workload);
-			
-			// Assign Shadow HMetis Data Id and generate workload and fix files
-			this.assignShadowDataId(db, workload);	
-			
-			this.generateHGraphWorkloadFile(db, workload);
-			this.generateHGraphFixFile(db, workload);
-			
-			this.generateCHGraphWorkloadFile(db, workload);
-			this.generateCHGraphFixFile(db, workload);
-			
-			this.generateGraphWorkloadFile(db, workload);
-			
-			workload.show(db, "");
-			
-			// Clone the Sampled Workload
-			//Workload cloned_sampled_workload = new Workload(sampled_workload);
-			//this.getSampled_workload_map().put(workload_id, cloned_sampled_workload);	
-			
-			Workload cloned_workload = new Workload(sampled_workload);
+			Workload cloned_workload = new Workload(workload);
 			this.getWorkload_map().put(workload_id, cloned_workload);
 
 			++workload_id;
@@ -202,8 +174,7 @@ public class WorkloadGenerator {
 	}
 	
 	// Refresh Workload Transactions and Data
-	public void reInitialiseWorkload(Database db, Workload workload) {
-		Map<Integer, Integer> dataFrequencyTracker = new TreeMap<Integer, Integer>();		
+	public void reInitialiseWorkload(Database db, Workload workload) {				
 		Map<Integer, Set<Integer>> dataInvolvedTransactionsTracker = new TreeMap<Integer, Set<Integer>>();
 		Set<Integer> involvedTransactions = null;
 		

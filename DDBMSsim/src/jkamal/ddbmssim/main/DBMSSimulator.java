@@ -9,6 +9,7 @@ package jkamal.ddbmssim.main;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -30,18 +31,18 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-	public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
-	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 24;
-	public final static double PARTITION_SIZE = 1; // 1; 0.1; 0.01
+	public final static int DATA_ROWS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
+	public final static int TRANSACTIONS = 10;
+	public final static int SIMULATION_RUNS = 2;
+	public final static double PARTITION_SIZE = 0.01; // 1; 0.1; 0.01
 	
 	// TPC-C Database table (9) row counts in different scale
 	//double[] pk_array = {0.19, 1.92, 1.92, 19.2, 57.69, 5.76, 5.76, 1.73, 5.76};
 	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 72 (9*8) Equal sized tables
 	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 48 (6*8) Equal sized tables
-	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
+	public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
 	//public final static int[] PK_ARRAY = {1, 10, 10, 100, 300, 30, 30, 30, 9}; // 520
-	public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
+	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
 	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //4,800 (9*800) Equal sized tables
 	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //7,200 (6*800) Equal sized tables
 
@@ -81,7 +82,7 @@ public class DBMSSimulator {
 		DatabaseServer dbs = new DatabaseServer(0, "test-dbs", DB_NODES);		
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
-		//Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size	
+		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size	
 		Database db = new Database(0, "testdb", 0, dbs, "Range", PARTITION_SIZE);
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
@@ -102,284 +103,82 @@ public class DBMSSimulator {
 		// Data Pre-processing
 		DataPreprocessor dataPreprocessor = new DataPreprocessor();
 		dataPreprocessor.preprocess(db);
-		
-		//==============================================================================================
+				
 		// Workload generation for the entire simulation		
 		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
 		workloadGenerator.generateWorkloads(dbs, db, DBMSSimulator.SIMULATION_RUNS);		
 		
-		//==============================================================================================
-		// Hypergraph/Compressed Hypergraph/Graph Partitioning and Data Movement		
-		ClusterIdMapper cluster_id_mapper = new ClusterIdMapper();		
-		DataMovement data_movement = new DataMovement();
-
-		String[] db_names = {"hgr", "chg", "gr"};
-		String[] strategy_names = {"bs", "s1", "s2"};
-		String[] dir_names = {"hMETIS_DIR_LOCATION", "hMETIS_DIR_LOCATION", "METIS_DIR_LOCATION"};
+		// Simulation initialisation
+		SimulationMetricsLogger simulation_logger = new SimulationMetricsLogger();
+		
+		String[] partitioners = {"hgr", "chg", "gr"};
+		String[] strategies = {"bs", "s1", "s2"};
+		String[] directories = {hMETIS_DIR_LOCATION, hMETIS_DIR_LOCATION, METIS_DIR_LOCATION};
 		
 		// Create 9 databases under 3 partitioning schemes and 3 data movement strategies
 		Map<Integer, Set<Database>> db_map = new TreeMap<Integer, Set<Database>>();
-		for(int i = 0; i < 3; ++i) {
+		for(int i = 0; i < partitioners.length; ++i) {
 			Set<Database> db_set = new TreeSet<Database>();
-			for(int j = 0; j < 3; ++j) {
+			for(int j = 0; j < strategies.length; ++j) {
+				// Creating individual databases
 				Database clone_db = new Database(db);
-				db_set.add(clone_db);				
+				clone_db.setDb_name(partitioners[i]+"_"+strategies[j]+"_"+"db");					
+				
+				// Creating individual log files
+				clone_db.setWorkload_log(simulation_logger.getWriter(directories[j], 
+						partitioners[i]+"_"+strategies[j]+"_"+"workload_log"));
+				clone_db.setNode_log(simulation_logger.getWriter(directories[j], 
+						partitioners[i]+"_"+strategies[j]+"_"+"node_log"));
+				clone_db.setPartition_log(simulation_logger.getWriter(directories[j], 
+						partitioners[i]+"_"+strategies[j]+"_"+"partition_log"));
+				
+				db_set.add(clone_db);
 			}
+			
 			db_map.put(i, db_set);
 		}
-		
-		// For HyperGraph Partitioning
-		Database hgr_bs_db = new Database(db);
-		Database hgr_s1_db = new Database(db);
-		Database hgr_s2_db = new Database(db);
-		// For Compressed HyperGraph Partitioning
-		Database chg_bs_db = new Database(db);
-		Database chg_s1_db = new Database(db);
-		Database chg_s2_db = new Database(db);
-		// For Graph Partitioning
-		Database gr_bs_db = new Database(db);
-		Database gr_s1_db = new Database(db);
-		Database gr_s2_db = new Database(db);
-		
-		
-		
-		SimulationMetricsLogger sim_logger = new SimulationMetricsLogger();
-		// For HyperGraph Partitioning		
-		PrintWriter hgr_bs_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_bs_db_log");
-		PrintWriter hgr_s1_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_s1_db_log");
-		PrintWriter hgr_s2_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_s2_db_log");
-		PrintWriter hgr_partition_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_partition_log");
-		PrintWriter hgr_node_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_node_log");
-		PrintWriter hgr_workload_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "hgr_workload_log");
-		// For Compressed HyperGraph Partitioning		
-		PrintWriter chg_bs_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_bs_db_log");
-		PrintWriter chg_s1_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_s1_db_log");
-		PrintWriter chg_s2_db_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_s2_db_log");
-		PrintWriter chg_partition_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_partition_log");
-		PrintWriter chg_node_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_node_log");
-		PrintWriter chg_workload_log = sim_logger.getWriter(hMETIS_DIR_LOCATION, "chg_workload_log");
-		// For Graph Partitioning		
-		PrintWriter gr_bs_db_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_bs_db_log");
-		PrintWriter gr_s1_db_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_s1_db_log");
-		PrintWriter gr_s2_db_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_s2_db_log");		
-		PrintWriter gr_partition_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_partition_log");
-		PrintWriter gr_node_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_node_log");
-		PrintWriter gr_workload_log = sim_logger.getWriter(METIS_DIR_LOCATION, "gr_workload_log");		
-		
+
+		// Run simulations
 		int simulation_run = 0;	
 		while(simulation_run != SIMULATION_RUNS) {			
 			Workload workload = workloadGenerator.getWorkload_map().get(simulation_run);
 			workload.setMessage("in");
 			
-			DBMSSimulator.runSimulation(db, workload, workloadGenerator);						
+			write("============================================================", null);
+			write("Starting simulation run "+simulation_run, "ACT");
 			
-			//==============================================================================================
-			// Run hMetis HyperGraph Partitioning
-			HGraphMinCut hgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "hgr"); 		
-			hgraphMinCut.runHMetis();
-
-			// Wait for 5 seconds to ensure that the Part files have been generated properly
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}			
-			
-			//==============================================================================================
-			// Run hMetis HyperGraph Partitioning for Compressed Hypergraph
-			HGraphMinCut chgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "chg"); 		
-			chgraphMinCut.runHMetis();
-
-			// Wait for 5 seconds to ensure that the Part files have been generated properly
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			for(Entry<Integer, Set<Database>> entry : db_map.entrySet()) {
+				for(Database database : entry.getValue()) {
+					runSimulation(database, workload, workloadGenerator, 
+							directories[entry.getKey()], partitioners[entry.getKey()], simulation_logger);
+				}
 			}
 			
-			//==============================================================================================
-			// Run Metis Graph Partitioning							
-			GraphMinCut graphMinCut = new GraphMinCut(workload, METIS, db.getDb_partitions().size()); 		
-			graphMinCut.runMetis();
-			
-			// Wait for 5 seconds to ensure that the Part files have been generated properly
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}					
-			
-		//=== Base Strategy
-			// Logging
-			sim_logger.setData_hasMoved(false);
-			collectLog(sim_logger, hgr_bs_db, workload, hgr_bs_db_log, hgr_workload_log, hgr_partition_log, hgr_node_log, "hgr");
-			collectLog(sim_logger, chg_bs_db, workload, chg_bs_db_log, chg_workload_log, chg_partition_log, chg_node_log, "chg");
-			collectLog(sim_logger, gr_bs_db, workload, gr_bs_db_log, gr_workload_log, gr_partition_log, gr_node_log, "gr");
-			
-			System.out.println("[ACT] Replaying Workload Capture using Base Strategy ...");
-			System.out.println("***********************************************************************************************************************");	
-			
-			// Read Part file and assign corresponding Data cluster Id			
-			cluster_id_mapper.processPartFile(hgr_bs_db, workload, hgr_bs_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "hgr");			
-			cluster_id_mapper.processPartFile(chg_bs_db, workload, chg_bs_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "chg");
-			cluster_id_mapper.processPartFile(gr_bs_db, workload, gr_bs_db.getDb_partitions().size(), METIS_DIR_LOCATION, "gr");
-			
-			// Perform Data Movement following One(Cluster)-to-One(Partition) and Many(Cluster)-to-One(Partition)
-			System.out.println("[ACT] Base Strategy[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) Peer | Using Hypergraph Partitioning");
-			data_movement.baseStrategy(hgr_bs_db, workload, "hgr");
-			System.out.println("=======================================================================================================================");
-			System.out.println("[ACT] Base Strategy[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) Peer | Using Compressed Hypergraph Partitioning");
-			data_movement.baseStrategy(chg_bs_db, workload, "chg");
-			System.out.println("=======================================================================================================================");
-			System.out.println("[ACT] Base Strategy[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) Peer | Using Graph Partitioning");
-			data_movement.baseStrategy(gr_bs_db, workload, "gr");
-			
-			sim_logger.setData_hasMoved(true);
-			collectLog(sim_logger, hgr_bs_db, workload, hgr_bs_db_log, hgr_workload_log, hgr_partition_log, hgr_node_log, "hgr");
-			collectLog(sim_logger, chg_bs_db, workload, chg_bs_db_log, chg_workload_log, chg_partition_log, chg_node_log, "chg");
-			collectLog(sim_logger, gr_bs_db, workload, gr_bs_db_log, gr_workload_log, gr_partition_log, gr_node_log, "gr");
-			
-			System.out.println("***********************************************************************************************************************");
-			
-			// Wait for 5 seconds to ensure that the files have been written out properly
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}			
-			
-		//=== Strategy-1
-			// Logging
-			workload.setMessage("in");
-			sim_logger.setData_hasMoved(false);
-			collectLog(sim_logger, hgr_s1_db, workload, hgr_s1_db_log, hgr_workload_log, hgr_partition_log, hgr_node_log, "hgr");
-			collectLog(sim_logger, chg_s1_db, workload, chg_s1_db_log, chg_workload_log, chg_partition_log, chg_node_log, "chg");
-			collectLog(sim_logger, gr_s1_db, workload, gr_s1_db_log, gr_workload_log, gr_partition_log, gr_node_log, "gr");
-			
-			System.out.println("[ACT] Replaying Workload Capture using Strategy-1 ...");
-			System.out.println("***********************************************************************************************************************");
-			
-			// Read Part file and assign corresponding Data cluster Id			
-			cluster_id_mapper.processPartFile(hgr_s1_db, workload, hgr_s1_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "hgr");
-			cluster_id_mapper.processPartFile(chg_s1_db, workload, chg_s1_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "chg");
-			cluster_id_mapper.processPartFile(gr_s1_db, workload, gr_s1_db.getDb_partitions().size(), METIS_DIR_LOCATION, "gr");
-			
-			System.out.println("[ACT] Strategy-1[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) [Column Max] | Using Hypergraph Partitioning");
-			data_movement.strategy1(hgr_s1_db, workload, "hgr");
-			System.out.println("=======================================================================================================================");
-			System.out.println("[ACT] Strategy-1[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) [Column Max] | Using Compressed Hypergraph Partitioning");
-			data_movement.strategy1(chg_s1_db, workload, "chg");
-			System.out.println("=======================================================================================================================");
-			System.out.println("[ACT] Strategy-1[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Partition) [Column Max] | Using Graph Partitioning");
-			data_movement.strategy1(gr_s1_db, workload, "gr");
-			
-			sim_logger.setData_hasMoved(true);
-			collectLog(sim_logger, hgr_s1_db, workload, hgr_s1_db_log, hgr_workload_log, hgr_partition_log, hgr_node_log, "hgr");
-			collectLog(sim_logger, chg_s1_db, workload, chg_s1_db_log, chg_workload_log, chg_partition_log, chg_node_log, "chg");
-			collectLog(sim_logger, gr_s1_db, workload, gr_s1_db_log, gr_workload_log, gr_partition_log, gr_node_log, "gr");
-			
-			System.out.println("***********************************************************************************************************************");
-			
-			// Wait for 5 seconds to ensure that the files have been written out properly
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-		//=== Strategy-2
-			// Logging
-			workload.setMessage("in");
-			sim_logger.setData_hasMoved(false);
-			collectLog(sim_logger, hgr_s2_db, workload, hgr_s2_db_log, hgr_workload_log, hgr_partition_log, hgr_node_log, "hgr");
-			collectLog(sim_logger, chg_s2_db, workload, chg_s2_db_log, chg_workload_log, chg_partition_log, chg_node_log, "chg");
-			collectLog(sim_logger, gr_s2_db, workload, gr_s2_db_log, gr_workload_log, gr_partition_log, gr_node_log, "gr");
-			
-			System.out.println("[ACT] Replaying Workload Capture using Strategy-2 ...");
-			System.out.println("***********************************************************************************************************************");
-
-			// Read Part file and assign corresponding Data cluster Id			
-			cluster_id_mapper.processPartFile(hgr_s2_db, workload, hgr_s2_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "hgr");
-			cluster_id_mapper.processPartFile(chg_s2_db, workload, chg_s2_db.getDb_partitions().size(), hMETIS_DIR_LOCATION, "chg");
-			cluster_id_mapper.processPartFile(gr_s2_db, workload, gr_s2_db.getDb_partitions().size(), METIS_DIR_LOCATION, "gr");
-			
-			System.out.println("[ACT] Strategy-2[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Unique Partition) [Sub Matrix Max] | Using Hypergraph Partitioning");			
-			data_movement.strategy2(hgr_s2_db, workload, "hgr");
-			System.out.println("=======================================================================================================================");
-			System.out.println("[ACT] Strategy-2[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Unique Partition) [Sub Matrix Max] | Using Compressed Hypergraph Partitioning");			
-			data_movement.strategy2(chg_s2_db, workload, "chg");
-			System.out.println("=======================================================================================================================");
-			System.out.println("[ACT] Strategy-2[Simulation Round-"+simulation_run+"] :: One(Cluster)-to-One(Unique Partition) [Sub Matrix Max] | Using Graph Partitioning");
-			data_movement.strategy2(gr_s2_db, workload, "gr");
-			
-			sim_logger.setData_hasMoved(true);
-			collectLog(sim_logger, hgr_s2_db, workload, hgr_s2_db_log, hgr_workload_log, hgr_partition_log, hgr_node_log, "hgr");
-			collectLog(sim_logger, chg_s2_db, workload, chg_s2_db_log, chg_workload_log, chg_partition_log, chg_node_log, "chg");
-			collectLog(sim_logger, gr_s2_db, workload, gr_s2_db_log, gr_workload_log, gr_partition_log, gr_node_log, "gr");
-			
-			System.out.println("***********************************************************************************************************************");
-			
-			// Wait for 5 seconds to ensure that the files have been written out properly
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
+			write("============================================================", null);
 			++ simulation_run;
 		}
 		
-		// End Logging
-		hgr_bs_db_log.flush();
-		hgr_s1_db_log.flush();
-		hgr_s2_db_log.flush();
-		hgr_workload_log.flush();
-		hgr_node_log.flush();
-		hgr_partition_log.flush();
+		// Wrapping Up
+		for(Entry<Integer, Set<Database>> entry : db_map.entrySet()) {
+			for(Database database : entry.getValue()) {
+				close_logFiles(database.getWorkload_log(), database.getNode_log(), database.getPartition_log());
+			}
+		}
 		
-		chg_bs_db_log.flush();
-		chg_s1_db_log.flush();
-		chg_s2_db_log.flush();
-		chg_workload_log.flush();
-		chg_node_log.flush();
-		chg_partition_log.flush();
-		
-		gr_bs_db_log.flush();
-		gr_s1_db_log.flush();
-		gr_s2_db_log.flush();
-		gr_workload_log.flush();
-		gr_node_log.flush();
-		gr_partition_log.flush();
-		
-		hgr_bs_db_log.close();
-		hgr_s1_db_log.close();
-		hgr_s2_db_log.close();
-		hgr_workload_log.close();
-		hgr_node_log.close();
-		hgr_partition_log.close();
-				
-		chg_bs_db_log.close();
-		chg_s1_db_log.close();
-		chg_s2_db_log.close();
-		chg_workload_log.close();
-		hgr_node_log.close();
-		chg_partition_log.close();
-		
-		gr_bs_db_log.close();
-		gr_s1_db_log.close();
-		gr_s2_db_log.close();
-		gr_workload_log.close();
-		hgr_node_log.close();
-		gr_partition_log.close();
+	
 	}
 	
-	private static void runSimulation(Database db, Workload workload, WorkloadGenerator workloadGenerator) throws IOException{	
+	private static void runSimulation(Database db, Workload workload, WorkloadGenerator workloadGenerator, 
+			String directory, String partitioner, SimulationMetricsLogger simulation_logger) throws IOException{
+		ClusterIdMapper cluster_id_mapper = new ClusterIdMapper();		
+		DataMovement data_movement = new DataMovement();
+		
 		// Perform workload sampling
 		System.out.println("[ACT] Starting workload sampling to remove duplicate transactions ...");
 		Workload sampled_workload = workloadGenerator.workloadSampling(db, workload);
 		
 		// Perform transaction classification
-		// Classify the Workload Transactions based on whether they are Distributed or not (Red/Orange/Green List)
+		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
 		write("[ACT] Starting workload classification to identify RED and ORANGE transactions ...", "ACT");		
 		TransactionClassifier transactionClassifier = new TransactionClassifier();
 		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
@@ -388,7 +187,7 @@ public class DBMSSimulator {
 		// Assign Shadow HMetis Data Id and generate workload and fix files
 		workloadGenerator.assignShadowDataId(db, sampled_workload);
 		
-		// Generate workload and fixfiles for partitioning
+		// Generate workload and fix-files for partitioning
 		workloadGenerator.generateHGraphWorkloadFile(db, sampled_workload);
 		workloadGenerator.generateHGraphFixFile(db, sampled_workload);
 		
@@ -397,21 +196,36 @@ public class DBMSSimulator {
 		
 		workloadGenerator.generateGraphWorkloadFile(db, sampled_workload);
 		
+		// Show details of the sampled workload
 		sampled_workload.show(db, "");
 		
-		// Perform hypergraph/graph/compressed hypergraph partitioning
+		// Perform hyper-graph/graph/compressed hyper-graph partitioning
+		runPartitioner(db, workload, partitioner);
 		
+
+		write("Replaying workload capture using database #"+db.getDb_name()+"# ...", "ACT");
+		write("***********************************************************************************************************************", null);
+		
+		// Log collection before data movement operation
+		simulation_logger.setData_hasMoved(false);
+		collectLog(simulation_logger, db, workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
+		
+		// Mapping cluster id to partition id
+		cluster_id_mapper.processPartFile(db, workload, db.getDb_partitions().size(), directory, partitioner);
 		
 		// Perform data movement
+		data_movement.performDataMovement(db, workload, partitioner);
 		
+		// Log collection after data movement operation
+		simulation_logger.setData_hasMoved(true);
+		collectLog(simulation_logger, db, workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 		
-		// Perform log collection
+		write("***********************************************************************************************************************", null);
 		
 	}
 	
-	private void runPartitioner(Database db, Workload workload, String type) throws IOException {
-		
-		switch(type) {
+	private static void runPartitioner(Database db, Workload workload, String partitioner) throws IOException {		
+		switch(partitioner) {
 		case "hgr":
 			// Run hMetis HyperGraph Partitioning
 			HGraphMinCut hgraphMinCut = new HGraphMinCut(workload, HMETIS, db.getDb_partitions().size(), "hgr"); 		
@@ -456,15 +270,29 @@ public class DBMSSimulator {
 		}
 	}
 	
+	private static void close_logFiles(PrintWriter workload_log, PrintWriter node_log, PrintWriter partition_log) {
+		// Flush and Close
+		workload_log.flush();
+		workload_log.close();
+		
+		node_log.flush();
+		node_log.close();
+		
+		partition_log.flush();
+		partition_log.close();
+	}
+	
 	private static void write(String content, String type) {
-		System.out.println("["+type+" "+content);
+		if(type == null)
+			System.out.println(content);
+		else
+			System.out.println("["+type+"] "+content);
 	}
 	
 	private static void collectLog(SimulationMetricsLogger logger, Database db, Workload workload
-			, PrintWriter db_writer, PrintWriter wrl_writer, PrintWriter part_writer, PrintWriter node_writer, String type) {
-		logger.logDb(db, workload, db_writer);
-		logger.logWorkload(db, workload, wrl_writer, type);
-		logger.logPartition(db, workload, part_writer);
+			, PrintWriter wrl_writer, PrintWriter node_writer, PrintWriter partition_writer, String partitioner) {		
+		logger.logWorkload(db, workload, wrl_writer, partitioner);
 		logger.logNode(db, workload, node_writer);
+		logger.logPartition(db, workload, partition_writer);		
 	}
 }

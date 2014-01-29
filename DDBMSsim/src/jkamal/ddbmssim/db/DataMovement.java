@@ -73,7 +73,21 @@ public class DataMovement {
 		workload.show(db, type);
 	}
 	
-	public void baseStrategy(Database db, Workload workload, String type) {
+	public void performDataMovement(Database db, Workload workload, String strategy) {
+		switch(strategy) {
+		case "bs":
+			this.baseStrategy(db, workload, strategy);
+			break;
+		case "s1":
+			this.strategy1(db, workload, strategy);
+			break;
+		case "s2":
+			this.strategy2(db, workload, strategy);
+			break;
+		}
+	}
+	
+	private void baseStrategy(Database db, Workload workload, String type) {
 		this.setEnvironment(db, workload, type);
 		
 		// Create Mapping Matrix
@@ -95,7 +109,7 @@ public class DataMovement {
 		this.wrappingUp(true, "bs", db, workload, type);
 	}
 	
-	public void strategy1(Database db, Workload workload, String type) {
+	private void strategy1(Database db, Workload workload, String type) {
 		this.setEnvironment(db, workload, type);
 		
 		// Create Mapping Matrix
@@ -119,7 +133,7 @@ public class DataMovement {
 		this.wrappingUp(true, "s1", db, workload, type);		
 	}
 	
-	public void strategy2(Database db, Workload workload, String type) {	
+	private void strategy2(Database db, Workload workload, String type) {	
 		this.setEnvironment(db, workload, type);
 		
 		// Create Mapping Matrix
