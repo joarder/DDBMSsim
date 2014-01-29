@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.io.StreamCollector;
 import jkamal.ddbmssim.main.DBMSSimulator;
 import jkamal.ddbmssim.workload.Workload;
@@ -26,11 +28,11 @@ public class GraphMinCut {
 	private String graph_file = null;
 	private List<String> arg_list = new ArrayList<String>();		
 
-	public GraphMinCut(Workload workload, String graph_exec, int partition_numbers) {
+	public GraphMinCut(Database db, Workload workload, String graph_exec, int partition_numbers) {
 		this.exec_dir = new File(DBMSSimulator.METIS_DIR_LOCATION);
 		this.exec_name = graph_exec;
 		this.num_partitions = Integer.toString(partition_numbers);
-		this.setGraph_file(workload.getWrl_id()+"-"+workload.getWrl_graphWorkloadFile()); 
+		this.setGraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_graphWorkloadFile()); 
 		
 		System.out.println("@ - "+this.getGraph_file());					
 		

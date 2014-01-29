@@ -36,6 +36,7 @@ public class Bootstrapping {
 		int pos = 0;
 		
 		int pk = 1;
+		int primary_key = 1;
 		int pk_range = DBMSSimulator.PK_ARRAY[pk-1];
 		//int pk_range = (int) (Math.ceil(DATA_OBJECTS * pk_array[pk-1]) / 100);		
 		
@@ -63,11 +64,12 @@ public class Bootstrapping {
 				if(pk_range == 0) {
 					++pk;
 					++pos;
+					primary_key = 1;
 					//pk_range = (int)((int) DATA_OBJECTS * pk_array[pk-1]);
 					pk_range = DBMSSimulator.PK_ARRAY[pk-1];
 				}				
 				
-				data.setData_pk(("pk-"+pk));
+				data.setData_pk(primary_key);
 				data.setData_size(DBMSSimulator.DATA_ROW_SIZE[pos]);
 				--pk_range;
 				
@@ -77,6 +79,7 @@ public class Bootstrapping {
 				dataList.add(data);				
 				++data_id;
 				++global_data;
+				++primary_key;
 			} // end -- for
 			
 			System.out.print(" with "+dataList.size()+" Data objects");

@@ -16,7 +16,7 @@ public class Data implements Comparable<Data> {
 	private double data_size;
 	//private int data_frequency;
 	private int data_weight;
-	private String data_pk;
+	private int data_pk;
 	private boolean data_isMoveable;
 	
 	// Workload Attributes
@@ -52,7 +52,7 @@ public class Data implements Comparable<Data> {
 		this.setData_size(0); // Values in MegaBytes
 		//this.setData_frequency(0);
 		this.setData_weight(1);
-		this.setData_pk("pk");
+		this.setData_pk(-1);
 		this.setData_isMoveable(false);	
 		
 		this.setData_zipfProbability(0.0);
@@ -161,11 +161,11 @@ public class Data implements Comparable<Data> {
 		this.data_size = data_size;
 	}
 
-	public String getData_pk() {
+	public int getData_pk() {
 		return data_pk;
 	}
 
-	public void setData_pk(String data_pk) {
+	public void setData_pk(int data_pk) {
 		this.data_pk = data_pk;
 	}
 
@@ -314,11 +314,11 @@ public class Data implements Comparable<Data> {
 	@Override
 	public String toString() {		
 		if(this.isData_isRoaming())
-			return (this.data_label+"|"+this.data_pk
+			return (this.data_label+"|"+this.data_pk//+"|"+this.getData_hmetisClusterId()
 					+"|P"+this.data_partition_id+"("+this.data_home_partition_id
 					+")/N"+this.data_node_id+"("+this.data_home_node_id+"))");// @C("+this.data_hmetis_cluster_id+") @h("+this.data_shadow_hmetis_id+")");
 		else
-			return (this.data_label+"|"+this.data_pk
+			return (this.data_label+"|"+this.data_pk//+"|"+this.getData_hmetisClusterId()
 					+"|P"+this.data_partition_id
 					+"/N"+this.data_node_id+")");// @C("+this.data_hmetis_cluster_id+") //@h("+this.data_shadow_hmetis_id+")");
 	}

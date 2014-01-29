@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import jkamal.ddbmssim.db.Data;
@@ -101,11 +102,11 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_chg_virtualDataId_clusterId_map(new TreeMap<Integer, Integer>());
 		this.setWrl_gr_dataId_clusterId_map(new TreeMap<Integer, Integer>());
 		
-		this.setWrl_hGraphWorkloadFile("hgr-workload.txt");
-		this.setWrl_hGraphFixFile("hgr-fixfile.txt");		
-		this.setWrl_chGraphWorkloadFile("chg-workload.txt");
-		this.setWrl_chGraphFixFile("chg-fixfile.txt");
-		this.setWrl_graphWorkloadFile("gr-workload.txt");
+		this.setWrl_hGraphWorkloadFile("workload.txt");
+		this.setWrl_hGraphFixFile("fixfile.txt");		
+		this.setWrl_chGraphWorkloadFile("workload.txt");
+		this.setWrl_chGraphFixFile("fixfile.txt");
+		this.setWrl_graphWorkloadFile("workload.txt");
 		
 		this.setWrl_distributedTransactions(0);
 		this.setWrl_impactOfDistributedTransactions(0.0);		
@@ -759,39 +760,28 @@ public class Workload implements Comparable<Workload> {
 
 	public void setMessage(String message) {
 		this.message = message;
-	}
-		
-	public Transaction search(int tr_id) {
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
-				if(transaction.getTr_id() == tr_id)
-					return transaction;
-			}
-		}
-		
-		return null;
-	}
-	
+	}	
 	
 	public void removeTransactions(Database db, ArrayList<Transaction> transactionList, Set<Integer> removed_transactions, int i) {
-		for(int j : removed_transactions) {
-			//System.out.println("@ j = "+j+" size="+transactionList.size());
-			Transaction tr = this.search(j);			
+		for(int tr_id : removed_transactions) {
+			//System.out.println("@ tr_id = "+tr_id+" size="+transactionList.size());
+			Transaction transaction = this.getTransaction(tr_id);			
 			
-			//System.out.println("@ Found T"+tr.getTr_id());
+			//System.out.println("@ Found T"+transaction.getTr_id());
 			
-			this.releaseInvolvedTransactionsFromData(db, tr);
-			transactionList.remove(tr); // Removing Object
+			this.releaseInvolvedTransactionsFromData(db, tr_id);
+			transactionList.remove(transaction); // Removing Object
 			
 			this.decWrl_totalTransactions();				
 			this.decWrl_transactionProportions(i);
 			//System.out.println(">> Total="+this.getWrl_totalTransactions());
-			//System.out.println(">> i = "+i+" | j = "+j+" | T"+tr.getTr_id());
+			//System.out.println(">> i = "+i+" | tr_id = "+tr_id+" | T"+transaction.getTr_id());
 		}
 	}
 	
 	
-	public void releaseInvolvedTransactionsFromData(Database db, Transaction transaction) {			
+	public void releaseInvolvedTransactionsFromData(Database db, int tr_id) {
+		Transaction transaction = this.getTransaction(tr_id);
 		//System.out.println("@ Removing T"+transaction.getTr_id());
 		for(Integer data_id : transaction.getTr_dataSet()) {
 			Data data = db.search(data_id);			
@@ -800,6 +790,54 @@ public class Workload implements Comparable<Workload> {
 		}
 	}
 	
+	// Reinitialise workload transactions and data within a specific database
+	public void reInitialise(Database db) {
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {
+				transaction.setTr_frequency(1); // resetting Transaction frequency
+				transaction.generateTransactionCost(db);
+			}
+		}
+	}
+	
+	// Refresh workload transactions and data within a specific database
+	public void refresh(Database db) {
+		Map<Integer, Set<Integer>> dataInvolvedTransactionsTracker = new TreeMap<Integer, Set<Integer>>();
+        Set<Integer> involvedTransactions = null;
+		
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {					
+				transaction.generateTransactionCost(db);								
+				
+				for(Integer data_id : transaction.getTr_dataSet()) {
+					Data data = db.search(data_id);
+					
+					// Remove already removed Transaction Ids from Data-Transaction involved List
+                    Set<Integer> toBeRemovedTransactionSet = new TreeSet<Integer>();
+                    for(Integer tr : data.getData_transactions_involved()) {
+                            
+                            if(this.getTransaction(tr) == null)
+                                    toBeRemovedTransactionSet.add(tr);
+                    }                                                
+                    
+                    Iterator<Integer> iterator = toBeRemovedTransactionSet.iterator();
+                    while(iterator.hasNext()) {
+                            int toBeRemovedTransaction = iterator.next();
+                            data.getData_transactions_involved().remove((Object)toBeRemovedTransaction);                                        
+                    }
+
+                    if(!dataInvolvedTransactionsTracker.containsKey(data.getData_id())) {
+                            involvedTransactions = new TreeSet<Integer>();
+                            involvedTransactions.add(transaction.getTr_id());
+                            dataInvolvedTransactionsTracker.put(data.getData_id(), involvedTransactions);
+                    } else {
+                            dataInvolvedTransactionsTracker.get(data.getData_id()).add(transaction.getTr_id());
+                    }
+				}
+			}
+		}
+	}	
+		
 	public void printWrl_transactionProp(int[] array) {
 		int size = array.length;
 		

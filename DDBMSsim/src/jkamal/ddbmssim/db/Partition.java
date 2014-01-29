@@ -292,7 +292,7 @@ public class Partition implements Comparable<Partition> {
 		System.out.print("       {");
 		
 		for(Data data : this.getPartition_dataSet()) {
-			System.out.print(data.getData_id());
+			System.out.print(data.toString());
 			
 			if(comma != 1)
 				System.out.print(", ");

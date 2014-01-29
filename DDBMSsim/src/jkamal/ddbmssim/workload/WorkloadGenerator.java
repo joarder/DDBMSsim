@@ -112,7 +112,7 @@ public class WorkloadGenerator {
 				System.out.println("[ACT] Varying current workload by generating "+new_tr+" new transactions ...");
 				this.print(workload);				
 				
-				this.reInitialiseWorkload(db, workload);
+				workload.reInitialise(db);
 			} else {
 				// === Workload Generation Round 0 ===
 				workload = this.workloadInitialisation(db, DBMSSimulator.WORKLOAD_TYPE, workload_id);				
@@ -123,13 +123,15 @@ public class WorkloadGenerator {
 				// Generating New Workload Transactions						
 				TransactionGenerator transactionGenerator = new TransactionGenerator();
 				transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());
-				this.reInitialiseWorkload(db, workload);
+				workload.reInitialise(db);
 			}						
 				
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);
 			
 			this.print(workload);
+			
+			//workload.show(db, "");
 			
 			// Clone the Workload
 			Workload cloned_workload = new Workload(workload);
@@ -143,6 +145,7 @@ public class WorkloadGenerator {
 	public Workload workloadSampling(Database db, Workload workload) {
 		Workload sampled_workload = new Workload(workload);
 		int removed_count = 0;
+		
 		Map<Integer, Set<Integer>> removable_transaction_map = new TreeMap<Integer, Set<Integer>>();		
 		for(Entry<Integer, ArrayList<Transaction>> entry : sampled_workload.getWrl_transactionMap().entrySet()) {		
 			Set<Integer> removed_transactions = new TreeSet<Integer>();
@@ -169,48 +172,9 @@ public class WorkloadGenerator {
 		
 		System.out.println("[MSG] Total "+removed_count+" duplicate transactions have been removed from the workload.");
 		
+		sampled_workload.refresh(db);
 		
 		return sampled_workload;
-	}
-	
-	// Refresh Workload Transactions and Data
-	public void reInitialiseWorkload(Database db, Workload workload) {				
-		Map<Integer, Set<Integer>> dataInvolvedTransactionsTracker = new TreeMap<Integer, Set<Integer>>();
-		Set<Integer> involvedTransactions = null;
-		
-		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
-				transaction.setTr_frequency(1); // resetting Transaction frequency				
-				//transaction.calculateTr_weight();
-				transaction.generateTransactionCost(db);								
-				
-				for(Integer data_id : transaction.getTr_dataSet()) {
-					Data data = db.search(data_id);
-					
-					// Remove already removed Transaction Ids from Data-Transaction involved List
-					Set<Integer> toBeRemovedTransactionSet = new TreeSet<Integer>();
-					for(Integer tr : data.getData_transactions_involved()) {
-						
-						if(workload.getTransaction(tr) == null)
-							toBeRemovedTransactionSet.add(tr);
-					}						
-					
-					Iterator<Integer> iterator = toBeRemovedTransactionSet.iterator();
-					while(iterator.hasNext()) {
-						int toBeRemovedTransaction = iterator.next();
-						data.getData_transactions_involved().remove((Object)toBeRemovedTransaction);					
-					}
-
-					if(!dataInvolvedTransactionsTracker.containsKey(data.getData_id())) {
-						involvedTransactions = new TreeSet<Integer>();
-						involvedTransactions.add(transaction.getTr_id());
-						dataInvolvedTransactionsTracker.put(data.getData_id(), involvedTransactions);
-					} else {
-						dataInvolvedTransactionsTracker.get(data.getData_id()).add(transaction.getTr_id());
-					}
-				}
-			}
-		}
 	}
 	
 	// Generates Transaction Proportions based on the Zipfian Ranking
@@ -296,13 +260,31 @@ public class WorkloadGenerator {
 		workload.setWrl_totalDataObjects(shadow_id - 1);
 	}
 	
+	public void generateWorkloadFile(Database db, Workload workload, String partitioner) throws IOException {
+		switch(partitioner) {
+		case "hgr":
+			this.generateHGraphWorkloadFile(db, workload);
+			this.generateHGraphFixFile(db, workload);
+			break;
+			
+		case "chg":
+			this.generateCHGraphWorkloadFile(db, workload);
+			this.generateCHGraphFixFile(db, workload);
+			break;
+			
+		case "gr":
+			this.generateGraphWorkloadFile(db, workload);
+			break;
+		}
+	}
+	
 	// Generates Workload File for Hypergraph partitioning
-	public void generateHGraphWorkloadFile(Database db, Workload workload) {
+	private void generateHGraphWorkloadFile(Database db, Workload workload) {
 		File workloadFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
-				+workload.getWrl_id()+"-"+workload.getWrl_hGraphWorkloadFile());
+				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphWorkloadFile());
 		
 		Data trData = null;
-		int hyper_edges = workload.getWrl_totalTransactions();
+		int hyper_edges = workload.getWrl_totalTransactions();		
 		int vertices = workload.getWrl_totalDataObjects();
 		int hasTransactionWeight = 1;
 		int hasDataWeight = 1;						
@@ -313,12 +295,12 @@ public class WorkloadGenerator {
 			try {
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
 				writer.write(hyper_edges+" "+vertices+" "+hasTransactionWeight+""+hasDataWeight+"\n");
-				
+				//System.out.println(hyper_edges+" "+vertices+" "+hasTransactionWeight+""+hasDataWeight);
 				for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 					for(Transaction transaction : entry.getValue()) {
 						if(transaction.getTr_class() != "green") {
-							writer.write(transaction.getTr_weight()+" ");
-							
+							writer.write(transaction.getTr_frequency()+" ");
+							//System.out.println("@@ "+transaction.getTr_frequency()+"* ");
 							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
 							while(data.hasNext()) {
 								trData = db.search(data.next());
@@ -350,7 +332,9 @@ public class WorkloadGenerator {
 								if(!uniqueDataSet.contains(trData.getData_shadowId())) {
 									++newline;
 									
-									writer.write(Integer.toString(trData.getData_weight()));																			
+									writer.write(Integer.toString(trData.getData_weight()));	
+									//System.out.println("@@ "+trData.getData_weight());
+									//writer.write(Integer.toString(1));
 									
 									if(newline != vertices)
 										writer.write("\n");										
@@ -374,9 +358,9 @@ public class WorkloadGenerator {
 	
 	// Generates Fix Files (Determines whether a Data is movable from its current Partition or not) 
 	// for Hypergraph partitioning
-	public void generateHGraphFixFile(Database db, Workload workload) {
+	private void generateHGraphFixFile(Database db, Workload workload) {
 		File fixFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
-				+workload.getWrl_id()+"-"+workload.getWrl_hGraphFixFile());
+				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphFixFile());
 		
 		Data trData = null;
 		
@@ -425,9 +409,9 @@ public class WorkloadGenerator {
 	}
 	
 	// Generates Workload File for Graph partitioning
-	public void generateGraphWorkloadFile(Database db, Workload workload) throws IOException {
+	private void generateGraphWorkloadFile(Database db, Workload workload) throws IOException {
 		File workloadFile = new File(DBMSSimulator.METIS_DIR_LOCATION+"\\"
-				+workload.getWrl_id()+"-"+workload.getWrl_graphWorkloadFile());
+				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_graphWorkloadFile());
 		
 		Data trData = null;
 		Data trInvolvedData = null;
@@ -508,11 +492,12 @@ public class WorkloadGenerator {
 	}
 	
 	private int simpleHash(int x, int nums) {
+		System.out.println("@debug >> x = "+x+" nums = "+nums);
 		return (x % nums);
 	} 
 	
 	// Generates Workload File for (Compressed) Hypergraph partitioning
-	public void generateCHGraphWorkloadFile(Database db, Workload workload) {
+	private void generateCHGraphWorkloadFile(Database db, Workload workload) {
 		Map<Integer, Set<Integer>> virtual_vertexMap = new TreeMap<Integer, Set<Integer>>();
 		Map<Integer, Integer> virtual_vertexWeightMap = new TreeMap<Integer, Integer>();
 		Set<Integer> virtual_vertex_dataSet = null;		
@@ -522,8 +507,8 @@ public class WorkloadGenerator {
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		Set<Integer> virtual_dataSet = new TreeSet<Integer>();		
 		
-		//System.out.println("@debug >> Red = "+workload.getWrl_tr_red()+" | Orange = "+workload.getWrl_tr_orange()
-				//+" | div = "+workload.getWrl_totalDataObjects()/2);
+		System.out.println("@debug >> Red = "+workload.getWrl_tr_red()+" | Orange = "+workload.getWrl_tr_orange()
+				+" | div = "+workload.getWrl_totalDataObjects()/2);
 
 		// Creating Virtual Nodes
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
@@ -536,29 +521,32 @@ public class WorkloadGenerator {
 						if(!dataSet.contains(trData.getData_id())) {
 							dataSet.add(trData.getData_id());
 							
-							String pk_id = trData.getData_pk().substring(trData.getData_pk().length() - 1);
-							int i = simpleHash(Integer.parseInt(pk_id), (workload.getWrl_totalDataObjects()/2));							
+							//String pk_id = trData.getData_pk().substring(trData.getData_pk().length() - 1);
+							int i = simpleHash(trData.getData_pk(), (workload.getWrl_totalDataObjects()/2));							
+							//System.out.println("@ "+trData.toString()+" | hashed at ("+i+")");
 							
 							if(!virtual_dataSet.contains(i)) {
 								virtual_dataSet.add(i);
 								
-								++virtual_vertex_id;
+								//virtual_vertex_id = i;
 								
 								virtual_vertex_dataSet = new TreeSet<Integer>();								
 								virtual_vertex_dataSet.add(trData.getData_id());								
-								virtual_vertexMap.put(virtual_vertex_id, virtual_vertex_dataSet);
-								virtual_vertexWeightMap.put(virtual_vertex_id, trData.getData_weight());
-							} else {																
-								virtual_vertexMap.get(virtual_vertex_id).add(trData.getData_id());
+								virtual_vertexMap.put(i, virtual_vertex_dataSet);
+								virtual_vertexWeightMap.put(i, trData.getData_weight());
 								
-								int weight = virtual_vertexWeightMap.get(virtual_vertex_id) + trData.getData_weight();
-								virtual_vertexWeightMap.remove(virtual_vertex_id);
-								virtual_vertexWeightMap.put(virtual_vertex_id, weight);
-							}
+								trData.setData_virtual_node_id(i);
+							} else {																
+								virtual_vertexMap.get(i).add(trData.getData_id());
+								
+								int weight = virtual_vertexWeightMap.get(i) + trData.getData_weight();
+								virtual_vertexWeightMap.remove(i);
+								virtual_vertexWeightMap.put(i, weight);
+								
+								trData.setData_virtual_node_id(i);
+							}							
 							
-							trData.setData_virtual_node_id(virtual_vertex_id);
-							
-							//System.out.println("@debug >> "+trData.toString()+" | hashed at ("+i+") | vid = "+virtual_vertex_id);
+							System.out.println("@debug >> "+trData.toString()+" | hashed at ("+i+") | vid = "+trData.getData_virtual_node_id());
 						}
 					}
 				}
@@ -566,18 +554,18 @@ public class WorkloadGenerator {
 		}
 		
 		//Check -- Found OK
-		//for(Entry<Integer, Set<Integer>> entry : virtual_vertexMap.entrySet()) {
-			//System.out.print(" vid = "+entry.getKey()+" {");
+		for(Entry<Integer, Set<Integer>> entry : virtual_vertexMap.entrySet()) {
+			System.out.print(" vid = "+entry.getKey()+" {");
 			
-			//for(Integer j : entry.getValue()) {
-				//System.out.print(j+", ");
-			//}
+			for(Integer j : entry.getValue()) {
+				System.out.print(j+", ");
+			}
 			
-			//System.out.print("}\n");
-		//}
+			System.out.print("}\n");
+		}
 		//Check -- Found OK
-		//for(Entry<Integer, Integer> entry : virtual_vertexWeightMap.entrySet())
-			//System.out.println(" vid = "+entry.getKey()+" | weight = "+entry.getValue());
+		for(Entry<Integer, Integer> entry : virtual_vertexWeightMap.entrySet())
+			System.out.println(" vid = "+entry.getKey()+" | weight = "+entry.getValue());
 		
 		// Creating Virtual Edges
 		Map<Integer, Set<Integer>> virtual_edgeMap = new TreeMap<Integer, Set<Integer>>();
@@ -618,8 +606,9 @@ public class WorkloadGenerator {
 							// Virtual Edge Weight
 							int combined_weight = 0;
 							for(Integer involved_tr_id : trData.getData_transactions_involved()) {
-								tr = workload.search(involved_tr_id);
-								combined_weight += tr.getTr_weight();
+								tr = workload.getTransaction(involved_tr_id);
+								//combined_weight += tr.getTr_weight();
+								combined_weight += tr.getTr_frequency();
 								//System.out.println("@debug >> "+tr.toString()+" | combined_weight = "+combined_weight);
 							}
 						
@@ -663,23 +652,23 @@ public class WorkloadGenerator {
 		}			
 		
 		//Check -- Found OK
-		//for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
-			//System.out.print(" eid = "+entry.getKey()+"{");
+		for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
+			System.out.print(" eid = "+entry.getKey()+"{");
 			
-			//for(Integer j : entry.getValue()) {
-				//System.out.print(j+", ");
-			//}
+			for(Integer j : entry.getValue()) {
+				System.out.print(j+", ");
+			}
 			
-			//System.out.print("}\n");
-		//}
+			System.out.print("}\n");
+		}
 		//Check -- Found OK
-		//for(Entry<Integer, Integer> entry : virtual_edgeWeightMap.entrySet())
-			//System.out.println(" eid = "+entry.getKey()+" | weight = "+entry.getValue());
+		for(Entry<Integer, Integer> entry : virtual_edgeWeightMap.entrySet())
+			System.out.println(" eid = "+entry.getKey()+" | weight = "+entry.getValue());
 				
 		
 		// Creating Compressed Hypergraph File
 		File workloadFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
-				+workload.getWrl_id()+"-"+workload.getWrl_chGraphWorkloadFile());
+				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile());
 				
 		int compressed_hyper_edges = virtual_edgeMap.size();
 		int compressed_vertices = virtual_vertexMap.size();
@@ -729,9 +718,9 @@ public class WorkloadGenerator {
 		}										
 	}
 	
-	public void generateCHGraphFixFile(Database db, Workload workload) {
+	private void generateCHGraphFixFile(Database db, Workload workload) {
 		File fixFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
-				+workload.getWrl_id()+"-"+workload.getWrl_chGraphFixFile());
+				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphFixFile());
 		
 		Data trData = null;
 		
@@ -780,7 +769,7 @@ public class WorkloadGenerator {
 	}
 	
 	// Printing the Workload contents
-	public void print(Workload workload) {
+	private void print(Workload workload) {
 		System.out.print("[MSG] Total "+workload.getWrl_totalTransactions()+" transactions of "
 				+workload.getWrl_transactionTypes()+" types having a distribution of ");
 		

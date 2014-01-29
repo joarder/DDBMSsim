@@ -144,8 +144,11 @@ public class TransactionClassifier {
 				orange_data = 0;
 				green_data = 0;
 				
+				//System.out.println("@ "+transaction.toString());
+				
 				if(transaction.getTr_dtCost() > 0) {
 					transaction.setTr_class("red");
+					//System.out.println(">> Red");
 					this.incRed_tr();
 				} else {
 					Iterator<Integer> data_iterator = transaction.getTr_dataSet().iterator();
@@ -153,13 +156,13 @@ public class TransactionClassifier {
 					while(data_iterator.hasNext()) {
 						Data data = db.search(data_iterator.next());
 						int tr_counts = data.getData_transactions_involved().size();
-						
+						//System.out.println("# "+data.toString());
 						if(tr_counts <= 1) 
 							++green_data;
 						else {							
 							for(int tr_id : data.getData_transactions_involved()){
 								Transaction tr = workload.getTransaction(tr_id);
-								
+								//System.out.println("-- "+tr_id);
 								if(tr.getTr_dtCost() > 0)
 									++orange_data;
 							} 

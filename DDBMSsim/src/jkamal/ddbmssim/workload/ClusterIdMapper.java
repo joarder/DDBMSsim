@@ -19,27 +19,28 @@ import jkamal.ddbmssim.db.Database;
 public class ClusterIdMapper {	
 	public ClusterIdMapper() { }
 	
-	public void processPartFile(Database db, Workload workload, int partition_numbers, String dir, String type) throws IOException {		
+	public void processPartFile(Database db, Workload workload, int partition_numbers, String dir, String partitioner) throws IOException {		
 		Map<Integer, Integer> keyMap = new TreeMap<Integer, Integer>();		
 		String wrl_file_name = null;
 		String part_file_name = null;
 		
-		switch(type) {
+		switch(partitioner) {
 		case "hgr":
-			wrl_file_name = workload.getWrl_hGraphWorkloadFile();
+			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphWorkloadFile();
 			break;
 		case "chg":
-			wrl_file_name = workload.getWrl_chGraphWorkloadFile();
+			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile();
 			break;
 		case "gr":
-			wrl_file_name = workload.getWrl_graphWorkloadFile();
+			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_graphWorkloadFile();
 			break;
 		}
 		
 		part_file_name = wrl_file_name+".part."+partition_numbers;	
-		File part_file = new File(dir+"\\"+workload.getWrl_id()+"-"+part_file_name);		
+		File part_file = new File(dir+"\\"+part_file_name);		
 		
 		int key = 1;		
+		//System.out.println("@ - "+part_file_name);
 		Scanner scanner = new Scanner(part_file);
 		try {
 			while(scanner.hasNextLine()) {
@@ -62,18 +63,20 @@ public class ClusterIdMapper {
 						int cluster_id = -1;
 						int virtual_id = data.getData_virtual_node_id();
 						
-						switch(type) {
+						switch(partitioner) {
 						case "hgr":
 							cluster_id = keyMap.get(shadow_id)+1;
 							data.setData_hmetisClusterId(cluster_id);
 							workload.getWrl_hg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
 							break;
+							
 						case "chg":
 							cluster_id = keyMap.get(virtual_id)+1;
 							data.setData_chmetisClusterId(cluster_id);
 							workload.getWrl_chg_virtualDataId_clusterId_map().put(data.getData_virtual_node_id(), cluster_id);
 							workload.getWrl_chg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
 							break;
+							
 						case "gr":
 							cluster_id = keyMap.get(shadow_id)+1;
 							data.setData_metisClusterId(cluster_id);

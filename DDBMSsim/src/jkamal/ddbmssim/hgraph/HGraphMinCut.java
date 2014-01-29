@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.io.StreamCollector;
 import jkamal.ddbmssim.main.DBMSSimulator;
 import jkamal.ddbmssim.workload.Workload;
@@ -33,21 +35,21 @@ public class HGraphMinCut {
 	private String chg_fixfile = null;
 	
 	//public HGraphMinCut(File dir, String hgraph_exec, String hgraph_file, String fix_file, int num_partitions) {
-	public HGraphMinCut(Workload workload, String hgraph_exec, int partition_numbers, String type) {
+	public HGraphMinCut(Database db, Workload workload, String hgraph_exec, int partition_numbers, String type) {
 		this.exec_dir = new File(DBMSSimulator.hMETIS_DIR_LOCATION);
 		this.exec_name = hgraph_exec;
 		this.num_partitions = Integer.toString(partition_numbers);
 		
 		switch(type) {
 		case "hgr":
-			this.setHgraph_file(workload.getWrl_id()+"-"+workload.getWrl_hGraphWorkloadFile());			
-			this.setHgr_fixfile(workload.getWrl_hGraphFixFile());
+			this.setHgraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphWorkloadFile());			
+			this.setHgr_fixfile(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphFixFile());
 			System.out.println("@ - "+this.getHgraph_file());
 			break;
 			
 		case "chg":
-			this.setChgraph_file(workload.getWrl_id()+"-"+workload.getWrl_chGraphWorkloadFile());
-			this.setChg_fixfile(workload.getWrl_chGraphFixFile());
+			this.setChgraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile());
+			this.setChg_fixfile(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphFixFile());
 			System.out.println("@ - "+this.getChgraph_file());
 			break;
 		}		

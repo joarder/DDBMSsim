@@ -50,7 +50,7 @@ public class DataMovement {
 		this.setInter_node_data_movements(++inter);
 	}
 
-	private void setEnvironment(Database db, Workload workload, String type) {
+	private void setEnvironment(Database db, Workload workload) {
 		workload.calculateDistributedTransactions();
 		this.setIntra_node_data_movements(0);
 		this.setInter_node_data_movements(0);		
@@ -73,26 +73,28 @@ public class DataMovement {
 		workload.show(db, type);
 	}
 	
-	public void performDataMovement(Database db, Workload workload, String strategy) {
+	public void performDataMovement(Database db, Workload workload, String strategy, String partitioner) {
 		switch(strategy) {
 		case "bs":
-			this.baseStrategy(db, workload, strategy);
+			this.baseStrategy(db, workload, partitioner);
 			break;
+			
 		case "s1":
-			this.strategy1(db, workload, strategy);
+			this.strategy1(db, workload, partitioner);
 			break;
+			
 		case "s2":
-			this.strategy2(db, workload, strategy);
+			this.strategy2(db, workload, partitioner);
 			break;
 		}
 	}
 	
-	private void baseStrategy(Database db, Workload workload, String type) {
-		this.setEnvironment(db, workload, type);
+	private void baseStrategy(Database db, Workload workload, String partitioner) {
+		this.setEnvironment(db, workload);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
-		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
+		Matrix mapping = mappingTable.generateMappingTable(db, workload, partitioner);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
 				"      (Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts)");
 		mapping.print();
@@ -105,16 +107,16 @@ public class DataMovement {
 		}
 		
 		// Perform Actual Data Movement
-		this.move(db, workload, keyMap, type);		
-		this.wrappingUp(true, "bs", db, workload, type);
+		this.move(db, workload, keyMap, partitioner);		
+		this.wrappingUp(true, "bs", db, workload, partitioner);
 	}
 	
-	private void strategy1(Database db, Workload workload, String type) {
-		this.setEnvironment(db, workload, type);
+	private void strategy1(Database db, Workload workload, String partitioner) {
+		this.setEnvironment(db, workload);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
-		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
+		Matrix mapping = mappingTable.generateMappingTable(db, workload, partitioner);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
 				"   [Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts]");
 		mapping.print();
@@ -129,16 +131,16 @@ public class DataMovement {
 		}
 		
 		// Perform Actual Data Movement
-		this.move(db, workload, keyMap, type);
-		this.wrappingUp(true, "s1", db, workload, type);		
+		this.move(db, workload, keyMap, partitioner);
+		this.wrappingUp(true, "s1", db, workload, partitioner);		
 	}
 	
-	private void strategy2(Database db, Workload workload, String type) {	
-		this.setEnvironment(db, workload, type);
+	private void strategy2(Database db, Workload workload, String partitioner) {	
+		this.setEnvironment(db, workload);
 		
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
-		Matrix mapping = mappingTable.generateMappingTable(db, workload, type);
+		Matrix mapping = mappingTable.generateMappingTable(db, workload, partitioner);
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n   [Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts]");
 		mapping.print();
 				
@@ -172,8 +174,8 @@ public class DataMovement {
 		}
 	
 		// Perform Actual Data Movement	
-		this.move(db, workload, keyMap, type);
-		this.wrappingUp(true, "s2", db, workload, type);
+		this.move(db, workload, keyMap, partitioner);
+		this.wrappingUp(true, "s2", db, workload, partitioner);
 	}
 	
 	private void updateData(Data data, int dst_partition_id, int dst_node_id, boolean roaming) {		

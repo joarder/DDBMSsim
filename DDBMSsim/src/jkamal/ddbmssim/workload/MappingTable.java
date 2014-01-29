@@ -14,7 +14,7 @@ import jkamal.ddbmssim.util.MatrixElement;
 public class MappingTable {
 	public MappingTable() {}
 	
-	public Matrix generateMappingTable(Database db, Workload workload, String type) {
+	public Matrix generateMappingTable(Database db, Workload workload, String partitioner) {
 		int M = db.getDb_partitions().size()+1;
 		int N = M; // Having a NxN matrix
 		
@@ -51,13 +51,15 @@ public class MappingTable {
 					
 					partition_id = data.getData_partitionId();
 					
-					switch(type) {
+					switch(partitioner) {
 					case "hgr":
 						cluster_id = data.getData_hmetisClusterId();
 						break;
+						
 					case "chg":
 						cluster_id = data.getData_chmetisClusterId();
 						break;
+						
 					case "gr":
 						cluster_id = data.getData_metisClusterId();
 						break;
