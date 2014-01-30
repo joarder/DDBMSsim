@@ -76,17 +76,25 @@ public class DataMovement {
 	public void performDataMovement(Database db, Workload workload, String strategy, String partitioner) {
 		switch(strategy) {
 		case "bs":
-			this.baseStrategy(db, workload, partitioner);
+			System.out.println("[ACT] Applying Random Cluster-to-Partition Strategy (bs) ...");
+			this.baseStrategy(db, workload, partitioner);			
 			break;
 			
 		case "s1":
-			this.strategy1(db, workload, partitioner);
+			System.out.println("[ACT] Applying Max Column Strategy (s1) ...");
+			this.strategy1(db, workload, partitioner);			
 			break;
 			
 		case "s2":
-			this.strategy2(db, workload, partitioner);
+			System.out.println("[ACT] Applying Max Sub Matrix Strategy (s2) ...");
+			this.strategy2(db, workload, partitioner);			
 			break;
 		}
+	}
+	
+	private void message() {
+		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
+				"      (Row :: Pre-Partition Id, Col :: Cluster Id, Elements :: Data Occurence Counts)");
 	}
 	
 	private void baseStrategy(Database db, Workload workload, String partitioner) {
@@ -95,8 +103,7 @@ public class DataMovement {
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
 		Matrix mapping = mappingTable.generateMappingTable(db, workload, partitioner);
-		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
-				"      (Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts)");
+		this.message();
 		mapping.print();
 		
 		// Create Key-Value (Destination PID-Cluster ID) Mappings from Mapping Matrix
@@ -117,8 +124,7 @@ public class DataMovement {
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
 		Matrix mapping = mappingTable.generateMappingTable(db, workload, partitioner);
-		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
-				"   [Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts]");
+		this.message();
 		mapping.print();
 		
 		// Create Key-Value (Destination PID-Cluster ID) Mappings from Mapping Matrix
@@ -141,7 +147,7 @@ public class DataMovement {
 		// Create Mapping Matrix
 		MappingTable mappingTable = new MappingTable();		
 		Matrix mapping = mappingTable.generateMappingTable(db, workload, partitioner);
-		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n   [Row :: Pre-Partition Id, Col :: Cluster Id, Elements: Data Occurance Counts]");
+		this.message();
 		mapping.print();
 				
 		// Step-1 :: Max Movement Matrix Formation

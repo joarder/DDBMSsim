@@ -44,13 +44,15 @@ public class HGraphMinCut {
 		case "hgr":
 			this.setHgraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphWorkloadFile());			
 			this.setHgr_fixfile(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphFixFile());
-			System.out.println("@ - "+this.getHgraph_file());
+			System.out.println("[MSG] Workload file: "+this.getHgraph_file());
+			System.out.println("[ACT] Running Hyper-graph Partitioning process ...");
 			break;
 			
 		case "chg":
 			this.setChgraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile());
 			this.setChg_fixfile(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphFixFile());
-			System.out.println("@ - "+this.getChgraph_file());
+			System.out.println("[MSG] Workload file: "+this.getChgraph_file());
+			System.out.println("[ACT] Running Hyper-graph Partitioning process ...");
 			break;
 		}		
 		

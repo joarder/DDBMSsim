@@ -433,11 +433,10 @@ public class WorkloadGenerator {
 						trData = db.search(data_id_itr.next());
 											
 						if(!dataSet.contains(trData.getData_id())) {
-							dataSet.add(trData.getData_id());
-							String str = Integer.toString(trData.getData_weight())+" ";
-							//String str = Integer.toString(trData.getData_shadowId())+"-";
-							//String str = "";
+							dataSet.add(trData.getData_id());							
 							dataIdSet = new TreeSet<Integer>();
+							
+							String str = Integer.toString(trData.getData_weight())+" ";							
 							
 							if(trData.getData_transactions_involved().size() != 0) {					
 								for(Integer transaction_id : trData.getData_transactions_involved()) {
@@ -449,15 +448,19 @@ public class WorkloadGenerator {
 											
 											if(!dataIdSet.contains(trInvolvedDataId) && trInvolvedData.getData_id() != trData.getData_id()) {
 												str += Integer.toString(trInvolvedData.getData_shadowId())+" ";							
-												str += tr.getTr_weight()+" ";
+												str += tr.getTr_frequency()+" ";
 												
 												++edges;
 												
 												dataIdSet.add(trInvolvedData.getData_id());
 											}
 										}
+									} else {
+										//System.out.println("@ Null transaction has been found !!! "+transaction_id);
 									}
 								}															
+							} else {
+								//System.out.println("@ No involved transactions !!! "+trData.toString()+" | "+trData.getData_shadowId());
 							}
 							
 							content += StringUtils.stripEnd(str, null);
@@ -492,13 +495,15 @@ public class WorkloadGenerator {
 	}
 	
 	private int simpleHash(int x, int nums) {
-		System.out.println("@debug >> x = "+x+" nums = "+nums);
+		//System.out.println("@debug >> x = "+x+" nums = "+nums);
 		return (x % nums);
 	} 
 	
-	// Generates Workload File for (Compressed) Hypergraph partitioning
+	// Generates Workload File for Compressed Hyper-graph partitioning
 	private void generateCHGraphWorkloadFile(Database db, Workload workload) {
 		Map<Integer, Set<Integer>> virtual_vertexMap = new TreeMap<Integer, Set<Integer>>();
+		Map<Integer, Integer> virtual_vertexToHashMap = new TreeMap<Integer, Integer>();
+		Map<Integer, Integer> virtual_vertexWeightToHashMap = new TreeMap<Integer, Integer>();
 		Map<Integer, Integer> virtual_vertexWeightMap = new TreeMap<Integer, Integer>();
 		Set<Integer> virtual_vertex_dataSet = null;		
 		int virtual_vertex_id = 0;
@@ -507,55 +512,63 @@ public class WorkloadGenerator {
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		Set<Integer> virtual_dataSet = new TreeSet<Integer>();		
 		
-		System.out.println("@debug >> Red = "+workload.getWrl_tr_red()+" | Orange = "+workload.getWrl_tr_orange()
-				+" | div = "+workload.getWrl_totalDataObjects()/2);
+		//System.out.println("@debug >> Red = "+workload.getWrl_tr_red()+" | Orange = "+workload.getWrl_tr_orange()
+				//+" | div = "+workload.getWrl_totalDataObjects()/2);
 
+		System.out.println("[ACT] Starting workload compression with CR = 0.5 ...");
+		System.out.println("[ACT] Creating virtual data objects ...");
 		// Creating Virtual Nodes
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				if(transaction.getTr_class() != "green") {
-					Iterator<Integer> data_id_itr =  transaction.getTr_dataSet().iterator();
-					while(data_id_itr.hasNext()) {												
-						trData = db.search(data_id_itr.next());
+					Iterator<Integer> data_id_itr1 =  transaction.getTr_dataSet().iterator();
+					while(data_id_itr1.hasNext()) {												
+						trData = db.search(data_id_itr1.next());
 						
 						if(!dataSet.contains(trData.getData_id())) {
-							dataSet.add(trData.getData_id());
-							
-							//String pk_id = trData.getData_pk().substring(trData.getData_pk().length() - 1);
+							dataSet.add(trData.getData_id());							
 							int i = simpleHash(trData.getData_pk(), (workload.getWrl_totalDataObjects()/2));							
 							//System.out.println("@ "+trData.toString()+" | hashed at ("+i+")");
 							
-							if(!virtual_dataSet.contains(i)) {
-								virtual_dataSet.add(i);
-								
-								//virtual_vertex_id = i;
+							if(!virtual_dataSet.contains(i+1)) {
+								virtual_dataSet.add(i+1);
 								
 								virtual_vertex_dataSet = new TreeSet<Integer>();								
 								virtual_vertex_dataSet.add(trData.getData_id());								
-								virtual_vertexMap.put(i, virtual_vertex_dataSet);
-								virtual_vertexWeightMap.put(i, trData.getData_weight());
 								
-								trData.setData_virtual_node_id(i);
+								virtual_vertexMap.put(i+1, virtual_vertex_dataSet);
+								virtual_vertexWeightMap.put(i+1, trData.getData_weight());
+																
+								++virtual_vertex_id;
 							} else {																
-								virtual_vertexMap.get(i).add(trData.getData_id());
+								virtual_vertexMap.get(i+1).add(trData.getData_id());
 								
-								int weight = virtual_vertexWeightMap.get(i) + trData.getData_weight();
-								virtual_vertexWeightMap.remove(i);
-								virtual_vertexWeightMap.put(i, weight);
-								
-								trData.setData_virtual_node_id(i);
+								int weight = virtual_vertexWeightMap.get(i+1) + trData.getData_weight();
+								virtual_vertexWeightMap.remove(i+1);
+								virtual_vertexWeightMap.put(i+1, weight);
 							}							
+														
+							virtual_vertexToHashMap.put(virtual_vertex_id, i+1);
+							virtual_vertexWeightToHashMap.put(virtual_vertex_id, i+1);
 							
-							System.out.println("@debug >> "+trData.toString()+" | hashed at ("+i+") | vid = "+trData.getData_virtual_node_id());
+							trData.setData_virtual_node_id(virtual_vertex_id);
+							
+							
+							//System.out.println("@ vid = "+virtual_vertex_id+" (i+1) = "+(i+1)+" | "+trData.toString());
+							//System.out.println("@debug >> "+trData.toString()+" | hashed at ("+(i+1)+") | vid = "+trData.getData_virtual_node_id());
+							//System.out.println(trData.getData_id()+" | "+trData.getData_pk()+" | "+(i+1));
 						}
 					}
 				}
 			}
 		}
 		
-		//Check -- Found OK
+		System.out.println("[OUT] Total "+virtual_vertexMap.size()+" virtual data objects have been created.");
+		
+//====== Check -- Found OK
+		/*
 		for(Entry<Integer, Set<Integer>> entry : virtual_vertexMap.entrySet()) {
-			System.out.print(" vid = "+entry.getKey()+" {");
+			System.out.print(" v' = "+entry.getKey()+" {");
 			
 			for(Integer j : entry.getValue()) {
 				System.out.print(j+", ");
@@ -565,95 +578,65 @@ public class WorkloadGenerator {
 		}
 		//Check -- Found OK
 		for(Entry<Integer, Integer> entry : virtual_vertexWeightMap.entrySet())
-			System.out.println(" vid = "+entry.getKey()+" | weight = "+entry.getValue());
+			System.out.println(" v' = "+entry.getKey()+" | weight = "+entry.getValue());
 		
+		System.out.println("--------------");
+		*/
+//======
+		
+		System.out.println("[ACT] Creating virtual transactions ...");
 		// Creating Virtual Edges
 		Map<Integer, Set<Integer>> virtual_edgeMap = new TreeMap<Integer, Set<Integer>>();
 		Map<Integer, Integer> virtual_edgeWeightMap = new TreeMap<Integer, Integer>();
-		Set<Integer> virtual_edge_nodeSet = null;
-		//Set<Integer> dataSet2 = new TreeSet<Integer>();
+		Map<Integer, Integer> virtual_vertexTracker = new TreeMap<Integer, Integer>();
+		Set<Integer> virtual_edge_vertexSet = null;		
 		Set<Integer> edgeSet = new TreeSet<Integer>();
 		int virtual_edge_id = 1;
-		boolean virtual_edge_weight = false;
-		Transaction tr = null;
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
-				if(transaction.getTr_class() != "green") {					
+				if(transaction.getTr_class() != "green") {	
+					
 					Iterator<Integer> data_id_itr2 =  transaction.getTr_dataSet().iterator();
 					while(data_id_itr2.hasNext()) {												
-						trData = db.search(data_id_itr2.next());						
-						
-						//if(!dataSet2.contains(trData.getData_id())) {
-							//dataSet2.add(trData.getData_id());		
-							//System.out.println("@debug >> "+trData.toString()+" | "+trData.getData_virtual_node_id());
-							
-							virtual_vertex_id = trData.getData_virtual_node_id();
+						trData = db.search(data_id_itr2.next());
+							virtual_vertex_id = trData.getData_virtual_node_id();							
 							
 							// Virtual Edge - Vertices
 							if(!edgeSet.contains(virtual_edge_id)) {								
 								edgeSet.add(virtual_edge_id);
 								
-								virtual_edge_nodeSet = new TreeSet<Integer>();
-								virtual_edge_nodeSet.add(virtual_vertex_id);
-								virtual_edgeMap.put(virtual_edge_id, virtual_edge_nodeSet);
+								virtual_edge_vertexSet = new TreeSet<Integer>();
+								virtual_edge_vertexSet.add(virtual_vertex_id);
+								virtual_edgeMap.put(virtual_edge_id, virtual_edge_vertexSet);
+																
 								//System.out.println("@debug >> v-eid= "+virtual_edge_id+" | v-vid = "+virtual_vertex_id);
 							} else {
 								virtual_edgeMap.get(virtual_edge_id).add(virtual_vertex_id);
 								//System.out.println("@debug >> v-eid= "+virtual_edge_id+" | v-vid = "+virtual_vertex_id);
 							}
-														
-							// Virtual Edge Weight
-							int combined_weight = 0;
-							for(Integer involved_tr_id : trData.getData_transactions_involved()) {
-								tr = workload.getTransaction(involved_tr_id);
-								//combined_weight += tr.getTr_weight();
-								combined_weight += tr.getTr_frequency();
-								//System.out.println("@debug >> "+tr.toString()+" | combined_weight = "+combined_weight);
-							}
-						
-							//Check
-							//System.out.println("%% Map Show %%");
-							//for(Entry<Integer, Integer> entry1 : virtual_edgeWeightMap.entrySet())
-								//System.out.println(" eid = "+entry1.getKey()+" | weight == "+entry1.getValue());
 							
-							//System.out.println("%%");
+							virtual_edgeWeightMap.put(virtual_edge_id, 1);
 							
-							if(virtual_edge_weight) {								
-								//System.out.println("@debug >> Before v-eid = "+virtual_edge_id);
-								int weight = virtual_edgeWeightMap.get(virtual_edge_id);
-								weight += combined_weight;
-								virtual_edgeWeightMap.remove(virtual_edge_id);
-								virtual_edgeWeightMap.put(virtual_edge_id, weight);
-								//System.out.println("@debug >> After v-eid = "+virtual_edge_id+" | w = "+weight);
-							} else {
-								virtual_edgeWeightMap.put(virtual_edge_id, combined_weight);
-								//System.out.println("@debug >> *** v-eid = "+virtual_edge_id+" | cw = "+combined_weight);
-								virtual_edge_weight = true;
+							if(!virtual_vertexTracker.containsKey(virtual_vertex_id))
+								virtual_vertexTracker.put(virtual_vertex_id, 1);
+							else {
+								int vertex_frequency = virtual_vertexTracker.get(virtual_vertex_id);
+								virtual_vertexTracker.put(virtual_vertex_id, ++vertex_frequency);
 							}
-						//}
 					}
 				}
 				
-				//System.out.println("*** >> "+virtual_edge_id);
-				if(virtual_edgeMap.get(virtual_edge_id) != null) {
-					if(virtual_edgeMap.get(virtual_edge_id).size() == 1) {
-						edgeSet.remove(virtual_edge_id);
-						virtual_edgeMap.remove(virtual_edge_id);
-						virtual_edgeWeightMap.remove(virtual_edge_id);
-						virtual_edge_weight = false;
-						//System.out.println("*** >> Removed v-eid = "+virtual_edge_id);
-					}
-				} else {
-					++virtual_edge_id;
-					virtual_edge_weight = false;
-				}
+				++virtual_edge_id;
 			}
-		}			
+		}	
 		
-		//Check -- Found OK
+		System.out.println("[OUT] Total "+virtual_edgeMap.size()+" virtual transactions have been created.");
+		
+//====== Check -- Found OK
+		/*
 		for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
-			System.out.print(" eid = "+entry.getKey()+"{");
+			System.out.print(" e' = "+entry.getKey()+"{");
 			
 			for(Integer j : entry.getValue()) {
 				System.out.print(j+", ");
@@ -663,10 +646,132 @@ public class WorkloadGenerator {
 		}
 		//Check -- Found OK
 		for(Entry<Integer, Integer> entry : virtual_edgeWeightMap.entrySet())
-			System.out.println(" eid = "+entry.getKey()+" | weight = "+entry.getValue());
-				
+			System.out.println(" e' = "+entry.getKey()+" | weight = "+entry.getValue());
 		
-		// Creating Compressed Hypergraph File
+		System.out.println("--------------");
+		*/
+//======		
+		
+		System.out.println("[ACT] Starting (compressed) workload sampling to remove virtual transactions having a single virtual node ...");		
+		// Identify the virtual edges which have only one virtual node associated with them
+		Set<Integer> removable_virtualEdgeSet = new TreeSet<Integer>();
+		for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
+			if(entry.getValue().size() == 1)
+				removable_virtualEdgeSet.add(entry.getKey());
+		}
+		
+		System.out.println("[OUT] Total "+removable_virtualEdgeSet.size()+" virtual transactions have been removed from the compressed workload.");
+		// Remove the virtual edges from the virtual edge map which have been identified in the previous step
+		for(Integer i : removable_virtualEdgeSet) {
+			// Decrease the frequency of the virtual vertices which were involved with this (ith) virtual edge
+			for(Integer j : virtual_edgeMap.get(i)) {
+				int vertex_frequency = virtual_vertexTracker.get(j);
+				virtual_vertexTracker.put(j, --vertex_frequency);
+				//System.out.println("@ Dec freq for "+j+" to "+vertex_frequency);
+			}
+			
+			virtual_edgeMap.remove(i);
+			virtual_edgeWeightMap.remove(i);
+		}
+				
+//======Check -- Found OK
+		/*
+		for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
+			System.out.print(" e' = "+entry.getKey()+"{");
+			
+			for(Integer j : entry.getValue()) {
+				System.out.print(j+", ");
+			}
+			
+			System.out.print("}\n");
+		}
+		//Check -- Found OK
+		for(Entry<Integer, Integer> entry : virtual_edgeWeightMap.entrySet())
+			System.out.println(" e' = "+entry.getKey()+" | weight = "+entry.getValue());
+		
+		System.out.println("@ Total "+virtual_edgeMap.size()+" e' are now left.");
+		System.out.println("--------------");
+		*/
+//======
+		
+		System.out.println("[ACT] Starting workload sampling to remove duplicate virtual transactions ...");
+		// Identify the virtual edges which have the same set of virtual nodes associated with them		
+		removable_virtualEdgeSet = new TreeSet<Integer>();		
+		
+		for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
+			for(Entry<Integer, Set<Integer>> entry1 : virtual_edgeMap.entrySet()) {
+				if(entry.getKey() != entry1.getKey() && !removable_virtualEdgeSet.contains(entry.getKey())) {
+					if(entry.getValue().equals(entry1.getValue())) {
+						
+						removable_virtualEdgeSet.add(entry1.getKey());
+					
+						//System.out.println("@ >> e' = "+entry.getKey()+" | e* = "+entry1.getKey());
+						if(virtual_edgeWeightMap.containsKey(entry.getKey())) {								
+							int weight = virtual_edgeWeightMap.get(entry.getKey());							
+							virtual_edgeWeightMap.remove(entry.getKey());
+							virtual_edgeWeightMap.put(entry.getKey(), ++weight);
+						} else {
+							virtual_edgeWeightMap.put(entry.getKey(), 1);
+						}
+					}
+				}
+			}
+		}
+		
+		System.out.println("[OUT] Total "+removable_virtualEdgeSet.size()+" duplicate virtual transactions have been removed from the workload.");
+		// Remove the virtual edges from the virtual edge map which have been identified in the previous step
+		for(Integer i : removable_virtualEdgeSet) {
+			// Decrease the frequency of the virtual vertices which were involved with this (ith) virtual edge
+			for(Integer j : virtual_edgeMap.get(i)) {
+				int vertex_frequency = virtual_vertexTracker.get(j);
+				virtual_vertexTracker.put(j, --vertex_frequency);
+				//System.out.println("> Dec freq for "+j+" to "+vertex_frequency);
+			}
+			
+			virtual_edgeMap.remove(i);
+			virtual_edgeWeightMap.remove(i);
+		}																			
+
+//======Check -- Found OK
+		/*
+		for(Entry<Integer, Set<Integer>> entry : virtual_edgeMap.entrySet()) {
+			System.out.print(" e' = "+entry.getKey()+"{");
+			
+			for(Integer j : entry.getValue()) {
+				System.out.print(j+", ");
+			}
+			
+			System.out.print("}\n");
+		}
+		//Check -- Found OK
+		for(Entry<Integer, Integer> entry : virtual_edgeWeightMap.entrySet())
+			System.out.println(" e' = "+entry.getKey()+" | weight = "+entry.getValue());
+		*/
+//======	
+		
+		// Delete the virtual nodes which does not have any appearance in any virtual edge
+		System.out.println("[ACT] Adjusting the virtual data object list ... ");//+virtual_vertexTracker.entrySet().size());
+		
+		int count = 0;
+		for(Entry<Integer, Integer> entry : virtual_vertexTracker.entrySet()) {
+			if(entry.getValue() == 0) {
+				//System.out.println("@ 0 value found for "+entry.getKey());
+				virtual_vertexToHashMap.values().remove(entry.getKey());
+				virtual_vertexMap.remove(entry.getKey());
+				virtual_vertexWeightMap.remove(entry.getKey());
+				++count;
+			}
+		}
+		
+		if(count != 0)
+			System.out.println("[OUT] Total "+virtual_vertexMap.size()+" virtual data objects are now existed after adjustment.");
+		else
+			System.out.println("[OUT] No adjustments were required.");		
+		
+		// Creating Compressed Hyper-graph Workload File
+		System.out.println("[MSG] Total "+virtual_edgeMap.size()+" virtual transactions have been identified for partitioning.");
+		System.out.println("[ACT] Generating workload file for compressed hypergraph partitioning ...");
+		
 		File workloadFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
 				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile());
 				
@@ -700,7 +805,8 @@ public class WorkloadGenerator {
 				int newline = 0;
 				
 				for(Entry<Integer, Integer> entry : virtual_vertexWeightMap.entrySet()) {
-						writer.write(Integer.toString(entry.getValue()));																			
+						//writer.write(Integer.toString(entry.getValue()));
+						writer.write(Integer.toString(1));
 						
 						if(newline != (virtual_vertexWeightMap.size()-1))
 							writer.write("\n");
@@ -715,9 +821,12 @@ public class WorkloadGenerator {
 			}
 		} catch (IOException e) {		
 			e.printStackTrace();
-		}										
+		}	
+		
+		System.out.println("[OUT] Workload file generation for compressed hypergraph partitioning has been completed.");
 	}
 	
+	// Generate Fix File for Compressed Hyper-graph partitioning 
 	private void generateCHGraphFixFile(Database db, Workload workload) {
 		File fixFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
 				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphFixFile());

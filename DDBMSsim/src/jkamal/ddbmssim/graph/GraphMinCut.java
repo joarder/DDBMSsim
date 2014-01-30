@@ -34,7 +34,8 @@ public class GraphMinCut {
 		this.num_partitions = Integer.toString(partition_numbers);
 		this.setGraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_graphWorkloadFile()); 
 		
-		System.out.println("@ - "+this.getGraph_file());					
+		System.out.println("[MSG] Workload file: "+this.getGraph_file());
+		System.out.println("[ACT] Starting Graph Partitioning process ...");
 		
 		switch(this.exec_name) {
 		case "pmetis":		

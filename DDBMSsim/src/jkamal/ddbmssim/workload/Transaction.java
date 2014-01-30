@@ -137,9 +137,9 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_frequency(--tr_frequency);
 	}
 	
-	/*public void calculateTr_weight() {
-		this.setTr_weight(this.getTr_frequency() * this.getTr_ranking());
-	}*/
+	public void calculateTr_weight() {
+		this.setTr_weight(this.getTr_frequency());
+	}
 	
 	// This function will calculate the Node and Partition Span Cost for the representative Transaction
 	public void generateTransactionCost(Database db) {

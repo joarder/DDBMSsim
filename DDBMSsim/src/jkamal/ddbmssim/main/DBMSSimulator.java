@@ -31,10 +31,10 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
 	public final static String WORKLOAD_TYPE = "TPC-C";
-	public final static int DATA_ROWS = 53; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
-	public final static int TRANSACTIONS = 50;
-	public final static int SIMULATION_RUNS = 2;
-	public final static double PARTITION_SIZE = 0.01; // 1; 0.1; 0.01
+	public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
+	public final static int TRANSACTIONS = 1000;
+	public final static int SIMULATION_RUNS = 24;
+	public final static double PARTITION_SIZE = 1; // 1; 0.1; 0.01
 	
 	// TPC-C Database table (9) row counts in different scale
 	//double[] pk_array = {0.19, 1.92, 1.92, 19.2, 57.69, 5.76, 5.76, 1.73, 5.76};
@@ -43,8 +43,8 @@ public class DBMSSimulator {
 	public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
 	//public final static int[] PK_ARRAY = {1, 10, 10, 100, 300, 30, 30, 30, 9}; // 520
 	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
-	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //4,800 (9*800) Equal sized tables
-	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //7,200 (6*800) Equal sized tables
+	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //4,800 (9*800) 9 Equal sized partitions
+	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //7,200 (6*800) 6 Equal sized partitions
 
 	//int[] data_row_size_array = {89, 95, 655, 46, 24, 8, 54, 306, 82}; // values are in Bytes
 	public final static double[] DATA_ROW_SIZE = {0.000084877, 0.000090599, 0.000624657, 0.000043869, 0.000022888, 0.0000076294, 0.000051498, 0.000291824, 0.000078201}; // values are in MegaBytes
@@ -113,50 +113,68 @@ public class DBMSSimulator {
 		
 		String[] partitioners = {"hgr", "chg", "gr"};
 		String[] strategies = {"bs", "s1", "s2"};
-		String[] directories = {hMETIS_DIR_LOCATION, hMETIS_DIR_LOCATION, METIS_DIR_LOCATION};
+		String[] directories = {hMETIS_DIR_LOCATION, METIS_DIR_LOCATION};
 		
 		// Create 9 databases under 3 partitioning schemes and 3 data movement strategies
 		Map<Integer, Set<Database>> db_map = new TreeMap<Integer, Set<Database>>();
+		String dir = null;
 		for(int i = 0; i < partitioners.length; ++i) {
 			Set<Database> db_set = new TreeSet<Database>();
 			for(int j = 0; j < strategies.length; ++j) {
 				// Creating individual databases
 				Database clone_db = new Database(db);
 				clone_db.setDb_name(partitioners[i]+"_"+strategies[j]+"_"+"db");
+				clone_db.setDb_id((i+1)*(j+1));
 				
 				System.out.println("@ Creating database "+clone_db.getDb_name());
 				
+				if(i == 2)
+					dir = directories[1];
+				else
+					dir = directories[0];
+				
 				// Creating individual log files
-				clone_db.setWorkload_log(simulation_logger.getWriter(directories[j], 
+				clone_db.setWorkload_log(simulation_logger.getWriter(dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"workload_log"));
-				clone_db.setNode_log(simulation_logger.getWriter(directories[j], 
+				clone_db.setNode_log(simulation_logger.getWriter(dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"node_log"));
-				clone_db.setPartition_log(simulation_logger.getWriter(directories[j], 
+				clone_db.setPartition_log(simulation_logger.getWriter(dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"partition_log"));
 				
 				db_set.add(clone_db);
 			}
-			
+			//System.out.println("@ i = "+i+" db_set size = "+db_set.size());
 			db_map.put(i, db_set);
 		}
 
 		// Run simulations
-		int simulation_run = 0;	
+		int simulation_run = 0;
+		dir = null;
 		while(simulation_run != SIMULATION_RUNS) {			
 			Workload workload = workloadGenerator.getWorkload_map().get(simulation_run);
 			workload.setMessage("in");
 			
 			write("============================================================", null);			
 			
-			for(Entry<Integer, Set<Database>> entry : db_map.entrySet()) {
+			int s = 0;
+			for(Entry<Integer, Set<Database>> entry : db_map.entrySet()) {				
 				for(Database database : entry.getValue()) {
-					write("Starting simulation run "+simulation_run+" for database "+database.getDb_name(), "ACT");
+					write("Starting simulation round ("+simulation_run+") for database ("+database.getDb_name()+")", "ACT");
+					//System.out.println("@ entry = "+entry.getKey()+" | size = "+entry.getValue().size());
+					if(entry.getKey() == 2)
+						dir = directories[1];
+					else
+						dir = directories[0];
+					
 					runSimulation(database, workload, workloadGenerator, 
-							directories[entry.getKey()], partitioners[entry.getKey()], strategies[entry.getKey()], simulation_logger);
+							dir, partitioners[entry.getKey()], strategies[s], simulation_logger);
+					
+					++s;
 				}
+				
+				s = 0;
 			}
-			
-			write("============================================================", null);
+
 			++ simulation_run;
 		}
 		
@@ -184,9 +202,7 @@ public class DBMSSimulator {
 		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");		
 		
 		TransactionClassifier transactionClassifier = new TransactionClassifier();
-		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
-		
-		write("Total "+target_transactions+" transactions have been identified for partitioning.", "MSG");		
+		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);						
 		
 		// Show details of the sampled workload
 		//sampled_workload.show(db, "");
@@ -194,13 +210,15 @@ public class DBMSSimulator {
 		// Assign Shadow HMetis Data Id and generate workload and fix files
 		workloadGenerator.assignShadowDataId(db, sampled_workload);
 		
+		write("Total "+target_transactions+" transactions having "+sampled_workload.getWrl_totalDataObjects()+" data objects have been identified for partitioning.", "MSG");
+		
 		// Generate workload and fix-files for partitioning
 		workloadGenerator.generateWorkloadFile(db, sampled_workload, partitioner);		
 		
 		// Perform hyper-graph/graph/compressed hyper-graph partitioning
 		runPartitioner(db, sampled_workload, partitioner);		
 
-		write("Replaying workload capture using database ("+db.getDb_name()+") ...", "ACT");
+		write("Applying data movement strategies for database ("+db.getDb_name()+") ...", "ACT");
 		write("***********************************************************************************************************************", null);
 		
 		// Log collection before data movement operation
@@ -239,7 +257,7 @@ public class DBMSSimulator {
 			
 			break;
 			
-		case "chg":
+		case "chg":			
 			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions().size(), "chg"); 		
 			chgraphMinCut.runHMetis();
 

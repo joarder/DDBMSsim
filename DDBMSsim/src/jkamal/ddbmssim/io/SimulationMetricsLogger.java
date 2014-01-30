@@ -153,9 +153,7 @@ public class SimulationMetricsLogger {
 						Transaction transaction = workload.getTransaction(transaction_id);
 						
 						if(transaction != null) {
-							writer.print("T"+transaction.getTr_id()+" ");						
-							writer.print(transaction.getTr_weight()+" ");
-							writer.print(transaction.getTr_ranking()+" ");
+							writer.print("T"+transaction.getTr_id()+" ");
 							writer.print(transaction.getTr_frequency()+" ");
 						} else {
 							//System.out.println("@debug >> "+data.toString()+" | T"+transaction_id);
