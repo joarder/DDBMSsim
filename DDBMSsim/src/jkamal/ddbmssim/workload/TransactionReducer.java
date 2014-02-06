@@ -48,11 +48,8 @@ public class TransactionReducer {
 			//System.out.print("\n");
 			
 			if(tr_nums != 0)				
-				workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), unique, i);
-				//workload.removeTransactions(db, workload.getWrl_transactionMap().get(i), 
-						//this.getRandomTransactions(dying_tr_nums, tr_nums, transaction_id_tracker, workload), i);				
+				workload.removeTransactions(db, unique, i, false);
 			
-			//transaction_id_tracker += tr_nums;
 			old_tr += dying_tr_nums; 
 			//System.out.println("@debug >> total TR = "+workload.getWrl_totalTransaction());
 		} // end -- i

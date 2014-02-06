@@ -1,15 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
-<properties>
-<comment>DBMSSimulator Configuration Parameters</comment>
-	<entry key="DB_NODES">3</entry>
-	<entry key="PARTITION_SIZE">0.01</entry>
-	<entry key="WORKLOAD_TYPE">TPC-C</entry>
-	<entry key="DATA_ROWS">53</entry>
-	<entry key="TRANSACTIONS">10</entry>
-	<entry key="SIMULATION_RUNS">2</entry>
-	<entry key="hMETIS_DIR_LOCATION">C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32</entry>
-	<entry key="METIS_DIR_LOCATION">C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32</entry>
-	<entry key="HMETIS">hmetis</entry>
-	<entry key="METIS">pmetis</entry>
-</properties>
+<?xml version="1.0"?>
+<simulator>
+	<hmetis>
+		<dir>C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32</dir>
+	<hmetis>
+	<metis>
+		<dir>C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32</dir>
+	<metis>
+</simulator>

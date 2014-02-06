@@ -26,32 +26,34 @@ import jkamal.ddbmssim.workload.ClusterIdMapper;
 import jkamal.ddbmssim.workload.DataPreprocessor;
 import jkamal.ddbmssim.workload.TransactionClassifier;
 import jkamal.ddbmssim.workload.Workload;
+import jkamal.ddbmssim.workload.WorkloadFileGenerator;
 import jkamal.ddbmssim.workload.WorkloadGenerator;
 
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
-	public final static String WORKLOAD_TYPE = "TPC-C";
+	public final static String WORKLOAD_TYPE = "tpcc";
 	public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 24;
+	public final static int SIMULATION_RUNS = 5;
 	public final static double PARTITION_SIZE = 1; // 1; 0.1; 0.01
 	
 	// TPC-C Database table (9) row counts in different scale
-	//double[] pk_array = {0.19, 1.92, 1.92, 19.2, 57.69, 5.76, 5.76, 1.73, 5.76};
+	//double[] pk_array = {0.0019, 0.0192, 0.0192, 0.192, 0.5769, 0.0576, 0.0576, 0.0173, 0.0576};
 	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 72 (9*8) Equal sized tables
 	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 48 (6*8) Equal sized tables
-	public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
+	//public final static int[] PK_ARRAY = {1, 1, 1, 10, 30, 3, 3, 3, 1}; // 53
 	//public final static int[] PK_ARRAY = {1, 10, 10, 100, 300, 30, 30, 30, 9}; // 520
-	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
-	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //4,800 (9*800) 9 Equal sized partitions
-	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //7,200 (6*800) 6 Equal sized partitions
+	public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
+	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //4,800 (6*800) 6 Equal sized partitions
+	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //7,200 (9*800) 9 Equal sized partitions
+	//public final static int[] PK_ARRAY = {446021, 99961, 30121, 99796, 41121, 44434, 10091, 10, 1} // 
 
 	//int[] data_row_size_array = {89, 95, 655, 46, 24, 8, 54, 306, 82}; // values are in Bytes
 	public final static double[] DATA_ROW_SIZE = {0.000084877, 0.000090599, 0.000624657, 0.000043869, 0.000022888, 0.0000076294, 0.000051498, 0.000291824, 0.000078201}; // values are in MegaBytes
 
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
 	
 	public final static String HMETIS = "hmetis";
 	public final static String METIS = "pmetis";
@@ -79,11 +81,11 @@ public class DBMSSimulator {
 		random_data = new RandomDataGenerator();				
 		
 		// Database Server and Tenant Database Creation
-		DatabaseServer dbs = new DatabaseServer(0, "test-dbs", DB_NODES);		
+		DatabaseServer dbs = new DatabaseServer(0, "simulator", DB_NODES);		
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
 		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size	
-		Database db = new Database(0, "testdb", 0, dbs, "Range", PARTITION_SIZE);
+		Database db = new Database(0, "tpcc", 0, dbs, "Range", PARTITION_SIZE);
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
 		dbs.getDbs_tenants().add(db);
@@ -152,7 +154,7 @@ public class DBMSSimulator {
 		dir = null;
 		while(simulation_run != SIMULATION_RUNS) {			
 			Workload workload = workloadGenerator.getWorkload_map().get(simulation_run);
-			workload.setMessage("in");
+			workload.setMessage("in");			
 			
 			write("============================================================", null);			
 			
@@ -188,33 +190,32 @@ public class DBMSSimulator {
 	
 	private static void runSimulation(Database db, Workload workload, WorkloadGenerator workloadGenerator, 
 			String directory, String partitioner, String strategy, SimulationMetricsLogger simulation_logger) throws IOException{
-		ClusterIdMapper cluster_id_mapper = new ClusterIdMapper();		
+		WorkloadFileGenerator workloadFileGenerator = new WorkloadFileGenerator();
+		ClusterIdMapper cluster_id_mapper = new ClusterIdMapper();
 		DataMovement data_movement = new DataMovement();
 		
-		write("Started with "+workload.getWrl_totalTransactions()+" transactions from original worklaod.", "MSG");
+		write("Started with "+workload.getWrl_totalTransactions()+" transactions from original workload.", "MSG");
 		
 		// Perform workload sampling
 		write("Starting workload sampling to remove duplicate transactions ...", "ACT");
-		Workload sampled_workload = workloadGenerator.workloadSampling(db, workload);		
+		Workload sampled_workload = workload.performSampling(db);		
+		sampled_workload.init(db);
+		//sampled_workload.show(db, "");
 		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
-		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");		
-		
+		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
 		TransactionClassifier transactionClassifier = new TransactionClassifier();
-		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);						
-		
-		// Show details of the sampled workload
+		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);		
 		//sampled_workload.show(db, "");
 		
-		// Assign Shadow HMetis Data Id and generate workload and fix files
-		workloadGenerator.assignShadowDataId(db, sampled_workload);
-		
 		write("Total "+target_transactions+" transactions having "+sampled_workload.getWrl_totalDataObjects()+" data objects have been identified for partitioning.", "MSG");
-		
+		// Assign Shadow HMetis Data Id and generate workload and fix files
+		workloadFileGenerator.assignShadowDataId(db, sampled_workload);
 		// Generate workload and fix-files for partitioning
-		workloadGenerator.generateWorkloadFile(db, sampled_workload, partitioner);		
+		boolean empty = workloadFileGenerator.generateWorkloadFile(db, sampled_workload, partitioner);		
 		
+		if(!empty) {
 		// Perform hyper-graph/graph/compressed hyper-graph partitioning
 		runPartitioner(db, sampled_workload, partitioner);		
 
@@ -226,8 +227,7 @@ public class DBMSSimulator {
 		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 		
 		// Mapping cluster id to partition id
-		cluster_id_mapper.processPartFile(db, sampled_workload, db.getDb_partitions().size(), directory, partitioner);
-		
+		cluster_id_mapper.processPartFile(db, sampled_workload, db.getDb_partitions().size(), directory, partitioner);		
 		//db.show();
 		
 		// Perform data movement		
@@ -238,7 +238,10 @@ public class DBMSSimulator {
 		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 		
 		write("***********************************************************************************************************************", null);
-		
+		} else {
+			write("Simulation run round aborted for database ("+db.getDb_name()+")","OUT");
+			write("***********************************************************************************************************************", null);
+		}
 	}
 	
 	private static void runPartitioner(Database db, Workload workload, String partitioner) throws IOException {		
@@ -307,7 +310,8 @@ public class DBMSSimulator {
 	}
 	
 	private static void collectLog(SimulationMetricsLogger logger, Database db, Workload workload
-			, PrintWriter wrl_writer, PrintWriter node_writer, PrintWriter partition_writer, String partitioner) {		
+			, PrintWriter wrl_writer, PrintWriter node_writer, PrintWriter partition_writer, String partitioner) {
+		
 		logger.logWorkload(db, workload, wrl_writer, partitioner);
 		logger.logNode(db, workload, node_writer);
 		logger.logPartition(db, workload, partition_writer);		

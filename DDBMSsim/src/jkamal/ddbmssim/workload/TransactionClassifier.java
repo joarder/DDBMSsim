@@ -151,16 +151,19 @@ public class TransactionClassifier {
 					//System.out.println(">> Red");
 					this.incRed_tr();
 				} else {
-					Iterator<Integer> data_iterator = transaction.getTr_dataSet().iterator();
-					
+					Iterator<Integer> data_iterator = transaction.getTr_dataSet().iterator();					
 					while(data_iterator.hasNext()) {
 						Data data = db.search(data_iterator.next());
-						int tr_counts = data.getData_transactions_involved().size();
+						//int tr_counts = data.getData_transactions_involved().size();
+						//System.out.println("@@ "+data.getData_id());
+						int tr_counts = workload.getWrl_dataTransactionsInvolved().get(data.getData_id()).size();
+						//System.out.println("@ "+data.getData_id()+" | size = "+tr_counts);
 						//System.out.println("# "+data.toString());
 						if(tr_counts <= 1) 
 							++green_data;
 						else {							
-							for(int tr_id : data.getData_transactions_involved()){
+							//for(int tr_id : data.getData_transactions_involved()){
+							for(int tr_id : workload.getWrl_dataTransactionsInvolved().get(data.getData_id())) {
 								Transaction tr = workload.getTransaction(tr_id);
 								//System.out.println("-- "+tr_id);
 								if(tr.getTr_dtCost() > 0)
@@ -183,12 +186,14 @@ public class TransactionClassifier {
 						transaction.setTr_class("orange");
 						this.incOrage_tr();
 					}
+					
+					//System.out.println("@ T"+transaction.getTr_id()+" | Green = "+green_data+" | Orange = "+orange_data);
 				}				
 			}
 			
 			// Removing Green Transactions from the Workload
 			if(unique.size() > 0) {
-				workload.removeTransactions(db, entry.getValue(), unique, entry.getKey());	
+				workload.removeTransactions(db, unique, entry.getKey(), true);	
 				//this.decGreen_tr(unique.size());
 				//unique.removeAll(unique);
 			}

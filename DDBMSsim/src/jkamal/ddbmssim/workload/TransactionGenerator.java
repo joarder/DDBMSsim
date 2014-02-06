@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.main.DBMSSimulator;
 
@@ -35,7 +34,7 @@ public class TransactionGenerator {
 		Transaction transaction;		
 		Set<Integer> trDataSet;
 		ArrayList<Integer> trDataList;		
-		Data data;
+		//Data data;
 		Double rand = 0.0;
 		int[] prop;
 		int data_id = 0;
@@ -74,8 +73,8 @@ public class TransactionGenerator {
 					} else {
 						trDataList.add(data_id);						
 												
-						data = db.search(data_id);							
-						data.getData_transactions_involved().add(global_tr_id);																														
+						//data = db.search(data_id);							
+						//data.getData_transactions_involved().add(global_tr_id);																														
 						
 						trDataSet.add(data_id);
 						
