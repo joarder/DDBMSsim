@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<parameters>
+    <!-- Database details -->
+    <db>tpcc</db>
+    <dbTables>9</dbTables>
+
+    <!-- The workload -->
+    <terminals>100</terminals>
+    <works>
+        <work>
+          <time>300</time>
+          <rate>10000</rate>
+          <weights>45,43,4,4,4</weights>
+        </work>
+        </works>
+</parameters>

@@ -52,6 +52,8 @@ public class DataMovement {
 
 	private void setEnvironment(Database db, Workload workload) {
 		workload.calculateDistributedTransactions();
+		workload.calculateMeanDTI();
+		
 		this.setIntra_node_data_movements(0);
 		this.setInter_node_data_movements(0);		
 				
@@ -69,7 +71,8 @@ public class DataMovement {
 	private void wrappingUp(boolean movement, String message, Database db, Workload workload, String type) {
 		workload.setWrl_hasDataMoved(true);					
 		workload.setMessage(message);				
-		workload.calculateDistributedTransactions();		
+		workload.calculateDistributedTransactions();	
+		workload.calculateMeanDTI();
 		workload.show(db, type);
 	}
 	
@@ -94,7 +97,7 @@ public class DataMovement {
 	
 	private void message() {
 		System.out.println("[ACT] Generating Data Movement Mapping Matrix ...\n" +
-				"      (Row :: Pre-Partition Id, Col :: Cluster Id, Elements :: Data Occurence Counts)");
+				"      (Row :: Pre-Partition Id, Col :: Cluster Id, Elements :: Data Occurrence Counts)");
 	}
 	
 	private void baseStrategy(Database db, Workload workload, String partitioner) {
@@ -304,7 +307,7 @@ public class DataMovement {
 					}									
 				} // end -- for()-Data
 				// Resetting Transaction frequency
-				transaction.setTr_frequency(1);
+				//transaction.setTr_frequency(1);
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction-Type		
 		

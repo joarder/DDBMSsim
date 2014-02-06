@@ -19,6 +19,7 @@ public class Transaction implements Comparable<Transaction> {
 	private int tr_weight;	
 	private int tr_dtCost; // Node Span Cost or, Distributed Transaction Cost
 	private int tr_psCost; // Partition Span Cost
+	private int tr_dtImpact;
 	private Set<Integer> tr_dataSet;
 	private String tr_class;
 	
@@ -30,6 +31,7 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_weight(0); 		
 		this.setTr_dtCost(0);
 		this.setTr_psCost(0);
+		this.setTr_dtImpact(0);
 		this.setTr_dataSet(dataSet);
 		this.setTr_class(null);
 	}
@@ -43,6 +45,7 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_weight(transaction.getTr_weight());		
 		this.setTr_dtCost(transaction.getTr_dtCost());
 		this.setTr_psCost(transaction.getTr_psCost());
+		this.setTr_dtImpact(transaction.getTr_dtImpact());
 		this.setTr_class(transaction.getTr_class());
 		
 		//Data cloneData;
@@ -111,6 +114,14 @@ public class Transaction implements Comparable<Transaction> {
 		this.tr_psCost = tr_psCost;
 	}
 	
+	public int getTr_dtImpact() {
+		return tr_dtImpact;
+	}
+
+	public void setTr_dtImpact(int tr_dtImpact) {
+		this.tr_dtImpact = tr_dtImpact;
+	}
+
 	public Set<Integer> getTr_dataSet() {
 		return tr_dataSet;
 	}
@@ -142,7 +153,7 @@ public class Transaction implements Comparable<Transaction> {
 	}
 	
 	// This function will calculate the Node and Partition Span Cost for the representative Transaction
-	public void generateTransactionCost(Database db) {
+	public void calculateDTCost(Database db) {
 		int pid = -1;
 		Partition partition;
 		Set<Integer> nsCost = new TreeSet<Integer>();
@@ -182,6 +193,11 @@ public class Transaction implements Comparable<Transaction> {
 	
 		this.setTr_psCost(psCost.size()-1);		
 	}
+	
+	// Calculate DT Impacts for the Workload
+	public void calculateDTImapct() {
+		this.setTr_dtImpact(this.getTr_dtCost() * this.getTr_frequency());
+	}	
 	
 	// Given a Data Id this function returns the corresponding Data from the Transaction
 	public Data lookup(Database db, int id) {		

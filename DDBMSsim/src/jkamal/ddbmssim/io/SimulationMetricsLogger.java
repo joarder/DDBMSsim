@@ -11,12 +11,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.TreeMap;
-import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.DatabaseServer;
 import jkamal.ddbmssim.db.Node;
 import jkamal.ddbmssim.db.Partition;
-import jkamal.ddbmssim.workload.Transaction;
 import jkamal.ddbmssim.workload.Workload;
 
 public class SimulationMetricsLogger {	
@@ -132,45 +130,6 @@ public class SimulationMetricsLogger {
 			prWriter.flush();
 			prWriter.close();
 		} 
-	}
-	
-	public void logDb(Database db, Workload workload, PrintWriter writer) {
-		int partitions = db.getDb_partitions().size();		
-		
-		for(int i = 1; i <= partitions; i++) {
-			Partition partition = db.getPartition(i);
-			
-			for(Data data : partition.getPartition_dataSet()) {
-				if(!this.has_data_moved)
-					writer.print("bf ");
-				else 
-					writer.print("af ");
-				
-				this.logData(workload, partition, data, writer);
-				
-				if(data.getData_transactions_involved().size() != 0) {					
-					for(Integer transaction_id : data.getData_transactions_involved()) {
-						Transaction transaction = workload.getTransaction(transaction_id);
-						
-						if(transaction != null) {
-							writer.print("T"+transaction.getTr_id()+" ");
-							writer.print(transaction.getTr_frequency()+" ");
-						} else {
-							//System.out.println("@debug >> "+data.toString()+" | T"+transaction_id);
-						}
-					}
-				}
-				
-				writer.println();
-			}
-		}			
-	}
-	
-	private void logData(Workload workload, Partition partition, Data data, PrintWriter writer) {
-		writer.print("W"+workload.getWrl_id()+" ");
-		writer.print("D"+data.getData_id()+" ");
-		writer.print("N"+data.getData_nodeId()+" ");
-		writer.print("P"+partition.getPartition_id()+" ");		
 	}
 	
 	public void logWorkload(Database db, Workload workload, PrintWriter writer, String type) {

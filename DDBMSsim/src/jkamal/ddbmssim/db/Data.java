@@ -6,9 +6,6 @@
 
 package jkamal.ddbmssim.db;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 public class Data implements Comparable<Data> {
 	private int data_id;
 	private String data_label;
@@ -22,10 +19,7 @@ public class Data implements Comparable<Data> {
 	// Workload Attributes
 	private double data_zipf_probability;
 	private double data_cumulative_zipf_probability;
-	private double data_normalised_cumulative_zipf_probability;
-	
-	// Transaction Attributes
-	private Set<Integer> data_transactions_involved;
+	private double data_normalised_cumulative_zipf_probability;	
 	
 	// HyperGraph and Graph Partitioning Attributes
 	private int data_hmetis_cluster_id;
@@ -59,7 +53,7 @@ public class Data implements Comparable<Data> {
 		this.setData_cumulativeZipfProbability(0.0);
 		this.setData_normalisedCumulativeZipfProbability(0.0);
 				
-		this.setData_transactions_involved(new TreeSet<Integer>());
+		//this.setData_transactions_involved(new TreeSet<Integer>());
 		
 		this.setData_hmetisClusterId(-1);
 		this.setData_chmetisClusterId(-1);
@@ -90,13 +84,7 @@ public class Data implements Comparable<Data> {
 		
 		this.setData_zipfProbability(data.getData_zipfProbability());
 		this.setData_cumulativeZipfProbability(data.getData_cumulativeZipfProbability());
-		this.setData_normalisedCumulativeZipfProbability(data.getData_normalisedCumulativeZipfProbability());
-		
-		Set<Integer> clone_data_transaction_involved = new TreeSet<Integer>();
-		for(Integer tr_id : data.getData_transactions_involved()) {
-			clone_data_transaction_involved.add(tr_id);
-		}
-		this.setData_transactions_involved(clone_data_transaction_involved);
+		this.setData_normalisedCumulativeZipfProbability(data.getData_normalisedCumulativeZipfProbability());		
 		
 		this.setData_hmetisClusterId(data.getData_hmetisClusterId());
 		this.setData_chmetisClusterId(data.getData_chmetisClusterId());
@@ -132,14 +120,6 @@ public class Data implements Comparable<Data> {
 	public String getData_value() {
 		return data_value;
 	}
-
-	/*public int getData_frequency() {
-		return data_frequency;
-	}
-
-	public void setData_frequency(int data_frequency) {
-		this.data_frequency = data_frequency;
-	}*/
 
 	public int getData_weight() {
 		return data_weight;
@@ -193,14 +173,14 @@ public class Data implements Comparable<Data> {
 		this.data_normalised_cumulative_zipf_probability = data_normalised_cdf;
 	}
 
-	public Set<Integer> getData_transactions_involved() {
+	/*public Set<Integer> getData_transactions_involved() {
 		return data_transactions_involved;
 	}
 
 	public void setData_transactions_involved(
 			Set<Integer> data_transaction_involved) {
 		this.data_transactions_involved = data_transaction_involved;
-	}
+	}*/
 
 	public boolean isData_isRoaming() {
 		return data_isRoaming;
