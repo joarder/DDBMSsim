@@ -5,12 +5,9 @@
 package jkamal.ddbmssim.util;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.random.RandomDataGenerator;
@@ -23,16 +20,16 @@ public class PitmanYor {
 		return _d;
 	}
 
-	public void set_d(double _d) {
-		this._d = _d;
+	public void set_d(double d) {
+		this._d = d;
 	}
 
 	public double get_alpha() {
 		return _alpha;
 	}
 
-	public void set_alpha(double _alpha) {
-		this._alpha = _alpha;
+	public void set_alpha(double alpha) {
+		this._alpha = alpha;
 	}
 
 	public PitmanYor(double d, double alpha) {
@@ -40,80 +37,85 @@ public class PitmanYor {
 		this.set_alpha(alpha);
 	}
 	
+	private double scale(double x, double a, double b, double min, double max) {
+		//System.out.println(x+"|"+a+"|"+b+"|"+min+"|"+max);
+		
+		return ((((b - a) * (x - min))/(max - min)) + a);
+	}
+	
 	public static void main(String[] args) {
-		// py(d, alpha) -- py(1/a, 0.5) where a = 2
-		// a is the power-law parameter (a > 1)
-		PitmanYor py = new PitmanYor(0.5, 0.5);
-		int n = 1000; // total number of data objects
-		double sum = 0.0;
+		// py(d, alpha) -- py(1/a, 0.5) where a = 2 and a is the power-law parameter (a > 1)
+		int n = 100; // total number of data objects
+		PitmanYor py = new PitmanYor(0.5, 0.5); // d = 0.5, alpha = 0.5		
 				
-		Map<Integer, Double> beta_map = new TreeMap<Integer, Double>();
-		Map<Integer, Double> pi_map = new TreeMap<Integer, Double>();
+		Map<Integer, ArrayList<Double>> betaMap = new TreeMap<Integer, ArrayList<Double>>();
+		ArrayList<Double> betaList = null;		
 		
 		// Step-1
 		RandomDataGenerator rdg = new  RandomDataGenerator();
+		BetaDistribution betaDistribution = new BetaDistribution(0.5, 0.5);
+		
+		double beta_i = 0.0;
+		double d = py.get_d();
+		double alpha = py.get_alpha(); 
+		
 		for(int i = 1; i <= n; i++) {
-			double beta_i = rdg.nextBeta(0.5, (0.5 + i * 0.5)); // beta_i = Beta((1-d), (alpha + i*d))
-			beta_map.put(i, beta_i);
+			betaList = new ArrayList<Double>();
+
+			beta_i = rdg.nextBeta((1 - d), (alpha + i * d)); // beta_i = Beta((1-d), (alpha + i*d))
+			betaList.add(beta_i);
+			betaList.add(betaDistribution.cumulativeProbability(((double)i/(double)n)));
 			
-			sum += beta_i;
-			//System.out.println(i+" "+beta_i);			
+			betaMap.put(i, betaList);			
 		} 
-		
-		//System.out.println("@ beta_ sum = "+sum);
-		//System.out.println("--------------------------------------");
-		
+
 		// Step-2
-		sum = 0.0;
-		pi_map.put(1, beta_map.get(1)); // pi_1 = beta_1
-		//System.out.println("1 "+pi_map.get(1));
+		Map<Integer, ArrayList<Double>> piMap = new TreeMap<Integer, ArrayList<Double>>();
+		ArrayList<Double> piList = new ArrayList<Double>();
+		double max = Integer.MIN_VALUE;
+		double min = Integer.MAX_VALUE;
 		
+		// for i=1; pi_1 = beta_1 
+		piList.add(betaMap.get(1).get(0));		
+		piMap.put(1, piList); 		
+		
+		// for i = 2:n
 		for(int i = 2; i <= n; i++) {
-			double _sum = 0.0;
+			double sum = 0.0;
+			piList = new ArrayList<Double>();
+			
 			for(int l = 1; l <= i-1; l++) {
-				_sum += (1- beta_map.get(l));
+				sum += (1- betaMap.get(l).get(0));
 			}
 			
-			double pi_i = beta_map.get(i) * _sum;
-			pi_map.put(i, pi_i);
+			double pi_i = betaMap.get(i).get(0) * sum;
 			
-			sum += pi_i;
-			//System.out.println(i+" "+pi_i);
+			if(pi_i > max)
+				max = pi_i;
+			
+			if(pi_i < min)
+				min = pi_i;
+			
+			piList.add(pi_i);
+			piMap.put(i, piList);
+		}		
+				
+		System.out.println(">> "+max+" | "+min);
+		
+		// scale pi_i values between 0 to 1		
+		for(Entry<Integer, ArrayList<Double>> entry : piMap.entrySet()) {
+			double val = py.scale(entry.getValue().get(0), 0, 1, min, max);
+			//System.out.println("@ "+val);
+			entry.getValue().add(val);
 		}
 		
-		//System.out.println("@ pi_ sum = "+sum);
-		//System.out.println("--------------------------------------");
-		
-		// Alternate
-		for(Entry<Integer, Double> entry : beta_map.entrySet())
-			System.out.println(entry.getValue()+"|"+pi_map.get(entry.getKey()));
-		
-		Map<Integer, ArrayList<Double>> _beta_map = new TreeMap<Integer, ArrayList<Double>>();
-		BetaDistribution beta = new BetaDistribution(0.5, (0.5 + n * 0.5));
-		for(int i = 1; i <= n; i++) {
-			ArrayList<Double> values = new ArrayList<Double>();
-			values.add(beta.probability(i));
-			values.add(beta.cumulativeProbability(i));
-			
-			_beta_map.put(i, values);
-		}
-		
-		pi_map = new TreeMap<Integer, Double>();
-		sum = 0.0;
-		pi_map.put(1, _beta_map.get(1).get(0)); // pi_1 = beta_1
-		//System.out.println("1 "+pi_map.get(1));
-		
-		for(int i = 2; i <= n; i++) {
-			double _sum = 0.0;
-			for(int l = 1; l <= i-1; l++) {
-				_sum += (1- _beta_map.get(l).get(0));
-			}
-			
-			double pi_i = _beta_map.get(i).get(0) * _sum;
-			pi_map.put(i, pi_i);
-		}
-		
-		for(Entry<Integer, ArrayList<Double>> entry : _beta_map.entrySet())
-			System.out.println(entry.getValue().get(0)+"|"+entry.getValue().get(1)+"|"+pi_map.get(entry.getKey()));
+		// Print
+		for(Entry<Integer, ArrayList<Double>> entry : betaMap.entrySet())
+			System.out.println(
+					entry.getKey()
+					+"|"+entry.getValue().get(0)
+					+"|"+entry.getValue().get(1)
+					+"|"+piMap.get(entry.getKey()).get(0)
+					+"|"+piMap.get(entry.getKey()).get(1));		
 	}
 }
