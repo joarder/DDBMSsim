@@ -19,7 +19,11 @@ public class Data implements Comparable<Data> {
 	// Workload Attributes
 	private double data_zipf_probability;
 	private double data_cumulative_zipf_probability;
-	private double data_normalised_cumulative_zipf_probability;	
+	private double data_normalised_cumulative_zipf_probability;
+	
+	//
+	private double data_popularity;
+	private double data_cumulative_beta_probability;
 	
 	// HyperGraph and Graph Partitioning Attributes
 	private int data_hmetis_cluster_id;
@@ -181,6 +185,23 @@ public class Data implements Comparable<Data> {
 			Set<Integer> data_transaction_involved) {
 		this.data_transactions_involved = data_transaction_involved;
 	}*/
+
+	public double getData_popularity() {
+		return data_popularity;
+	}
+
+	public void setData_popularity(double data_popularity) {
+		this.data_popularity = data_popularity;
+	}
+
+	public double getData_cumulative_beta_probability() {
+		return data_cumulative_beta_probability;
+	}
+
+	public void setData_cumulative_beta_probability(
+			double data_cumulative_beta_probability) {
+		this.data_cumulative_beta_probability = data_cumulative_beta_probability;
+	}
 
 	public boolean isData_isRoaming() {
 		return data_isRoaming;

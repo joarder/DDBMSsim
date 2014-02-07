@@ -12,18 +12,17 @@ import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.Partition;
 import jkamal.ddbmssim.main.DBMSSimulator;
+import jkamal.ddbmssim.util.PitmanYor;
 
 public class DataPreprocessor {	
 	private Map<Integer, Double> zipf_probability_map;
 	private Map<Integer, Double> zipf_cumulative_probability_map;
 	private Map<Integer, Double> zipf_norm_cumulative_probability_map;
-	private Map<Integer, Double> data_weight;
 	
 	public DataPreprocessor() {		
 		this.setZipf_probability_map(new TreeMap<Integer, Double>());
 		this.setZipf_cumulative_probability_map(new TreeMap<Integer, Double>());
 		this.setZipf_norm_cumulative_probability_map(new TreeMap<Integer, Double>());
-		this.setData_weight(new TreeMap<Integer, Double>());
 	}
 		
 	public Map<Integer, Double> getZipf_probability_map() {
@@ -86,14 +85,6 @@ public class DataPreprocessor {
 		
 		return normalised_value;
 	}
-	
-	public Map<Integer, Double> getData_weight() {
-		return data_weight;
-	}
-
-	public void setData_weight(Map<Integer, Double> data_weight) {
-		this.data_weight = data_weight;
-	}
 
 	public void preprocess(Database db) {			  
 	    int data_id_tracker = 1;
@@ -133,5 +124,10 @@ public class DataPreprocessor {
 	    	
 	    	//System.out.println(">> NC = "+normalised_carry_fwd);
 	    }	
+	}
+	
+	public void preprocess1(Database db) {
+		PitmanYor py = new PitmanYor(0.5, 0.5); // d = 0.5, alpha = 0.5
+		py.generateDataPopularity(db.getDb_dataNumbers());
 	}
 }

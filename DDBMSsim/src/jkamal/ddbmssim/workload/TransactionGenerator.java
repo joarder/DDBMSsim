@@ -47,7 +47,7 @@ public class TransactionGenerator {
 			prop = workload.getWrl_transactionProportions();
 		
 		// Reseed the Random Data Generator
-		DBMSSimulator.random_data.reSeed(0);		
+		DBMSSimulator.randomDataGenerator.reSeed(0);		
 		
 		// i -- Transaction types
 		for(int i = 0; i < workload.getWrl_transactionTypes(); i++) {	
@@ -64,7 +64,7 @@ public class TransactionGenerator {
 				
 				// k -- required numbers of Data items based on Transaction type
 				for(int k = 0; k < i+2; k++) {					
-					rand = DBMSSimulator.random_data.nextUniform(0.0, 1.0, true);
+					rand = DBMSSimulator.randomDataGenerator.nextUniform(0.0, 1.0, true);
 					//System.out.println("# rand = "+rand);
 					data_id = db.getRandomData(rand);									
 										

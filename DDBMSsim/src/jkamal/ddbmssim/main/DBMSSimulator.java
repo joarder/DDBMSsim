@@ -60,7 +60,7 @@ public class DBMSSimulator {
 	
 	public static RandomDataGenerator random_birth;
 	public static RandomDataGenerator random_death;
-	public static RandomDataGenerator random_data;
+	public static RandomDataGenerator randomDataGenerator;
 	
 	private static int global_tr_id;
 	
@@ -78,7 +78,7 @@ public class DBMSSimulator {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		random_data = new RandomDataGenerator();				
+		randomDataGenerator = new RandomDataGenerator();				
 		
 		// Database Server and Tenant Database Creation
 		DatabaseServer dbs = new DatabaseServer(0, "simulator", DB_NODES);		
