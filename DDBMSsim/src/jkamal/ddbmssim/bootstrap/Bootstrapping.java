@@ -24,7 +24,7 @@ public class Bootstrapping {
 	
 	// Synthetic Data Generation
 	// Options: Range, Salting, Hash (Random), Consistent-Hash (Random)
-	public void bootstrapping(DatabaseServer dbs, Database db, int DATA_OBJECTS) {		
+	private void tpcc(DatabaseServer dbs, Database db, int DATA_OBJECTS) {
 		Partition partition;
 		ArrayList<Data> dataList;
 		Data data;												
@@ -108,6 +108,14 @@ public class Bootstrapping {
 		}
 		
 		System.out.println("[MSG] Total Data Items: "+global_data);
-		System.out.println("[MSG] Total Partitions: "+db.getDb_partitions().size());
+		System.out.println("[MSG] Total Partitions: "+db.getDb_partitions().size());	
 	}
+	
+	public void bootstrapping(DatabaseServer dbs, Database db, int DATA_OBJECTS) {
+		switch(db.getDb_name()) {
+		case "tpcc":
+			this.tpcc(dbs, db, DATA_OBJECTS);
+			break;
+		}
+	}			
 }

@@ -66,62 +66,70 @@ public class PitmanYor {
 	
 	public void generateDataPopularity(int n) {
 		
-		for(int i = 0; i < DBMSSimulator.PK_ARRAY.length; i++) {
+		//for(int i = 0; i < DBMSSimulator.PK_ARRAY.length; i++) {
 			
-		}
+		//}
 						
 		// Step-1
 		ArrayList<Double> betaList = null;
 		RandomDataGenerator rdg = new  RandomDataGenerator();
+		rdg.reSeed(0);
 		//DBMSSimulator.randomDataGenerator.reSeed(0);
-		BetaDistribution betaDistribution = new BetaDistribution(0.5, 0.5);
+		//BetaDistribution betaDistribution = new BetaDistribution(0.5, 0.5);		
 		
 		double beta_i = 0.0;
 		double d = this.get_d();
 		double alpha = this.get_alpha(); 
 		
+		BetaDistribution betaDistribution = new BetaDistribution((1 - d), (alpha + n * d));
+		
 		for(int i = 1; i <= n; i++) {
 			betaList = new ArrayList<Double>();
 
 			//beta_i = DBMSSimulator.randomDataGenerator.nextBeta((1 - d), (alpha + i * d)); // beta_i = Beta((1-d), (alpha + i*d))
-			beta_i = rdg.nextBeta((1 - d), (alpha + i * d)); // beta_i = Beta((1-d), (alpha + i*d))
+			beta_i = rdg.nextBeta((1 - d), (alpha + i * d)); // beta_i = Beta((1-d), (alpha + i*d))			
 			betaList.add(beta_i);
-			betaList.add(betaDistribution.cumulativeProbability(((double)i/(double)n)));
+			//betaList.add(betaDistribution.cumulativeProbability(((double)i/(double)n)));
 			
 			this.getBetaMap().put(i, betaList);			
 		} 
 
 		// Step-2
-		//Map<Integer, ArrayList<Double>> piMap = new TreeMap<Integer, ArrayList<Double>>();
 		ArrayList<Double> piList = new ArrayList<Double>();
+		ArrayList<Double> _piList = new ArrayList<Double>();
 		double max = Integer.MIN_VALUE;
 		double min = Integer.MAX_VALUE;
 		
 		// for i=1; pi_1 = beta_1 
-		piList.add(this.getBetaMap().get(1).get(0));		
+		piList.add(this.getBetaMap().get(1).get(0));
+		_piList.add(this.getBetaMap().get(1).get(0));
 		this.getPiMap().put(1, piList);
 		
-		// for i = 2:n
+		// for i = 2:n		
 		for(int i = 2; i <= n; i++) {
 			double sum = 0.0;
 			piList = new ArrayList<Double>();
 			
-			for(int l = 1; l <= i-1; l++) {
-				sum += (1- this.getBetaMap().get(l).get(0));
+			for(int l = 1; l <= (i-1); l++) {
+				sum += (1 - this.getBetaMap().get(l).get(0));
 			}
 			
 			double pi_i = this.getBetaMap().get(i).get(0) * sum;
+			piList.add(pi_i);
+			_piList.add(pi_i);
+			this.getPiMap().put(i, piList);
 			
 			if(pi_i > max)
 				max = pi_i;
 			
 			if(pi_i < min)
 				min = pi_i;
-			
-			piList.add(pi_i);
-			this.getPiMap().put(i, piList);
 		}		
 				
+		// random permutation
+		rdg.reSeed(0);
+		Object[] popularity = rdg.nextSample(_piList, n);
+		
 		//System.out.println(">> "+max+" | "+min);
 		
 		// scale pi_i values between 0 to 1		
@@ -133,11 +141,18 @@ public class PitmanYor {
 		for(Entry<Integer, ArrayList<Double>> entry : this.getBetaMap().entrySet())
 			System.out.println(
 					entry.getKey()
-					//+"|"+entry.getValue().get(0)
-					+"|"+entry.getValue().get(1)
+					+"|"+entry.getValue().get(0)
+					//+"|"+entry.getValue().get(1)
 					+"|"+piMap.get(entry.getKey()).get(0));
 					//+"|"+piMap.get(entry.getKey()).get(1));
-				
+
+		System.out.println("--------------------");
+		for(Object o : popularity) {
+			System.out.println(o);
+		}
+		
+		/*
+		// random selection of data		
 		System.out.println("--------------------------");
 		double rand = 0.0;
 		for(int i = 1; i <= n+10; i++) {
@@ -172,6 +187,7 @@ public class PitmanYor {
 			if(smallest)
 				System.out.print("|1"+"\n");
 		}
+		*/
 	}
 	
 

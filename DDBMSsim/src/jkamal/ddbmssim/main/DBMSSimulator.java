@@ -85,7 +85,7 @@ public class DBMSSimulator {
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
 		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size	
-		Database db = new Database(0, "tpcc", 0, dbs, "Range", PARTITION_SIZE);
+		Database db = new Database(0, "tpcc", 0, dbs, "hash", PARTITION_SIZE);
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
 		dbs.getDbs_tenants().add(db);

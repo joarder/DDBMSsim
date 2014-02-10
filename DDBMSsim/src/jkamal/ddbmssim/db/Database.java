@@ -20,6 +20,7 @@ public class Database implements Comparable<Database> {
 	private DatabaseServer db_dbs;
 	private int db_data_numbers;
 	private int db_partition_size;	
+	private String db_partitioing;
 	private Set<Partition> db_partitions;		
 	private Map<Integer, Set<Integer>> db_nodes;
 	private double[] db_normalised_cumalitive_zipf_probability;
@@ -34,6 +35,7 @@ public class Database implements Comparable<Database> {
 		this.setDb_dbs(dbs);
 		this.setDb_dataNumbers(DBMSSimulator.DATA_ROWS);
 		this.setDb_partitionSize((int)(partition_size * 1000)); // Partition Size Range (1 ~ 1000 GB), 1 GB = 1000 Data Objects of equal size
+		this.setDb_partitioing(model);
 		this.setDb_partitions(new TreeSet<Partition>());
 		this.setDb_nodes(new TreeMap<Integer, Set<Integer>>());
 		this.setDb_normalisedCumalitiveZipfProbabilityArray(new double[this.getDb_dataNumbers()]);
@@ -108,6 +110,14 @@ public class Database implements Comparable<Database> {
 
 	public void setDb_dbs(DatabaseServer db_dbs) {
 		this.db_dbs = db_dbs;
+	}
+
+	public String getDb_partitioing() {
+		return db_partitioing;
+	}
+
+	public void setDb_partitioing(String db_partitioing) {
+		this.db_partitioing = db_partitioing;
 	}
 
 	public Set<Partition> getDb_partitions() {
