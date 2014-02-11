@@ -15,7 +15,7 @@ public class MappingTable {
 	public MappingTable() {}
 	
 	public Matrix generateMappingTable(Database db, Workload workload, String partitioner) {
-		int M = db.getDb_partitions().size()+1;
+		int M = db.getDb_partitions()+1;
 		int N = M; // Having a NxN matrix
 		
 		// Create a 2D Matrix to represent the Data movements due to partitioning decision

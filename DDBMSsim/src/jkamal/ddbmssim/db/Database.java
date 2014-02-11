@@ -11,17 +11,16 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import jkamal.ddbmssim.main.DBMSSimulator;
-
 public class Database implements Comparable<Database> {
 	private int db_id;
 	private String db_name;
 	private int db_tenant;	
 	private DatabaseServer db_dbs;
-	private int db_data_numbers;
-	private int db_partition_size;	
+	//private int db_data_numbers;
+	private int db_partition_size;
+	private int db_partitions;
 	private String db_partitioing;
-	private Set<Partition> db_partitions;		
+	private Set<Table> db_tables;		
 	private Map<Integer, Set<Integer>> db_nodes;
 	private double[] db_normalised_cumalitive_zipf_probability;
 	private PrintWriter workload_log;
@@ -33,12 +32,13 @@ public class Database implements Comparable<Database> {
 		this.setDb_name(name);
 		this.setDb_tenant(tenant_id);
 		this.setDb_dbs(dbs);
-		this.setDb_dataNumbers(DBMSSimulator.DATA_ROWS);
+		//this.setDb_dataNumbers(DBMSSimulator.DATA_ROWS);
 		this.setDb_partitionSize((int)(partition_size * 1000)); // Partition Size Range (1 ~ 1000 GB), 1 GB = 1000 Data Objects of equal size
+		this.setDb_partitions(0);
 		this.setDb_partitioing(model);
-		this.setDb_partitions(new TreeSet<Partition>());
+		this.setDb_tables(new TreeSet<Table>());
 		this.setDb_nodes(new TreeMap<Integer, Set<Integer>>());
-		this.setDb_normalisedCumalitiveZipfProbabilityArray(new double[this.getDb_dataNumbers()]);
+		this.setDb_normalisedCumalitiveZipfProbabilityArray(new double[6051]);
 	}	
 	
 	// Copy Constructor
@@ -47,16 +47,17 @@ public class Database implements Comparable<Database> {
 		this.setDb_name(db.getDb_name());
 		this.setDb_tenant(db.getDb_tenant());	
 		this.setDb_dbs(db.getDb_dbs());
-		this.setDb_dataNumbers(db.getDb_dataNumbers());
+		//this.setDb_dataNumbers(db.getDb_dataNumbers());
 		this.setDb_partitionSize(db.getDb_partitionSize());		
+		this.setDb_partitions(db.getDb_partitions());
 		
-		Set<Partition> cloneDbPartitions = new TreeSet<Partition>();
-		Partition clonePartition;
-		for(Partition partition : db.getDb_partitions()) {
-			clonePartition = new Partition(partition);
-			cloneDbPartitions.add(clonePartition);
+		Set<Table> cloneDbTables = new TreeSet<Table>();
+		Table cloneTable;
+		for(Table table : db.getDb_tables()) {
+			cloneTable = new Table(table);
+			cloneDbTables.add(cloneTable);
 		}		
-		this.setDb_partitions(cloneDbPartitions);
+		this.setDb_tables(cloneDbTables);
 		
 		Map<Integer, Set<Integer>> clone_db_nodes = new TreeMap<Integer, Set<Integer>>();		
 		for(Entry<Integer, Set<Integer>> entry : db.getDb_nodes().entrySet()) {
@@ -70,7 +71,7 @@ public class Database implements Comparable<Database> {
 		}
 		this.setDb_nodes(clone_db_nodes);
 		
-		double[] clone_db_normalised_cumalitive_zipf_probability = new double[db.getDb_dataNumbers()];
+		double[] clone_db_normalised_cumalitive_zipf_probability = new double[6051];
 		int i = 0;
 		for(double d : db.getDb_normalisedCumalitiveZipfProbabilityArray()) {
 			clone_db_normalised_cumalitive_zipf_probability[i] = d;
@@ -120,21 +121,29 @@ public class Database implements Comparable<Database> {
 		this.db_partitioing = db_partitioing;
 	}
 
-	public Set<Partition> getDb_partitions() {
+	public int getDb_partitions() {
 		return db_partitions;
 	}
 
-	public void setDb_partitions(Set<Partition> db_partitions) {
+	public void setDb_partitions(int db_partitions) {
 		this.db_partitions = db_partitions;
 	}
+
+	public Set<Table> getDb_tables() {
+		return this.db_tables;
+	}
+
+	public void setDb_tables(Set<Table> db_tables) {
+		this.db_tables = db_tables;
+	}
 	
-	public int getDb_dataNumbers() {
+	/*public int getDb_dataNumbers() {
 		return db_data_numbers;
 	}
 
 	public void setDb_dataNumbers(int db_data) {
 		this.db_data_numbers = db_data;
-	}
+	}*/
 
 	public Map<Integer, Set<Integer>> getDb_nodes() {
 		return db_nodes;
@@ -184,45 +193,37 @@ public class Database implements Comparable<Database> {
 			double[] db_normalised_cumalitive_zipf_probability) {
 		this.db_normalised_cumalitive_zipf_probability = db_normalised_cumalitive_zipf_probability;
 	}
-
-	public boolean insert() {
-		boolean success = false;
-		
-		
-		return success;
-	}
-	
-	public boolean update() {
-		boolean success = false;
-		
-		
-		return success;
-	}
 	
 	// Searches for a specific Data by it's Id
 	public Data search(int data_id) {
-		for(Partition partition : this.getDb_partitions()) {
-			int partition_id = partition.lookupPartitionId_byDataId(data_id);
-			//System.out.println("@debug >> searching d"+data_id+" | Found in P"+partition_id);
-			
-			if(partition_id != -1)				
-				return(this.getPartition(partition_id).getData_byDataId(data_id));
-		}			
+		for(Table table : this.getDb_tables()) {
+			for(Partition partition : table.getTbl_partitions()) {
+				int partition_id = partition.lookupPartitionId_byDataId(data_id);
+				//System.out.println("@debug >> searching d"+data_id+" | Found in P"+partition_id);
+				
+				if(partition_id != -1)				
+					return(this.getPartition(partition_id).getData_byDataId(data_id));
+			}
+		}
+		
+		return null;
+	}		
+	
+	public Partition getPartition(int partition_id) {
+		for(Table table : this.getDb_tables()) {
+			for(Partition partition : table.getTbl_partitions()) {						
+				if(partition.getPartition_globalId() == partition_id) 
+					return partition;
+			}
+		}
 		
 		return null;
 	}
 	
-	public boolean delete(int data_id) {
-		boolean success = false;
-		
-		
-		return success;
-	}
-	
-	public Partition getPartition(int partition_id) {
-		for(Partition partition : this.getDb_partitions()) {						
-			if(partition.getPartition_id() == partition_id) 
-				return partition;
+	public Table getTable(int table_id) {
+		for(Table table : this.getDb_tables()) {						
+			if(table.getTbl_id() == table_id) 
+				return table;
 		}
 		
 		return null;
@@ -234,7 +235,7 @@ public class Database implements Comparable<Database> {
 		for(Entry<Integer, Set<Integer>> entry : this.getDb_nodes().entrySet()) {
 			if(entry.getKey() == node_id) {
 				for(Integer partition_id : entry.getValue()) {
-					node_partitions.add(this.getPartition(partition_id).getPartition_id());
+					node_partitions.add(this.getPartition(partition_id).getPartition_globalId());
 				}
 				
 				break;
@@ -270,23 +271,26 @@ public class Database implements Comparable<Database> {
 	public void show() {		
 		System.out.println("[OUT] ==== Database Details ====");
 		System.out.println("      Database: "+this.getDb_name());
-		System.out.println("      Number of Partitions: "+this.getDb_partitions().size());		
+		System.out.println("      Number of Partitions: "+this.getDb_partitionSize());		
 		System.out.println("[OUT] ==== Partition Table Details ====");		
 		
 		Set<Integer> overloadedPartition = new TreeSet<Integer>();
 		int comma = -1;		
 		for(Entry<Integer, Set<Integer>> entry : this.getDb_nodes().entrySet()) {
-			System.out.println("    --N"+entry.getKey());//+" {");
+			System.out.println("    --N"+entry.getKey()
+					+" | Inflow("+this.getDb_dbs().getDbs_node(entry.getKey()).getNode_inflow()+")|"
+					+" | Outflow("+this.getDb_dbs().getDbs_node(entry.getKey()).getNode_outflow()+")"
+					);
 				
 			for(Integer partition_id : entry.getValue()) {
 				Partition partition = this.getPartition(partition_id);
-				partition.getCurrentLoad();
+				partition.updatePartitionLoad();
 				
 				System.out.println("    ----"+partition.toString());
 				//partition.show();
 				
 				if(partition.isPartition_overloaded())
-					overloadedPartition.add(partition.getPartition_id());
+					overloadedPartition.add(partition.getPartition_globalId());
 			}									
 		}
 		

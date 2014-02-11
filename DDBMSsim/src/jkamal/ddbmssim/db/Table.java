@@ -5,20 +5,31 @@
 package jkamal.ddbmssim.db;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 public class Table implements Comparable<Table>{
 	private int tbl_id;
-	private String tbl_name;
 	private int tbl_db_id;
-	private Set<Data> tbl_data_set;
-	private Set<Integer> tbl_partitions;
+	private String tbl_name;
+	private Set<Partition> tbl_partitions;
 	
-	public Table() {
-		
+	public Table(int id, int db_id, String name) {
+		this.setTbl_id(id);
+		this.setTbl_db_id(db_id);
+		this.setTbl_name(name);
+		this.setTbl_partitions(new TreeSet<Partition>());
 	}
 	
+	// Copy Constructor
 	public Table(Table table) {
+		this.setTbl_id(table.getTbl_id());
+		this.setTbl_db_id(table.getTbl_db_id());
+		this.setTbl_name(table.getTbl_name());
 		
+		Set<Partition> clone_partitions = new TreeSet<Partition>();		
+		for(Partition clonePartition : table.getTbl_partitions())
+			clone_partitions.add(clonePartition);
+		this.setTbl_partitions(clone_partitions);		
 	}
 	
 	public int getTbl_id() {
@@ -29,14 +40,6 @@ public class Table implements Comparable<Table>{
 		this.tbl_id = tbl_id;
 	}
 
-	public String getTbl_name() {
-		return tbl_name;
-	}
-
-	public void setTbl_name(String tbl_name) {
-		this.tbl_name = tbl_name;
-	}
-
 	public int getTbl_db_id() {
 		return tbl_db_id;
 	}
@@ -45,20 +48,29 @@ public class Table implements Comparable<Table>{
 		this.tbl_db_id = tbl_db_id;
 	}
 
-	public Set<Data> getTbl_data_set() {
-		return tbl_data_set;
+	public String getTbl_name() {
+		return tbl_name;
 	}
 
-	public void setTbl_data_set(Set<Data> tbl_data_set) {
-		this.tbl_data_set = tbl_data_set;
+	public void setTbl_name(String tbl_name) {
+		this.tbl_name = tbl_name;
 	}
 
-	public Set<Integer> getTbl_partitions() {
+	public Set<Partition> getTbl_partitions() {
 		return tbl_partitions;
 	}
 
-	public void setTbl_partitions(Set<Integer> tbl_partitions) {
+	public void setTbl_partitions(Set<Partition> tbl_partitions) {
 		this.tbl_partitions = tbl_partitions;
+	}
+	
+	public Partition getPartition(int partition_id) {		
+		for(Partition partition : this.getTbl_partitions()) {						
+			if(partition.getPartition_id() == partition_id) 
+				return partition;
+		}	
+		
+		return null;
 	}
 
 	public void show() {

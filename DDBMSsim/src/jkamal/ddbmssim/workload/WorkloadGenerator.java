@@ -76,8 +76,8 @@ public class WorkloadGenerator {
 				workload.setWrl_transactionBorning((int) ((int) workload.getWrl_totalTransactions() * 0.5));
 				workload.setWrl_transactionBirthRate(0.5); // fixed rate
 				
-				// === Death Management === 						
-				workload.setWrl_transactionDeathProp(transactionPropGen(workload.getWrl_transactionTypes(), 
+				// === Death Management ===
+				workload.setWrl_transactionDeathProp(transactionPropConvertor(DBMSSimulator.TRANSACTION_PROPORTION,
 						workload.getWrl_transactionDying()));
 				
 				// Reducing Old Workload Transactions			
@@ -87,8 +87,8 @@ public class WorkloadGenerator {
 				System.out.println("[ACT] Varying current workload by reducing "+old_tr+" old transactions ...");
 				this.print(workload);
 
-				// === Birth Management ===								
-				workload.setWrl_transactionBirthProp(transactionPropGen(workload.getWrl_transactionTypes(), 
+				// === Birth Management ===
+				workload.setWrl_transactionBirthProp(transactionPropConvertor(DBMSSimulator.TRANSACTION_PROPORTION,
 						workload.getWrl_transactionBorning()));
 				
 				// Generating New Workload Transactions						
@@ -102,22 +102,21 @@ public class WorkloadGenerator {
 			} else {
 				// === Workload Generation Round 0 ===
 				workload = this.workloadInitialisation(db, DBMSSimulator.WORKLOAD_TYPE, workload_id);				
-				workload.setWrl_initTotalTransactions(DBMSSimulator.TRANSACTIONS);				
-				workload.setWrl_transactionProp(transactionPropGen(workload.getWrl_transactionTypes(), 
+				workload.setWrl_initTotalTransactions(DBMSSimulator.TRANSACTIONS);
+				workload.setWrl_transactionProp(transactionPropConvertor(DBMSSimulator.TRANSACTION_PROPORTION, 
 						DBMSSimulator.TRANSACTIONS));
 				
 				// Generating New Workload Transactions						
 				TransactionGenerator transactionGenerator = new TransactionGenerator();
 				transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());
 				workload.reInitialise(db);
+				this.print(workload);
 			}						
 				
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
-					"gathered for the target workload of simulation round "+workload_id);
+					"gathered for the target workload of simulation round "+workload_id);						
 			
-			//this.print(workload);
-			
-			//workload.show(db, "");
+			workload.show(db, "");
 			
 			// Clone the Workload
 			Workload cloned_workload = new Workload(workload);
@@ -127,51 +126,15 @@ public class WorkloadGenerator {
 		}
 	}		
 	
-	// Generates Transaction Proportions based on the Zipfian Ranking
-	public int[] transactionPropGen(int ranks, int elements) {		
-		int proportionArray[] = new int[ranks];
-		int rankArray[] = zipfLawDistributionGeneration(ranks, elements);
+	// Following the transaction proportion from TPC-C benchmark model 
+	private int[] transactionPropConvertor(double[] prop, int transactions) {
+		int proportionArray[] = new int[prop.length];
 		
-		// TR Rankings {T1, T2, T3, T4, T5} = {5, 4, 1, 2, 3}; 1 = Higher, 5 = Lower
-		int begin = 0;
-		int end = (rankArray.length - 1);
-		for(int i = 0; i < proportionArray.length; i++) {
-			if(i < 2) {
-				proportionArray[i] = rankArray[end];
-				-- end;
-			} else {
-				proportionArray[i] = rankArray[begin];
-				++ begin;
-			}			
-			//System.out.println("@debug >> TR-"+(i+1)+" | Counts = "+propArray[i]);
-		}
+		for(int i=0; i < proportionArray.length; i++)
+			proportionArray[i] = (int) (prop[i] * transactions);
 		
 		return proportionArray;
 	}	
-	
-	// Generates Zipfian Ranking for Transactions
-	public int[] zipfLawDistributionGeneration(int ranks, int elements) {
-		double prop[] = new double[ranks];
-		int finalProp[] = new int[ranks];
-		
-		double sum = 0.0d;
-		for(int rank = 0; rank < ranks; rank++) {
-			prop[rank] = elements / (rank+1); // exponent value is always 1
-			sum += prop[rank];
-		}
-			
-		double amplification = elements/sum;		
-		int finalSum = 0;
-		for(int rank = 0; rank < ranks; rank++) {
-			finalProp[rank] = (int) (prop[rank] * amplification);
-			finalSum += finalProp[rank];
-		}				
-		
-		finalProp[0] += (elements - finalSum); // Adjusting the difference by adding it to the highest rank proportion
-		finalSum += (elements - finalSum);
-		
-		return finalProp;
-	}
 	
 	// Printing the Workload contents
 	private void print(Workload workload) {

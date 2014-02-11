@@ -63,7 +63,7 @@ public class TransactionGenerator {
 				trDataList = new ArrayList<Integer>();
 				
 				// k -- required numbers of Data items based on Transaction type
-				for(int k = 0; k < i+2; k++) {					
+				for(int k = 0; k < DBMSSimulator.TRANSACTION_DATA[i]; k++) {					
 					rand = DBMSSimulator.randomDataGenerator.nextUniform(0.0, 1.0, true);
 					//System.out.println("# rand = "+rand);
 					data_id = db.getRandomData(rand);									
@@ -102,4 +102,15 @@ public class TransactionGenerator {
 		
 		return new_tr;
 	}	
+	
+	// TPC-C transaction generation
+	
+	// New-Order Transaction
+	private Transaction generateT1(int global_tr_id) {
+		Transaction transaction = null; //new Transaction(global_tr_id);
+		
+		
+		
+		return transaction;
+	}
 }

@@ -15,6 +15,7 @@ import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.DatabaseServer;
 import jkamal.ddbmssim.db.Node;
 import jkamal.ddbmssim.db.Partition;
+import jkamal.ddbmssim.db.Table;
 import jkamal.ddbmssim.workload.Workload;
 
 public class SimulationMetricsLogger {	
@@ -112,18 +113,20 @@ public class SimulationMetricsLogger {
 			
 			prWriter.println();			
 			
-			for(Partition partition : db.getDb_partitions()) {				
-				space = db.getDb_partitions().size();
+			for(Table table : db.getDb_tables()) {
+				for(Partition partition : table.getTbl_partitions()) {				
+					space = db.getDb_partitions();
+					
+					prWriter.print(Integer.toString(partition.getPartition_dataSet().size())+" ");
+					prWriter.print(Integer.toString(partition.getPartition_roaming_data())+" "); //getRoaming_dataObjects().size()
+					prWriter.print(Integer.toString(partition.getPartition_foreign_data())); //getForeign_dataObjects().size()
+					
+					if(space != 1)
+						prWriter.print(" ");
 				
-				prWriter.print(Integer.toString(partition.getPartition_dataSet().size())+" ");
-				prWriter.print(Integer.toString(partition.getPartition_roaming_data())+" "); //getRoaming_dataObjects().size()
-				prWriter.print(Integer.toString(partition.getPartition_foreign_data())); //getForeign_dataObjects().size()
-				
-				if(space != 1)
-					prWriter.print(" ");
-			
-				--space;									
-			}	
+					--space;									
+				}
+			}
 			
 			prWriter.println();
 		} finally {
@@ -178,19 +181,21 @@ public class SimulationMetricsLogger {
 		}			
 	}
 	
-	public void logPartition(Database db, Workload workload, PrintWriter prWriter) {		
-		for(Partition partition : db.getDb_partitions()) {
-			if(this.isData_movement())// && workload.getWrl_id() == 0)
-				this.writePartitionLog(workload, partition, prWriter);
-			//else
-				//this.writePartitionLog(workload, partition, prWriter);
+	public void logPartition(Database db, Workload workload, PrintWriter prWriter) {
+		for(Table table : db.getDb_tables()) {
+			for(Partition partition : table.getTbl_partitions()) {
+				if(this.isData_movement())// && workload.getWrl_id() == 0)
+					this.writePartitionLog(workload, partition, prWriter);
+				//else
+					//this.writePartitionLog(workload, partition, prWriter);
+			}
 		}
 	}
 	
 	private void writePartitionLog(Workload workload,Partition partition, PrintWriter prWriter) {
 		prWriter.print(workload.getWrl_id()+" ");
 		prWriter.print(workload.getMessage()+" ");
-		prWriter.print(partition.getPartition_id()+" ");
+		prWriter.print(partition.getPartition_globalId()+" ");
 		prWriter.print(partition.getPartition_nodeId()+" ");
 		prWriter.print(partition.getPartition_current_load()+" ");
 		prWriter.print(partition.getPartition_dataSet().size()+" ");

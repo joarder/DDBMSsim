@@ -32,10 +32,10 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
 	public final static String WORKLOAD_TYPE = "tpcc";
-	public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
+	//public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
 	public final static int TRANSACTIONS = 1000;
 	public final static int SIMULATION_RUNS = 12;
-	public final static double PARTITION_SIZE = 1; // 1; 0.1; 0.01
+	public final static double PARTITION_SCALE = 0.1; // 1; 0.1; 0.01
 	
 	// TPC-C Database table (9) row counts in different scale
 	//double[] pk_array = {0.0019, 0.0192, 0.0192, 0.192, 0.5769, 0.0576, 0.0576, 0.0173, 0.0576};
@@ -46,14 +46,41 @@ public class DBMSSimulator {
 	public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //5,200
 	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //4,800 (6*800) 6 Equal sized partitions
 	//public final static int[] PK_ARRAY = {10, 100, 100, 1000, 3000, 300, 300, 300, 90}; //7,200 (9*800) 9 Equal sized partitions
-	//public final static int[] PK_ARRAY = {446021, 99961, 30121, 99796, 41121, 44434, 10091, 10, 1} // 
+	//public final static int[] PK_ARRAY = {446021, 99961, 30121, 99796, 41121, 44434, 10091, 10, 1}; // 
+	public final static int[] TPCC_TABLE = {30, 10, 30, 100, 5, 30, 300, 100, 1}; //606 - following tpcc
+	//public final static int[] TPCC_TABLE = {300, 100, 300, 1000, 50, 300, 3000, 1000, 1}; //6051 - following tpcc
 
 	//int[] data_row_size_array = {89, 95, 655, 46, 24, 8, 54, 306, 82}; // values are in Bytes
 	public final static double[] DATA_ROW_SIZE = {0.000084877, 0.000090599, 0.000624657, 0.000043869, 0.000022888, 0.0000076294, 0.000051498, 0.000291824, 0.000078201}; // values are in MegaBytes
 
+	public final static double[] TRANSACTION_PROPORTION = {0.45, 0.43, 0.04, 0.04, 0.04};
+	public final static int[] TRANSACTION_DATA = {10, 9, 5, 6, 3};
+	public final static int[] T1_DATA = {1, 1, 0, 1, 1, 1, 1, 2, 1};
+	public final static int[] T2_DATA = {5, 2, 1, 0, 0, 0, 0, 0, 1};
+	public final static int[] T3_DATA = {3, 0, 0, 0, 0, 1, 1, 0, 0};
+	public final static int[] T4_DATA = {1, 0, 0, 0, 1, 2, 2, 0, 0};
+	public final static int[] T5_DATA = {0, 1, 0, 0, 0, 0, 1, 1, 0};
+	public final static int[] T1_CHANGE = {0, 0, 0, 0, 1, 1, 1, 0, 0};
+	public final static int[] T2_CHANGE = {0, 0, 1, 0, 0, 0, 0, 0, 0};
+	public final static int[] T3_CHANGE = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+	public final static int[] T4_CHANGE = {0, 0, 0, 0, -1, 0, 0, 0, 0};
+	public final static int[] T5_CHANGE = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+	/*
+	 * TPC-C tables
+	 * Customer
+	 * District
+	 * History
+	 * Item
+	 * New-Order
+	 * Order
+	 * Order-Line
+	 * Stock
+	 * Warehouse
+	 */
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "hmetis";
 	public final static String METIS = "pmetis";
@@ -85,18 +112,16 @@ public class DBMSSimulator {
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
 		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size	
-		Database db = new Database(0, "tpcc", 0, dbs, "hash", PARTITION_SIZE);
+		Database db = new Database(0, "tpcc", 0, dbs, "hash", PARTITION_SCALE);
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
 		dbs.getDbs_tenants().add(db);
 		
 		// Perform Bootstrapping through synthetic Data generation and placing it into appropriate Partition
 		System.out.println("[ACT] Started Bootstrapping Process ...");
-		System.out.println("[ACT] Generating "+ DATA_ROWS +" synthetic data items ...");
-
 		Bootstrapping bootstrapping = new Bootstrapping();
-		bootstrapping.bootstrapping(dbs, db, DATA_ROWS);
-		System.out.println("[MSG] Data creation and placement into partitions done.");
+		bootstrapping.bootstrapping(db);
+		System.out.println("[MSG] Data creation and placement into partitions have been done.");
 		
 		// Printing out details after data loading
 		dbs.show();
@@ -104,7 +129,7 @@ public class DBMSSimulator {
 		
 		// Data Pre-processing
 		DataPreprocessor dataPreprocessor = new DataPreprocessor();
-		dataPreprocessor.preprocess(db);
+		dataPreprocessor.generateDataPopularity(db);
 				
 		// Workload generation for the entire simulation		
 		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
@@ -115,11 +140,13 @@ public class DBMSSimulator {
 		
 		String[] partitioners = {"hgr", "chg", "gr"};
 		String[] strategies = {"bs", "s1", "s2"};
-		String[] directories = {hMETIS_DIR_LOCATION, METIS_DIR_LOCATION};
+		String[] directories = {hMETIS_DIR_LOCATION, METIS_DIR_LOCATION, LOG_LOCATION};
 		
 		// Create 9 databases under 3 partitioning schemes and 3 data movement strategies
 		Map<Integer, Set<Database>> db_map = new TreeMap<Integer, Set<Database>>();
 		String dir = null;
+		String log_dir = directories[2];
+		
 		for(int i = 0; i < partitioners.length; ++i) {
 			Set<Database> db_set = new TreeSet<Database>();
 			for(int j = 0; j < strategies.length; ++j) {
@@ -136,11 +163,11 @@ public class DBMSSimulator {
 					dir = directories[0];
 				
 				// Creating individual log files
-				clone_db.setWorkload_log(simulation_logger.getWriter(dir, 
+				clone_db.setWorkload_log(simulation_logger.getWriter(log_dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"workload_log"));
-				clone_db.setNode_log(simulation_logger.getWriter(dir, 
+				clone_db.setNode_log(simulation_logger.getWriter(log_dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"node_log"));
-				clone_db.setPartition_log(simulation_logger.getWriter(dir, 
+				clone_db.setPartition_log(simulation_logger.getWriter(log_dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"partition_log"));
 				
 				db_set.add(clone_db);
@@ -229,7 +256,7 @@ public class DBMSSimulator {
 		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 		
 		// Mapping cluster id to partition id
-		cluster_id_mapper.processPartFile(db, sampled_workload, db.getDb_partitions().size(), directory, partitioner);		
+		cluster_id_mapper.processPartFile(db, sampled_workload, db.getDb_partitions(), directory, partitioner);		
 		//db.show();
 		
 		// Perform data movement		
@@ -250,7 +277,7 @@ public class DBMSSimulator {
 		switch(partitioner) {
 		case "hgr":
 			// Run hMetis HyperGraph Partitioning
-			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions().size(), "hgr"); 		
+			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "hgr"); 		
 			hgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
@@ -263,7 +290,7 @@ public class DBMSSimulator {
 			break;
 			
 		case "chg":			
-			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions().size(), "chg"); 		
+			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "chg"); 		
 			chgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
@@ -278,7 +305,7 @@ public class DBMSSimulator {
 		case "gr":
 			//==============================================================================================
 			// Run Metis Graph Partitioning							
-			GraphMinCut graphMinCut = new GraphMinCut(db, workload, METIS, db.getDb_partitions().size()); 		
+			GraphMinCut graphMinCut = new GraphMinCut(db, workload, METIS, db.getDb_partitions()); 		
 			graphMinCut.runMetis();
 			
 			// Wait for 5 seconds to ensure that the Part files have been generated properly

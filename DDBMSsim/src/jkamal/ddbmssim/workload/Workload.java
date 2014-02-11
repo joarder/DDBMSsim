@@ -751,20 +751,6 @@ public class Workload implements Comparable<Workload> {
 				}
 			}
 		}
-		
-		// Check
-		/*for(Entry<Integer, Set<Integer>> entry : this.getWrl_dataTransactionsInvolved().entrySet()) {
-			System.out.print(" d"+entry.getKey()+" {");
-			
-			for(Integer j : entry.getValue()) {
-				System.out.print(j+", ");
-			}
-			
-			System.out.print("}\n");
-		}*/
-		
-		//Data data = db.search(44);
-		//int tr_counts = this.getWrl_dataTransactionsInvolved().get(data.getData_id()).size();
 	}
 	
 	// Workload Sampling
@@ -810,7 +796,10 @@ public class Workload implements Comparable<Workload> {
 			}
 		}
 		
-		this.setWrl_meanDTI(((double)sum/(double)this.getWrl_distributedTransactions()));
+		if(this.getWrl_distributedTransactions() != 0)
+			this.setWrl_meanDTI(((double)sum/(double)this.getWrl_distributedTransactions()));
+		else
+			this.setWrl_meanDTI(0.0);
 	}
 	
 	// Search and return a target Transaction from the Workload

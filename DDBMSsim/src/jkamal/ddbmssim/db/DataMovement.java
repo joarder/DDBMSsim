@@ -62,9 +62,11 @@ public class DataMovement {
 			node.setNode_outflow(0);
 		}
 		
-		for(Partition partition : db.getDb_partitions()) {
-			partition.setPartition_inflow(0);
-			partition.setPartition_outflow(0);
+		for(Table table : db.getDb_tables()) {
+			for(Partition partition : table.getTbl_partitions()) {
+				partition.setPartition_inflow(0);
+				partition.setPartition_outflow(0);
+			}
 		}
 	}
 	
