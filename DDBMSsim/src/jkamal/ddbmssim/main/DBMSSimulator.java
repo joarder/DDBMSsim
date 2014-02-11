@@ -34,7 +34,7 @@ public class DBMSSimulator {
 	public final static String WORKLOAD_TYPE = "tpcc";
 	public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 5;
+	public final static int SIMULATION_RUNS = 12;
 	public final static double PARTITION_SIZE = 1; // 1; 0.1; 0.01
 	
 	// TPC-C Database table (9) row counts in different scale
@@ -206,12 +206,14 @@ public class DBMSSimulator {
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
 		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
 		TransactionClassifier transactionClassifier = new TransactionClassifier();
-		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);		
-		//sampled_workload.show(db, "");
-		
-		write("Total "+target_transactions+" transactions having "+sampled_workload.getWrl_totalDataObjects()+" data objects have been identified for partitioning.", "MSG");
+		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+				
 		// Assign Shadow HMetis Data Id and generate workload and fix files
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);
+		
+		write("Total "+target_transactions+" transactions having "+sampled_workload.getWrl_totalDataObjects()+" data objects have been identified for partitioning.", "MSG");
+		sampled_workload.show(db, "");
+		
 		// Generate workload and fix-files for partitioning
 		boolean empty = workloadFileGenerator.generateWorkloadFile(db, sampled_workload, partitioner);		
 		

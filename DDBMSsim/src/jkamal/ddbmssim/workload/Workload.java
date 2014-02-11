@@ -804,11 +804,13 @@ public class Workload implements Comparable<Workload> {
 		int sum = 0;
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
 			for(Transaction transaction : entry.getValue()) {
-				sum += transaction.getTr_dtImpact();
+				if(transaction.getTr_dtCost() > 0)
+					sum += transaction.getTr_dtImpact();
+				//System.out.println("@ "+sum+"| "+transaction.getTr_dtImpact());
 			}
 		}
 		
-		this.setWrl_meanDTI(sum/this.getWrl_totalTransactions());
+		this.setWrl_meanDTI(((double)sum/(double)this.getWrl_distributedTransactions()));
 	}
 	
 	// Search and return a target Transaction from the Workload
@@ -896,7 +898,7 @@ public class Workload implements Comparable<Workload> {
 		this.calculateMeanDTI();
 		
 		System.out.println("      # Total Distributed Transactions: "+this.getWrl_distributedTransactions()+" ("+this.getWrl_percentageDistributedTransactions()+"%)");
-		System.out.println("      # Mean Impact (for "+this.getWrl_totalTransactions()+" Workload Transactions): "+this.getWrl_meanDTI());
+		System.out.println("      # Mean Impact: "+this.getWrl_meanDTI());
 		
 		switch(type) {
 		case "hgr":
