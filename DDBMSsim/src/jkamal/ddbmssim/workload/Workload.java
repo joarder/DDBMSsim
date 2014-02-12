@@ -877,7 +877,7 @@ public class Workload implements Comparable<Workload> {
 			for(Transaction transaction : entry.getValue()) {
 				transaction.calculateDTCost(db);
 				System.out.print("     ");
-				//transaction.show(db);
+				transaction.show(db);
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction Types						
 				

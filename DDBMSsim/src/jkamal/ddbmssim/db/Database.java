@@ -16,7 +16,7 @@ public class Database implements Comparable<Database> {
 	private String db_name;
 	private int db_tenant;	
 	private DatabaseServer db_dbs;
-	//private int db_data_numbers;
+	private int db_data_numbers;
 	private int db_partition_size;
 	private int db_partitions;
 	private String db_partitioing;
@@ -32,7 +32,7 @@ public class Database implements Comparable<Database> {
 		this.setDb_name(name);
 		this.setDb_tenant(tenant_id);
 		this.setDb_dbs(dbs);
-		//this.setDb_dataNumbers(DBMSSimulator.DATA_ROWS);
+		this.setDb_data_numbers(0);
 		this.setDb_partitionSize((int)(partition_size * 1000)); // Partition Size Range (1 ~ 1000 GB), 1 GB = 1000 Data Objects of equal size
 		this.setDb_partitions(0);
 		this.setDb_partitioing(model);
@@ -47,7 +47,7 @@ public class Database implements Comparable<Database> {
 		this.setDb_name(db.getDb_name());
 		this.setDb_tenant(db.getDb_tenant());	
 		this.setDb_dbs(db.getDb_dbs());
-		//this.setDb_dataNumbers(db.getDb_dataNumbers());
+		this.setDb_data_numbers(db.getDb_data_numbers());
 		this.setDb_partitionSize(db.getDb_partitionSize());		
 		this.setDb_partitions(db.getDb_partitions());
 		
@@ -113,6 +113,14 @@ public class Database implements Comparable<Database> {
 		this.db_dbs = db_dbs;
 	}
 
+	public int getDb_data_numbers() {
+		return db_data_numbers;
+	}
+
+	public void setDb_data_numbers(int db_data_numbers) {
+		this.db_data_numbers = db_data_numbers;
+	}
+
 	public String getDb_partitioing() {
 		return db_partitioing;
 	}
@@ -136,14 +144,6 @@ public class Database implements Comparable<Database> {
 	public void setDb_tables(Set<Table> db_tables) {
 		this.db_tables = db_tables;
 	}
-	
-	/*public int getDb_dataNumbers() {
-		return db_data_numbers;
-	}
-
-	public void setDb_dataNumbers(int db_data) {
-		this.db_data_numbers = db_data;
-	}*/
 
 	public Map<Integer, Set<Integer>> getDb_nodes() {
 		return db_nodes;
@@ -209,7 +209,7 @@ public class Database implements Comparable<Database> {
 		return null;
 	}		
 	
-	public Partition getPartition(int partition_id) {
+	public Partition getPartition(int partition_id) { // search by global partition id from the Database level
 		for(Table table : this.getDb_tables()) {
 			for(Partition partition : table.getTbl_partitions()) {						
 				if(partition.getPartition_globalId() == partition_id) 
@@ -245,9 +245,7 @@ public class Database implements Comparable<Database> {
 		return node_partitions;
 	}
 	
-	public int getRandomData(double rand) {
-		int data_id = -1;
-		
+	public int getRandomData(double rand) {		
 		for(int i = 0; i < this.getDb_normalisedCumalitiveZipfProbabilityArray().length; i++) {
 			double d_i = this.getDb_normalisedCumalitiveZipfProbabilityArray()[i];
 			double d_i1 = this.getDb_normalisedCumalitiveZipfProbabilityArray()[i+1];
@@ -255,7 +253,8 @@ public class Database implements Comparable<Database> {
 			if(d_i <= rand && rand < d_i1){
 				Data data_i = this.search(i+1);
 				Data data_i1 = this.search(i+2);
-				
+				//System.out.println("(i) "+data_i.toString()+"|"+data_i.getData_normalisedCumulativeZipfProbability());
+				//System.out.println("(i+1) "+data_i1.toString()+"|"+data_i1.getData_normalisedCumulativeZipfProbability());
 				if(data_i.getData_zipfProbability() > data_i1.getData_zipfProbability())
 					return (i+1);
 				else
@@ -265,7 +264,7 @@ public class Database implements Comparable<Database> {
 				return 1;			
 		}
 		
-		return data_id;
+		return -1;
 	}
 	
 	public void show() {		
@@ -278,6 +277,7 @@ public class Database implements Comparable<Database> {
 		int comma = -1;		
 		for(Entry<Integer, Set<Integer>> entry : this.getDb_nodes().entrySet()) {
 			System.out.println("    --N"+entry.getKey()
+					+"("+this.getDb_dbs().getDbs_node(entry.getKey()).getNode_size()+" MB)"
 					+" | Inflow("+this.getDb_dbs().getDbs_node(entry.getKey()).getNode_inflow()+")|"
 					+" | Outflow("+this.getDb_dbs().getDbs_node(entry.getKey()).getNode_outflow()+")"
 					);

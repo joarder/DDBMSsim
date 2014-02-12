@@ -201,7 +201,7 @@ public class WorkloadFileGenerator {
 									++newline;
 									
 									if(trData.isData_isMoveable())									
-										writer.write(Integer.toString(trData.getData_partitionId()));
+										writer.write(Integer.toString(trData.getData_globalPartitionId()));
 									else
 										writer.write(Integer.toString(-1));
 									
@@ -692,7 +692,7 @@ public class WorkloadFileGenerator {
 									++newline;
 									
 									if(trData.isData_isMoveable())									
-										writer.write(Integer.toString(trData.getData_partitionId()));
+										writer.write(Integer.toString(trData.getData_globalPartitionId()));
 									else
 										writer.write(Integer.toString(-1));
 									

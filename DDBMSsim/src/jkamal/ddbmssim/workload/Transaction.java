@@ -166,7 +166,7 @@ public class Transaction implements Comparable<Transaction> {
 			data = db.search(ns.next());
 			
 			if(data.isData_isRoaming())
-				pid = data.getData_partitionId();				
+				pid = data.getData_globalPartitionId();				
 			else 
 				pid = data.getData_homePartitionId();
 				
@@ -184,7 +184,7 @@ public class Transaction implements Comparable<Transaction> {
 		while(ps.hasNext()) {
 			data = db.search(ps.next());
 			if(data.isData_isRoaming())
-				pid = data.getData_partitionId();
+				pid = data.getData_globalPartitionId();
 			else 
 				pid = data.getData_homePartitionId();				
 			

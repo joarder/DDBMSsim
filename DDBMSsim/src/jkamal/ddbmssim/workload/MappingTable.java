@@ -49,7 +49,7 @@ public class MappingTable {
 				for(Integer data_id : transaction.getTr_dataSet()) {
 					Data data = db.search(data_id);
 					
-					partition_id = data.getData_partitionId();
+					partition_id = data.getData_globalPartitionId();
 					
 					switch(partitioner) {
 					case "hgr":

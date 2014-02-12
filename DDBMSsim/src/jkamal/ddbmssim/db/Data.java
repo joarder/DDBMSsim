@@ -33,8 +33,9 @@ public class Data implements Comparable<Data> {
 	private boolean data_hasShadowId;
 	private int data_virtual_node_id;
 	
-	// Partition Attributes		
-	private int data_partition_id;			// Currently residing (Roaming/Home) Partition Id
+	// Partition Attributes
+	private int data_local_partition_id;
+	private int data_global_partition_id;			// Currently residing (Roaming/Home) Partition Id
 	private int data_home_partition_id;		// Original Home Partition Id	
 	// Node Attributes
 	private int data_node_id;				// Currently residing (Roaming/Home) Node Id
@@ -43,7 +44,7 @@ public class Data implements Comparable<Data> {
 	private boolean data_isRoaming;							
 	
 	// Default Constructor
-	public Data(int id, int pid, int nid, boolean roaming) {
+	public Data(int id, int lpid, int gpid, int nid, boolean roaming) {
 		this.setData_id(id); // default data id = -1 means undefined.
 		this.setData_label("d"+id);
 		this.setData_value(this.getData_label());
@@ -66,8 +67,9 @@ public class Data implements Comparable<Data> {
 		this.setData_hasShadowId(false);
 		this.setData_virtual_node_id(-1);
 		
-		this.setData_partitionId(pid); // default partition id = -1 means undefined.
-		this.setData_homePartitionId(pid);
+		this.setData_localPartitionId(lpid);
+		this.setData_globalPartitionId(gpid); // default partition id = -1 means undefined.
+		this.setData_homePartitionId(gpid);
 		
 		this.setData_nodeId(nid);
 		this.setData_homeNodeId(nid);
@@ -96,7 +98,8 @@ public class Data implements Comparable<Data> {
 		this.setData_hasShadowId(data.isData_hasShadowId());
 		this.setData_virtual_node_id(data.getData_virtual_node_id());
 				
-		this.setData_partitionId(data.getData_partitionId());				
+		this.setData_localPartitionId(data.getData_localPartitionId());
+		this.setData_globalPartitionId(data.getData_globalPartitionId());				
 		this.setData_homePartitionId(data.getData_homePartitionId());
 		
 		this.setData_nodeId(data.getData_nodeId());
@@ -211,12 +214,20 @@ public class Data implements Comparable<Data> {
 		this.data_isRoaming = data_isRoaming;
 	}
 
-	public int getData_partitionId() {
-		return data_partition_id;
+	public int getData_localPartitionId() {
+		return data_local_partition_id;
 	}
 
-	public void setData_partitionId(int data_partition_id) {
-		this.data_partition_id = data_partition_id;
+	public void setData_localPartitionId(int data_local_partition_id) {
+		this.data_local_partition_id = data_local_partition_id;
+	}
+
+	public int getData_globalPartitionId() {
+		return data_global_partition_id;
+	}
+
+	public void setData_globalPartitionId(int data_partition_id) {
+		this.data_global_partition_id = data_partition_id;
 	}
 
 	public int getData_homePartitionId() {
@@ -316,11 +327,11 @@ public class Data implements Comparable<Data> {
 	public String toString() {		
 		if(this.isData_isRoaming())
 			return (this.data_label+"|"+this.data_pk//+"|"+this.getData_hmetisClusterId()
-					+"|P"+this.data_partition_id+"("+this.data_home_partition_id
+					+"|P"+this.data_global_partition_id+"("+this.data_home_partition_id
 					+")/N"+this.data_node_id+"("+this.data_home_node_id+"))");// @C("+this.data_hmetis_cluster_id+") @h("+this.data_shadow_hmetis_id+")");
 		else
 			return (this.data_label+"|"+this.data_pk//+"|"+this.getData_hmetisClusterId()
-					+"|P"+this.data_partition_id
+					+"|P"+this.data_global_partition_id
 					+"/N"+this.data_node_id+")");// @C("+this.data_hmetis_cluster_id+") //@h("+this.data_shadow_hmetis_id+")");
 	}
 		

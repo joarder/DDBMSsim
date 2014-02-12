@@ -190,7 +190,7 @@ public class DataMovement {
 	}
 	
 	private void updateData(Data data, int dst_partition_id, int dst_node_id, boolean roaming) {		
-		data.setData_partitionId(dst_partition_id);					
+		data.setData_globalPartitionId(dst_partition_id);					
 		data.setData_nodeId(dst_node_id);
 		
 		if(roaming)
@@ -254,7 +254,7 @@ public class DataMovement {
 						home_partition_id = data.getData_homePartitionId();
 						home_partition = db.getPartition(data.getData_homePartitionId());																		
 						
-						current_partition_id = data.getData_partitionId();									
+						current_partition_id = data.getData_globalPartitionId();									
 						current_partition = db.getPartition(current_partition_id);
 						current_node_id = data.getData_nodeId();			
 						

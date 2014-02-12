@@ -55,6 +55,7 @@ public class WorkloadGenerator {
 	
 	// Generates Workloads for the entire simulation
 	public void generateWorkloads(DatabaseServer dbs, Database db, int simulation_run_numbers) throws IOException {
+		DataPopularityProfile popularityProfile = new DataPopularityProfile();				
 		Workload workload = null;
 		int workload_id = 0;
 		
@@ -62,6 +63,8 @@ public class WorkloadGenerator {
 			System.out.println("--------------------------------------------------------------------------");
 			System.out.println("[ACT] Starting workload generation for simulation round "+workload_id+"...");
 			if(workload_id != 0) {
+				//popularityProfile.generateDataPopularity(db);
+				
 				workload = new Workload(this.getWorkload_map().get(workload_id -1));
 				workload.setWrl_id(workload_id);
 				workload.setWrl_label("W"+workload_id);
@@ -100,6 +103,8 @@ public class WorkloadGenerator {
 				
 				workload.reInitialise(db);
 			} else {
+				popularityProfile.generateDataPopularity(db);
+				
 				// === Workload Generation Round 0 ===
 				workload = this.workloadInitialisation(db, DBMSSimulator.WORKLOAD_TYPE, workload_id);				
 				workload.setWrl_initTotalTransactions(DBMSSimulator.TRANSACTIONS);

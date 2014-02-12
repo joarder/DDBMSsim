@@ -11,10 +11,10 @@ import java.util.TreeSet;
 
 public class Node implements Comparable<Node> {		
 	private int node_id;
-	private String node_label;				
+	private String node_label;	
 	private Set<Integer> node_partitions;
 	private static int NODE_MAX_CAPACITY = 100; // 1000GB = 1TB -- 1000 Partitions // 1TB Data (in Size) Or, equivalently 1000 Partitions can be stored in a single node.
-	
+	private double node_size;
 	private int node_inflow;
 	private int node_outflow;
 	
@@ -24,6 +24,7 @@ public class Node implements Comparable<Node> {
 		this.setNode_id(id);
 		this.setNode_label("N"+label);		
 		this.setNode_partitions(new TreeSet<Integer>());
+		this.setNode_size(0.0d);
 		this.setNode_inflow(0);
 		this.setNode_outflow(0);
 		this.setNode_total_data(0);
@@ -51,6 +52,14 @@ public class Node implements Comparable<Node> {
 
 	public static void setNODE_MAX_CAPACITY(int max_capacity) {
 		NODE_MAX_CAPACITY = max_capacity;
+	}
+
+	public double getNode_size() {
+		return node_size;
+	}
+
+	public void setNode_size(double node_size) {
+		this.node_size = node_size;
 	}
 
 	public Set<Integer> getNode_partitions() {

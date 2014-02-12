@@ -70,6 +70,19 @@ public class DatabaseServer {
 		this.dbs_tenants = dbs_tenants;
 	}
 	
+	public void updateNodeLoad() {
+		double sum = 0.0d;
+		for(Node node : this.getDbs_nodes()) {
+			for(int pid : node.getNode_partitions()) {
+				for(Database db : this.getDbs_tenants()) {					
+					sum += db.getPartition(pid).getPartition_size();
+				}
+			}
+			
+			node.setNode_size(sum);
+		}
+	}
+	
 	public void show() {
 		// DBS Details
 		System.out.println("[OUT] Database Server Details===");

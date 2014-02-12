@@ -14,13 +14,13 @@ import jkamal.ddbmssim.db.Partition;
 import jkamal.ddbmssim.db.Table;
 import jkamal.ddbmssim.main.DBMSSimulator;
 
-public class DataPreprocessor {
+public class DataPopularityProfile {
 	private Map<Integer, Double> zipf_exponent;
 	private Map<Integer, Double> zipf_probability_map;
 	private Map<Integer, Double> zipf_cumulative_probability_map;
-	private Map<Integer, Double> zipf_norm_cumulative_probability_map;
+	private Map<Integer, Double> zipf_norm_cumulative_probability_map;	
 	
-	public DataPreprocessor() {
+	public DataPopularityProfile() {
 		this.setZipf_exponent(new TreeMap<Integer, Double>());
 		this.setZipf_probability_map(new TreeMap<Integer, Double>());
 		this.setZipf_cumulative_probability_map(new TreeMap<Integer, Double>());
@@ -90,12 +90,13 @@ public class DataPreprocessor {
 	//
 	public void generateDataPopularity(Database db) {			  
 	    int data_id_tracker = 1;
-	    double normalisation_carry_fwd = 0.0;	    
+	    double normalisation_carry_fwd = 0.0;
 	    
 	    this.configureZipfExponent(db);
 	    
 	    for(Table tbl : db.getDb_tables()) {
-	    	int table_data_size = DBMSSimulator.TPCC_TABLE[tbl.getTbl_id()-1];
+	    	//int table_data_size = DBMSSimulator.TPCC_TABLE[tbl.getTbl_id()-1];
+	    	int table_data_size = tbl.getTbl_data_count();
 	    	
 	    	this.getZipfProbability(0, table_data_size, data_id_tracker, this.getZipf_exponent().get(tbl.getTbl_id()));	    	
 	    	normalisation_carry_fwd = this.getNormalisedCumulativeProbability(db.getDb_tables().size(), data_id_tracker, normalisation_carry_fwd);
@@ -115,7 +116,8 @@ public class DataPreprocessor {
 		    	Partition partition = p_iterator.next();
 	   		 
 		    	// Iterating each data objects
-		    	for(Data data : partition.getPartition_dataSet()) {	    		
+		    	for(Data data : partition.getPartition_dataSet()) {	
+		    		//System.out.println(data.getData_id()+"|"+data_id_tracker);
 		    		data.setData_zipfProbability(
 		    				this.getZipf_probability_map().get(data_id_tracker));
 		    		data.setData_cumulativeZipfProbability(
@@ -124,13 +126,20 @@ public class DataPreprocessor {
 		    				this.getZipf_norm_cumulative_probability_map().get(data_id_tracker));	    		
 		    		
 		    		db.getDb_normalisedCumalitiveZipfProbabilityArray()[data.getData_id()-1] = data.getData_normalisedCumulativeZipfProbability();
-		    		
+		    		if(data.getData_id() == 206) {
 		    		System.out.println(data.getData_id()+" | "
 					+data.getData_zipfProbability()+" | "
 					+data.getData_cumulativeZipfProbability()+" | "
-					+data.getData_normalisedCumulativeZipfProbability());
+					+data.getData_normalisedCumulativeZipfProbability());}
 		    				    		
 		    		++data_id_tracker;
+		    		
+		    		
+		    		if(data.getData_normalisedCumulativeZipfProbability() > table.getTbl_max_cp())
+						table.setTbl_max_cp(data.getData_normalisedCumulativeZipfProbability());
+					
+					if(data.getData_normalisedCumulativeZipfProbability() < table.getTbl_min_cp())
+						table.setTbl_min_cp(data.getData_normalisedCumulativeZipfProbability());
 		    	}		    	
 		    }
 	    }			
