@@ -104,12 +104,14 @@ public class DataPopularityProfile {
 	    	data_id_tracker += table_data_size;
 		}
 		
-		// Iterating each tables
+		// Iterating each tables	    
 	    data_id_tracker = 1;
 		Iterator<Table> t_iterator = db.getDb_tables().iterator();
 	    while(t_iterator.hasNext()) {
 	    	Table table = t_iterator.next();
-	    	
+	    	double max = Double.MIN_VALUE;
+		    double min = Double.MAX_VALUE;
+		    
 	    	// Iterating each partitions
 	    	Iterator<Partition> p_iterator = table.getTbl_partitions().iterator();
 		    while(p_iterator.hasNext()) {
@@ -126,22 +128,25 @@ public class DataPopularityProfile {
 		    				this.getZipf_norm_cumulative_probability_map().get(data_id_tracker));	    		
 		    		
 		    		db.getDb_normalisedCumalitiveZipfProbabilityArray()[data.getData_id()-1] = data.getData_normalisedCumulativeZipfProbability();
-		    		if(data.getData_id() == 206) {
-		    		System.out.println(data.getData_id()+" | "
+		    		
+		    		/*System.out.println(data.getData_id()+" | "
 					+data.getData_zipfProbability()+" | "
 					+data.getData_cumulativeZipfProbability()+" | "
-					+data.getData_normalisedCumulativeZipfProbability());}
+					+data.getData_normalisedCumulativeZipfProbability());*/
 		    				    		
 		    		++data_id_tracker;
 		    		
 		    		
-		    		if(data.getData_normalisedCumulativeZipfProbability() > table.getTbl_max_cp())
-						table.setTbl_max_cp(data.getData_normalisedCumulativeZipfProbability());
+		    		if(data.getData_normalisedCumulativeZipfProbability() > max)
+		    			max = data.getData_normalisedCumulativeZipfProbability();
 					
-					if(data.getData_normalisedCumulativeZipfProbability() < table.getTbl_min_cp())
-						table.setTbl_min_cp(data.getData_normalisedCumulativeZipfProbability());
-		    	}		    	
+					if(data.getData_normalisedCumulativeZipfProbability() < min)
+						min = data.getData_normalisedCumulativeZipfProbability();						
+		    	}
 		    }
+		    
+		    table.setTbl_max_cp(max);
+	    	table.setTbl_min_cp(min);
 	    }			
 	}
 	
@@ -150,9 +155,9 @@ public class DataPopularityProfile {
 			int table_data_size = DBMSSimulator.TPCC_TABLE[tbl.getTbl_id()-1];
 			
 			if(tbl.getTbl_id() == 2 || tbl.getTbl_id() == 4 || tbl.getTbl_id() == 9)
-				this.getZipf_exponent().put(tbl.getTbl_id(), 2.25d);	    		
+				this.getZipf_exponent().put(tbl.getTbl_id(), 2.0d);	    		
 			else
-				this.getZipf_exponent().put(tbl.getTbl_id(), 2.25d+scale(table_data_size, 0, 1, 1, 300));						
+				this.getZipf_exponent().put(tbl.getTbl_id(), 2.0d+scale(table_data_size, 0, 1, 1, 300));						
 		}	
 	}
 	

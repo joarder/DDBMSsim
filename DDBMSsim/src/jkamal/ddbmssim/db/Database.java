@@ -196,7 +196,18 @@ public class Database implements Comparable<Database> {
 	
 	// Searches for a specific Data by it's Id
 	public Data search(int data_id) {
-		for(Table table : this.getDb_tables()) {
+		int target_partition = data_id % this.getDb_dbs().getDbs_nodes().size();		
+		
+		for(Table table : this.getDb_tables()) {			
+			for(Data data : table.getPartition(target_partition + 1).getPartition_dataSet()) {
+				if(data.getData_id() == data_id)
+					return data;
+			}
+		}
+		
+		//return(this.getPartition((target_partition + 1)).getData_byDataId(data_id));
+		
+		/*for(Table table : this.getDb_tables()) {
 			for(Partition partition : table.getTbl_partitions()) {
 				int partition_id = partition.lookupPartitionId_byDataId(data_id);
 				//System.out.println("@debug >> searching d"+data_id+" | Found in P"+partition_id);
@@ -204,15 +215,15 @@ public class Database implements Comparable<Database> {
 				if(partition_id != -1)				
 					return(this.getPartition(partition_id).getData_byDataId(data_id));
 			}
-		}
+		}*/
 		
 		return null;
 	}		
 	
-	public Partition getPartition(int partition_id) { // search by global partition id from the Database level
+	public Partition getPartition(int global_partition_id) { // search by global partition id from the Database level
 		for(Table table : this.getDb_tables()) {
 			for(Partition partition : table.getTbl_partitions()) {						
-				if(partition.getPartition_globalId() == partition_id) 
+				if(partition.getPartition_globalId() == global_partition_id) 
 					return partition;
 			}
 		}
@@ -245,26 +256,67 @@ public class Database implements Comparable<Database> {
 		return node_partitions;
 	}
 	
-	public int getRandomData(double rand) {		
-		for(int i = 0; i < this.getDb_normalisedCumalitiveZipfProbabilityArray().length; i++) {
+	public int getRandomData(double rand, Table table) {		
+		//for(Table table : this.getDb_tables()) {
+			for(Partition partition : table.getTbl_partitions()) {
+				Data[] dataArray = partition.getPartition_dataSet()
+						.toArray(new Data[partition.getPartition_dataSet().size()]);
+				
+				for(int i = 0; i < (dataArray.length - 1); i++) {
+					double d_i = this.getDb_normalisedCumalitiveZipfProbabilityArray()[dataArray[i].getData_id()];
+					double d_i1 = this.getDb_normalisedCumalitiveZipfProbabilityArray()[dataArray[i+1].getData_id()];
+					
+					if(d_i <= rand && rand < d_i1){						
+						
+						/*if(dataArray[i].getData_id() == 30 || dataArray[i+1].getData_id() == 30) {
+							System.out.println(">-- (i) "+dataArray[i].toString()+"|"+dataArray[i+1].getData_normalisedCumulativeZipfProbability());
+							System.out.println(">-- (i+1) "+dataArray[i+1].toString()+"|"+dataArray[i+1].getData_normalisedCumulativeZipfProbability());
+						}*/
+						
+						if(dataArray[i].getData_zipfProbability() > dataArray[i].getData_zipfProbability())
+							return (dataArray[i].getData_id());
+						else 
+							return (dataArray[i+1].getData_id());						
+					}
+					else if(d_i > rand)
+						return dataArray[0].getData_id();
+				}
+			}
+		//}
+		
+		return -1;
+		
+		/*for(int i = 0; i < this.getDb_normalisedCumalitiveZipfProbabilityArray().length; i++) {
 			double d_i = this.getDb_normalisedCumalitiveZipfProbabilityArray()[i];
 			double d_i1 = this.getDb_normalisedCumalitiveZipfProbabilityArray()[i+1];
 			
 			if(d_i <= rand && rand < d_i1){
 				Data data_i = this.search(i+1);
 				Data data_i1 = this.search(i+2);
-				//System.out.println("(i) "+data_i.toString()+"|"+data_i.getData_normalisedCumulativeZipfProbability());
-				//System.out.println("(i+1) "+data_i1.toString()+"|"+data_i1.getData_normalisedCumulativeZipfProbability());
+				
+				if(data_i == null || data_i1 == null) {
+					System.out.println("> (i) = "+i);
+					System.out.println("> (i+1) = "+(i+1));
+				}
+				
+				
+				if(data_i.getData_id() == 206 || data_i1.getData_id() == 206) {
+				System.out.println(">-- (i) "+data_i.toString()+"|"+data_i.getData_normalisedCumulativeZipfProbability());
+				System.out.println(">-- (i+1) "+data_i1.toString()+"|"+data_i1.getData_normalisedCumulativeZipfProbability());}
 				if(data_i.getData_zipfProbability() > data_i1.getData_zipfProbability())
 					return (i+1);
-				else
-					return (i+2);
+				else {
+					if(data_i1.getData_zipfProbability() > tbl_max)
+						return (i+1);
+					else
+						return (i+2);
+				}
 			}
 			else if(d_i > rand)
 				return 1;			
 		}
 		
-		return -1;
+		return -1;*/
 	}
 	
 	public void show() {		

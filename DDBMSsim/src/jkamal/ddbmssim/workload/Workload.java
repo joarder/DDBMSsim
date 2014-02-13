@@ -814,6 +814,32 @@ public class Workload implements Comparable<Workload> {
 		return null;
 	}
 	
+	// Returns a list of transaction ids which contain the searched data id
+	public ArrayList<Integer> getTransactionListForSearchedData(int data_id) {
+		ArrayList<Integer> transactionList = new ArrayList<Integer>();
+		
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {
+				if(transaction.getTr_dataSet().contains(data_id))
+					transactionList.add(transaction.getTr_id());
+			}
+		}
+		
+		return transactionList;
+	}
+	
+	// Remove a data id from the given list of transactions
+	public void removeDataFromTransactions(int data_id, ArrayList<Integer> transactionList) {
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {
+				if(transaction.getTr_dataSet().contains(data_id)) {
+					transaction.getTr_dataSet().remove(data_id);
+					System.out.println("@ d"+data_id+" has been removed from T"+transaction.getTr_id());
+				}
+			}
+		}
+	}
+	
 	// Remove a set of transactions from the Workload
 	public void removeTransactions(Database db, Set<Integer> removed_transactions, int i, boolean flag) {
 		for(int tr_id : removed_transactions) {

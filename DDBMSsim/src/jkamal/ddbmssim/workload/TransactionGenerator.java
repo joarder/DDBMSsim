@@ -58,7 +58,7 @@ public class TransactionGenerator {
 				++global_tr_id;
 				DBMSSimulator.incGlobal_tr_id();
 				// Gather Data objects from a Transaction
-				trDataSet = this.getTransactionalDataSet(db, i);				
+				trDataSet = this.getTransactionalDataSet(db, i, workload);				
 				// Create a new Transaction												
 				transaction = new Transaction(global_tr_id, trDataSet);				
 				transaction.setTr_ranking(i+1);
@@ -85,7 +85,7 @@ public class TransactionGenerator {
 	}	
 	
 	// Create a data set for a specific transaction of type i
-	private Set<Integer> getTransactionalDataSet(Database db, int i) {
+	private Set<Integer> getTransactionalDataSet(Database db, int i, Workload workload) {
 		DataPopularityProfile popularityProfile = new DataPopularityProfile();
 		Set<Integer> trDataSet = new TreeSet<Integer>();
 		ArrayList<Integer> trDataList = new ArrayList<Integer>();
@@ -95,7 +95,7 @@ public class TransactionGenerator {
 			int data_nums = DBMSSimulator.TRANSACTION_DATA_DIST[i][table.getTbl_id()-1];
 			int action = DBMSSimulator.TRANSACTION_DB_CHANGE[i][table.getTbl_id()-1];
 			
-			System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);
+			//System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
 			
 			switch(action) {
 			case 0:						
@@ -103,13 +103,14 @@ public class TransactionGenerator {
 						for(Partition partition : table.getTbl_partitions()) {
 							for(Data data : partition.getPartition_dataSet()) {
 								trDataSet.add(data.getData_id());
-								System.out.println("@ d"+data.getData_id());
+								
+								//System.out.println("\t\t* d"+data.getData_id());
 							}
 						}
 					} else {
 						for(int d = 0; d < data_nums; d++) {
-							double rand = DBMSSimulator.randomDataGenerator.nextUniform(table.getTbl_min_cp(), table.getTbl_max_cp(), true);				
-							data_id = db.getRandomData(rand);				
+							double rand = DBMSSimulator.randomDataGenerator.nextUniform(table.getTbl_min_cp(), table.getTbl_max_cp(), false);				
+							data_id = db.getRandomData(rand, table);				
 							
 							if(trDataList.contains(data_id) && d > 0) {
 								--d;
@@ -117,9 +118,14 @@ public class TransactionGenerator {
 							} else {
 								trDataList.add(data_id);
 								trDataSet.add(data_id);
-								
-								System.out.println("# rand = "+rand+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
-								System.out.println("@ d"+data_id);
+																
+								//System.out.println("\t\t# rand = "+rand+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
+								//System.out.println("\t\t@ d"+data_id);
+								//Data x = db.search(data_id);								
+								/*System.out.println("\t\t@-- "+x.getData_id()+" | "
+										+x.getData_zipfProbability()+" | "
+										+x.getData_cumulativeZipfProbability()+" | "
+										+x.getData_normalisedCumulativeZipfProbability());*/								
 							}
 						}
 					}
@@ -130,7 +136,7 @@ public class TransactionGenerator {
 					int target_partition = data_id % db.getDb_dbs().getDbs_nodes().size();
 					Partition partition = table.getPartition(target_partition+1);
 					
-					Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), partition.getPartition_nodeId(), false);				
+					Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false);				
 					data.setData_pk(partition.getPartition_table_id());
 					data.setData_size(DBMSSimulator.DATA_ROW_SIZE[partition.getPartition_table_id()-1]);
 					
@@ -150,8 +156,8 @@ public class TransactionGenerator {
 					break;
 					
 			case -1:
-					double rand = DBMSSimulator.randomDataGenerator.nextUniform(table.getTbl_min_cp(), table.getTbl_max_cp(), true);				
-					data_id = db.getRandomData(rand);
+					double rand = DBMSSimulator.randomDataGenerator.nextUniform(table.getTbl_min_cp(), table.getTbl_max_cp(), false);				
+					data_id = db.getRandomData(rand, table);
 					
 					Data _data = db.search(data_id);
 					Partition _partition = table.getPartition(_data.getData_localPartitionId());
@@ -161,12 +167,15 @@ public class TransactionGenerator {
 					_partition.getPartition_dataSet().remove(_data);
 					_partition.updatePartitionLoad();						
 					
+					// Remove the data id from the workload transactions
+					workload.removeDataFromTransactions(data_id, workload.getTransactionListForSearchedData(data_id));
+					
 					// Decrement Data counts at Node and Database level
 					db.getDb_dbs().getDbs_node(_partition.getPartition_nodeId()).decNode_totalData();
 					int data_counts = db.getDb_data_numbers();
 					db.setDb_data_numbers(--data_counts);
 										
-					System.out.println("@ Deleting d"+data_id+" from "+_partition.getPartition_label());
+					//System.out.println("@ Deleting d"+data_id+" from "+_partition.getPartition_label());
 					// Update Data Popularity
 					popularityProfile.generateDataPopularity(db);
 					break;

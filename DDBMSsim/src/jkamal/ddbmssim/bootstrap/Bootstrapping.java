@@ -69,7 +69,7 @@ public class Bootstrapping {
 				int target_partition = data_id % db.getDb_dbs().getDbs_nodes().size();
 				Partition partition = tbl.getPartition(target_partition+1);
 				
-				Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), partition.getPartition_nodeId(), false);				
+				Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), tbl.getTbl_id(), partition.getPartition_nodeId(), false);				
 				data.setData_pk(partition.getPartition_table_id());
 				data.setData_size(DBMSSimulator.DATA_ROW_SIZE[partition.getPartition_table_id()-1]);
 				
