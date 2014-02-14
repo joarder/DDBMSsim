@@ -5,6 +5,7 @@
 package jkamal.ddbmssim.workload;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -92,8 +93,8 @@ public class TransactionGenerator {
 		int data_id = 0;
 		
 		for(Table table : db.getDb_tables()) {			
-			int data_nums = DBMSSimulator.TRANSACTION_DATA_DIST[i][table.getTbl_id()-1];
-			int action = DBMSSimulator.TRANSACTION_DB_CHANGE[i][table.getTbl_id()-1];
+			int data_nums = DBMSSimulator.TPCC_TRANSACTION_DATA_DIST[i][table.getTbl_id()-1];
+			int action = DBMSSimulator.TPCC_TRANSACTIONAL_CHANGE[i][table.getTbl_id()-1];
 			
 			//System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
 			
@@ -133,17 +134,25 @@ public class TransactionGenerator {
 			
 			case 1:					
 					data_id = db.getDb_data_numbers()+1;
+					
+					// Generate Primary and Foreign Keys
+					LinkedList<Integer> linkSet = db.getSchemaLinkSet(table.getTbl_id());
+					String[] keys = db.getTableKeys(table.getTbl_type(), table.getTbl_id(), data_id, linkSet);
+					
+					// Generate Partition Id
 					int target_partition = data_id % db.getDb_dbs().getDbs_nodes().size();
 					Partition partition = table.getPartition(target_partition+1);
 					
-					Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false);				
+					// Create a new Data Row Object
+					Data data = new Data(data_id, keys[0], keys[1], partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false);				
 					data.setData_pk(partition.getPartition_table_id());
-					data.setData_size(DBMSSimulator.DATA_ROW_SIZE[partition.getPartition_table_id()-1]);
+					data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id()-1]);
 					
 					// Put an entry into the Partition Data lookup table and add in the Data object into the Partition Data Set
 					partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_globalId());
 					partition.getPartition_dataSet().add(data);
 					partition.updatePartitionLoad();
+					
 					// Increment Data counts at Node and Database level
 					db.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();					
 					db.setDb_data_numbers(data_id);

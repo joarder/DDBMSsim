@@ -15,13 +15,14 @@ public class Data implements Comparable<Data> {
 	private int data_weight;
 	private int data_pk;
 	private boolean data_isMoveable;
+
+	private String data_primary_key;
+	private String data_foreign_key;
 	
 	// Workload Attributes
 	private double data_zipf_probability;
 	private double data_cumulative_zipf_probability;
 	private double data_normalised_cumulative_zipf_probability;
-	
-	//
 	private double data_popularity;
 	private double data_cumulative_beta_probability;
 	
@@ -47,7 +48,7 @@ public class Data implements Comparable<Data> {
 	private boolean data_isRoaming;							
 	
 	// Default Constructor
-	public Data(int id, int lpid, int gpid, int tid, int nid, boolean roaming) {
+	public Data(int id, String pk, String fk, int lpid, int gpid, int tid, int nid, boolean roaming) {
 		this.setData_id(id); // default data id = -1 means undefined.
 		this.setData_label("d"+id);
 		this.setData_value(this.getData_label());
@@ -56,6 +57,9 @@ public class Data implements Comparable<Data> {
 		this.setData_weight(1);
 		this.setData_pk(-1);
 		this.setData_isMoveable(false);	
+		
+		this.setData_primary_key(pk);
+		this.setData_foreign_key(fk);
 		
 		this.setData_zipfProbability(0.0);
 		this.setData_cumulativeZipfProbability(0.0);
@@ -161,6 +165,22 @@ public class Data implements Comparable<Data> {
 
 	public void setData_pk(int data_pk) {
 		this.data_pk = data_pk;
+	}
+
+	public String getData_primary_key() {
+		return data_primary_key;
+	}
+
+	public void setData_primary_key(String data_primary_key) {
+		this.data_primary_key = data_primary_key;
+	}
+
+	public String getData_foreign_key() {
+		return data_foreign_key;
+	}
+
+	public void setData_foreign_key(String data_foreign_key) {
+		this.data_foreign_key = data_foreign_key;
 	}
 
 	public double getData_zipfProbability() {

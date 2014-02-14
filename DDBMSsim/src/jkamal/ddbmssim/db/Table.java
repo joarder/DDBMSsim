@@ -11,16 +11,18 @@ public class Table implements Comparable<Table>{
 	private int tbl_id;
 	private int tbl_db_id;
 	private String tbl_name;
+	private int tbl_type;
 	private int tbl_data_count;
 	private double tbl_size;
 	private Set<Partition> tbl_partitions;
 	private double tbl_max_cp;
 	private double tbl_min_cp;
 	
-	public Table(int id, int db_id, String name) {
+	public Table(int id, int type, int db_id, String name) {
 		this.setTbl_id(id);
 		this.setTbl_db_id(db_id);
 		this.setTbl_name(name);
+		this.setTbl_type(type);
 		this.setTbl_data_count(0);
 		this.setTbl_size(0.0d);
 		this.setTbl_partitions(new TreeSet<Partition>());
@@ -33,6 +35,7 @@ public class Table implements Comparable<Table>{
 		this.setTbl_id(table.getTbl_id());
 		this.setTbl_db_id(table.getTbl_db_id());
 		this.setTbl_name(table.getTbl_name());
+		this.setTbl_type(table.getTbl_type());
 		this.setTbl_data_count(table.getTbl_data_count());
 		this.setTbl_size(table.getTbl_size());
 		
@@ -83,6 +86,14 @@ public class Table implements Comparable<Table>{
 
 	public void setTbl_size(double tbl_size) {
 		this.tbl_size = tbl_size;
+	}
+
+	public int getTbl_type() {
+		return tbl_type;
+	}
+
+	public void setTbl_type(int tbl_type) {
+		this.tbl_type = tbl_type;
 	}
 
 	public Set<Partition> getTbl_partitions() {

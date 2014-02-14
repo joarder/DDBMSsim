@@ -152,7 +152,7 @@ public class DataPopularityProfile {
 	
 	private void configureZipfExponent(Database db) {		
 		for(Table tbl : db.getDb_tables()) {
-			int table_data_size = DBMSSimulator.TPCC_TABLE[tbl.getTbl_id()-1];
+			int table_data_size = DBMSSimulator.TPCC_TABLE_DATA[tbl.getTbl_id()-1];
 			
 			if(tbl.getTbl_id() == 2 || tbl.getTbl_id() == 4 || tbl.getTbl_id() == 9)
 				this.getZipf_exponent().put(tbl.getTbl_id(), 2.0d);	    		

@@ -5,11 +5,14 @@
 package jkamal.ddbmssim.db;
 
 import java.io.PrintWriter;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+
+import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class Database implements Comparable<Database> {
 	private int db_id;
@@ -194,6 +197,80 @@ public class Database implements Comparable<Database> {
 		this.db_normalised_cumalitive_zipf_probability = db_normalised_cumalitive_zipf_probability;
 	}
 	
+	// Getting the dependency information for the target table
+	public LinkedList<Integer> getSchemaLinkSet(int table_id) {
+		LinkedList<Integer> linkSet = new LinkedList<Integer>();
+		
+		for(int i = 0; i < DBMSSimulator.TPCC_SCHEMA[table_id - 1].length; i++) {
+			int link = DBMSSimulator.TPCC_SCHEMA[table_id - 1][i];					
+			
+			if(link == 1)
+				linkSet.add(DBMSSimulator.TPCC_TABLE_DATA[i]);
+		}
+		
+		return linkSet;
+	}
+	
+	// For Primary Table
+	public String createPrimaryKey(int table_id, int data_id) {
+		return (Integer.toString(table_id)+"-"+Integer.toString(data_id));
+	}
+	
+	// For Dependent Table
+	public String createPrimaryKey(LinkedList<Integer> linkSet, int data_id) {
+		String primary_key = "";
+		int adder = linkSet.size();
+		
+		for(Integer i : linkSet) {
+			primary_key += Integer.toString(i);
+			
+			if(adder != 1)
+				primary_key += "-";
+			
+			--adder;
+		}
+		
+		return primary_key;
+	}
+	
+	// For Secondary Table
+	public String createForeignKey(int table_id, LinkedList<Integer> linkSet, int data_id) {
+		String foreign_key = Integer.toString(table_id)+"-";
+		int adder = linkSet.size();
+		
+		for(Integer i : linkSet) {
+			foreign_key += Integer.toString(i);
+			
+			if(adder != 1)
+				foreign_key += "-";
+			
+			--adder;
+		}
+		
+		return foreign_key;
+	}
+	
+	public String[] getTableKeys(int table_type, int table_id, int data_id, LinkedList<Integer> linkSet) {
+		String[] keys = new String[2];
+		
+		switch(table_type) {
+			case 1: // Primary table
+				keys[0] = this.createPrimaryKey(table_id, data_id); //primary_key
+				keys[1] = Integer.toString(Integer.MAX_VALUE); // No Foreign Key
+				break;
+			case 0: // Secondary table
+				keys[0] = this.createPrimaryKey(table_id, data_id); //primary_key
+				keys[1] = this.createForeignKey(table_id, linkSet, data_id);
+				break;
+			case -1: // Dependent table						
+				keys[0] = this.createPrimaryKey(linkSet, data_id); //primary_key
+				keys[1] = Integer.toString(Integer.MAX_VALUE); // No Foreign Key
+				break;
+		}
+		
+		return keys;
+	}
+	
 	// Searches for a specific Data by it's Id
 	public Data search(int data_id) {
 		int target_partition = data_id % this.getDb_dbs().getDbs_nodes().size();		
@@ -204,18 +281,6 @@ public class Database implements Comparable<Database> {
 					return data;
 			}
 		}
-		
-		//return(this.getPartition((target_partition + 1)).getData_byDataId(data_id));
-		
-		/*for(Table table : this.getDb_tables()) {
-			for(Partition partition : table.getTbl_partitions()) {
-				int partition_id = partition.lookupPartitionId_byDataId(data_id);
-				//System.out.println("@debug >> searching d"+data_id+" | Found in P"+partition_id);
-				
-				if(partition_id != -1)				
-					return(this.getPartition(partition_id).getData_byDataId(data_id));
-			}
-		}*/
 		
 		return null;
 	}		

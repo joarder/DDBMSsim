@@ -29,46 +29,43 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
+	public final static double PARTITION_SCALE = 0.1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
-	//public final static int DATA_ROWS = 5200; // 10GB Data (in Size) // 5,200 for a TPC-C Database (scaled down by 1K for individual table row counts)
+	
 	public final static int TRANSACTIONS = 100;
 	public final static int SIMULATION_RUNS = 2;
-	public final static double PARTITION_SCALE = 0.1; // 1; 0.1; 0.01	
-	// TPC-C Database table (9) row counts in different scale
-	//double[] pk_array = {0.0019, 0.0192, 0.0192, 0.192, 0.5769, 0.0576, 0.0576, 0.0173, 0.0576};
-	//public final static int[] TPCC_TABLE = {446021, 99961, 30121, 99796, 41121, 44434, 10091, 10, 1}; // 
-	public final static int[] TPCC_TABLE = {30, 10, 30, 100, 5, 30, 300, 100, 1}; //606 - following tpcc
-	//public final static int[] TPCC_TABLE = {300, 100, 300, 1000, 50, 300, 3000, 1000, 1}; //6051 - following tpcc
-	//int[] data_row_size_array = {89, 95, 655, 46, 24, 8, 54, 306, 82}; // values are in Bytes
-	public final static double[] DATA_ROW_SIZE = {0.000084877, 0.000090599, 0.000624657, 0.000043869, 0.000022888, 0.0000076294, 0.000051498, 0.000291824, 0.000078201}; // values are in MegaBytes
-	public final static double[] TRANSACTION_PROPORTION = {0.45, 0.43, 0.04, 0.04, 0.04};
-	public final static int[] TRANSACTION_DATA = {10, 9, 5, 6, 3};
-	public final static int[][] TRANSACTION_DATA_DIST = new int[][]{ 
-											{1, 2, 0, 1, 1, 1, 1, 2, 1},
-											{5, 1, 1, 0, 0, 0, 0, 0, 1},
-											{3, 0, 0, 0, 0, 1, 1, 0, 0},
-											{1, 0, 0, 0, 1, 2, 2, 0, 0},
-											{0, 1, 0, 0, 0, 0, 1, 1, 0}
+
+	public final static int TPCC_WAREHOUSE = 1; // # of Warehouse, W = 1
+	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
+	public final static int[][] TPCC_SCHEMA = new int[][]{
+											{0, 1, 0, 0, 0, 0, 0, 0, 0}, // Customer (Secondary:0) - District
+											{0, 0, 0, 0, 0, 0, 0, 0, 1}, // District (Secondary:0) - Warehouse
+											{1, 1, 0, 0, 0, 0, 0, 0, 0}, // History (Dependent:-1) - Customer, District
+											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // Item (Primary:1)
+											{0, 0, 0, 0, 0, 1, 0, 0, 0}, // New-Order (Dependent:-1) - Order
+											{1, 0, 0, 0, 0, 0, 0, 0, 0}, // Order (Secondary:0) - Customer
+											{0, 0, 0, 0, 0, 1, 0, 1, 0}, // Order-Line (Secondary:0) - New-Order, Stock
+											{0, 0, 0, 1, 0, 0, 0, 0, 1}, // Stock (Dependent:-1) - Item, Warehouse
+											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // Warehouse (Primary:1)
 											};
-	public final static int[][] TRANSACTION_DB_CHANGE = new int[][]{
-											{0, 0, 0, 0, 1, 1, 1, 0, 0},
-											{0, 0, 1, 0, 0, 0, 0, 0, 0},
-											{0, 0, 0, 0, 0, 0, 0, 0, 0},
-											{0, 0, 0, 0, -1, 0, 0, 0, 0},
-											{0, 0, 0, 0, 0, 0, 0, 0, 0}
+	public final static int[] TPCC_TABLE_TYPE = {0, 0, -1, 1, -1, 0, 0, -1, 1}; // -1: Dependent, 0: Secondary, 1: Primary
+	public final static int[] TPCC_TABLE_DATA = {30, 10, 30, 100, 5, 30, 300, 100, 1}; // Should be multiplied by W
+	public final static double[] TPCC_DATA_ROW_SIZE = {0.000084877, 0.000090599, 0.000624657, 0.000043869, 0.000022888, 0.0000076294, 0.000051498, 0.000291824, 0.000078201}; // values are in MegaBytes
+	public final static double[] TPCC_TRANSACTION_PROPORTION = {0.45, 0.43, 0.04, 0.04, 0.04};
+	public final static int[][] TPCC_TRANSACTION_DATA_DIST = new int[][]{ 
+											{1, 2, 0, 1, 1, 1, 1, 2, 1}, // 10: New-Order Transaction
+											{5, 1, 1, 0, 0, 0, 0, 0, 1}, // 9 : Payment Transaction
+											{3, 0, 0, 0, 0, 1, 1, 0, 0}, // 5 : Order-Status Transaction
+											{1, 0, 0, 0, 1, 2, 2, 0, 0}, // 6 : Delivery Transaction
+											{0, 1, 0, 0, 0, 0, 1, 1, 0}  // 3 : Stock-Level Transaction
 											};
-	/*
-	 * TPC-C tables
-	 * Customer
-	 * District
-	 * History
-	 * Item
-	 * New-Order
-	 * Order
-	 * Order-Line
-	 * Stock
-	 * Warehouse
-	 */
+	public final static int[][] TPCC_TRANSACTIONAL_CHANGE = new int[][]{
+											{0, 0, 0, 0, 1, 1, 1, 0, 0}, // 3: Insert
+											{0, 0, 1, 0, 0, 0, 0, 0, 0}, // 0
+											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // 0
+											{0, 0, 0, 0, -1, 0, 0, 0, 0},// 1: Delete
+											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
+											};
 	
 	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
 	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";

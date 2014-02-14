@@ -80,7 +80,7 @@ public class WorkloadGenerator {
 				workload.setWrl_transactionBirthRate(0.5); // fixed rate
 				
 				// === Death Management ===
-				workload.setWrl_transactionDeathProp(transactionPropConvertor(DBMSSimulator.TRANSACTION_PROPORTION,
+				workload.setWrl_transactionDeathProp(transactionPropConvertor(DBMSSimulator.TPCC_TRANSACTION_PROPORTION,
 						workload.getWrl_transactionDying()));
 				
 				// Reducing Old Workload Transactions			
@@ -91,7 +91,7 @@ public class WorkloadGenerator {
 				this.print(workload);
 
 				// === Birth Management ===
-				workload.setWrl_transactionBirthProp(transactionPropConvertor(DBMSSimulator.TRANSACTION_PROPORTION,
+				workload.setWrl_transactionBirthProp(transactionPropConvertor(DBMSSimulator.TPCC_TRANSACTION_PROPORTION,
 						workload.getWrl_transactionBorning()));
 				
 				// Generating New Workload Transactions						
@@ -108,7 +108,7 @@ public class WorkloadGenerator {
 				// === Workload Generation Round 0 ===
 				workload = this.workloadInitialisation(db, DBMSSimulator.WORKLOAD_TYPE, workload_id);				
 				workload.setWrl_initTotalTransactions(DBMSSimulator.TRANSACTIONS);
-				workload.setWrl_transactionProp(transactionPropConvertor(DBMSSimulator.TRANSACTION_PROPORTION, 
+				workload.setWrl_transactionProp(transactionPropConvertor(DBMSSimulator.TPCC_TRANSACTION_PROPORTION, 
 						DBMSSimulator.TRANSACTIONS));
 				
 				// Generating New Workload Transactions						
