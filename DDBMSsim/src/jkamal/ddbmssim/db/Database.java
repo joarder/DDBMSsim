@@ -205,7 +205,7 @@ public class Database implements Comparable<Database> {
 			int link = DBMSSimulator.TPCC_SCHEMA[table_id - 1][i];					
 			
 			if(link == 1)
-				linkSet.add(DBMSSimulator.TPCC_TABLE_DATA[i]);
+				linkSet.add(i);
 		}
 		
 		return linkSet;
@@ -234,7 +234,7 @@ public class Database implements Comparable<Database> {
 	}
 	
 	// For Secondary Table
-	public String createForeignKey(int table_id, LinkedList<Integer> linkSet, int data_id) {
+	public String createForeignKey(int table_id, LinkedList<Integer> linkSet) {
 		String foreign_key = Integer.toString(table_id)+"-";
 		int adder = linkSet.size();
 		
@@ -254,15 +254,15 @@ public class Database implements Comparable<Database> {
 		String[] keys = new String[2];
 		
 		switch(table_type) {
-			case 1: // Primary table
+			case 0: // Primary table
 				keys[0] = this.createPrimaryKey(table_id, data_id); //primary_key
 				keys[1] = Integer.toString(Integer.MAX_VALUE); // No Foreign Key
 				break;
-			case 0: // Secondary table
+			case 1: // Secondary table
 				keys[0] = this.createPrimaryKey(table_id, data_id); //primary_key
-				keys[1] = this.createForeignKey(table_id, linkSet, data_id);
+				keys[1] = this.createForeignKey(table_id, linkSet);
 				break;
-			case -1: // Dependent table						
+			case 2: // Dependent table						
 				keys[0] = this.createPrimaryKey(linkSet, data_id); //primary_key
 				keys[1] = Integer.toString(Integer.MAX_VALUE); // No Foreign Key
 				break;

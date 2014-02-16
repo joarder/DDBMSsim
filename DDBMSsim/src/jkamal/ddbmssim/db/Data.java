@@ -6,6 +6,9 @@
 
 package jkamal.ddbmssim.db;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Data implements Comparable<Data> {
 	private int data_id;
 	private String data_label;
@@ -16,8 +19,8 @@ public class Data implements Comparable<Data> {
 	private int data_pk;
 	private boolean data_isMoveable;
 
-	private String data_primary_key;
-	private String data_foreign_key;
+	private Map<Integer, Integer> data_primary_key;
+	private Map<Integer, Integer> data_foreign_key;
 	
 	// Workload Attributes
 	private double data_zipf_probability;
@@ -48,7 +51,7 @@ public class Data implements Comparable<Data> {
 	private boolean data_isRoaming;							
 	
 	// Default Constructor
-	public Data(int id, String pk, String fk, int lpid, int gpid, int tid, int nid, boolean roaming) {
+	public Data(int id, int lpid, int gpid, int tid, int nid, boolean roaming) {
 		this.setData_id(id); // default data id = -1 means undefined.
 		this.setData_label("d"+id);
 		this.setData_value(this.getData_label());
@@ -58,8 +61,8 @@ public class Data implements Comparable<Data> {
 		this.setData_pk(-1);
 		this.setData_isMoveable(false);	
 		
-		this.setData_primary_key(pk);
-		this.setData_foreign_key(fk);
+		this.setData_primary_key(new HashMap<Integer, Integer>());
+		this.setData_foreign_key(new HashMap<Integer, Integer>());
 		
 		this.setData_zipfProbability(0.0);
 		this.setData_cumulativeZipfProbability(0.0);
@@ -167,19 +170,19 @@ public class Data implements Comparable<Data> {
 		this.data_pk = data_pk;
 	}
 
-	public String getData_primary_key() {
+	public Map<Integer, Integer> getData_primary_key() {
 		return data_primary_key;
 	}
 
-	public void setData_primary_key(String data_primary_key) {
+	public void setData_primary_key(Map<Integer, Integer> data_primary_key) {
 		this.data_primary_key = data_primary_key;
 	}
 
-	public String getData_foreign_key() {
+	public Map<Integer, Integer> getData_foreign_key() {
 		return data_foreign_key;
 	}
 
-	public void setData_foreign_key(String data_foreign_key) {
+	public void setData_foreign_key(Map<Integer, Integer> data_foreign_key) {
 		this.data_foreign_key = data_foreign_key;
 	}
 

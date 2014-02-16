@@ -136,15 +136,14 @@ public class TransactionGenerator {
 					data_id = db.getDb_data_numbers()+1;
 					
 					// Generate Primary and Foreign Keys
-					LinkedList<Integer> linkSet = db.getSchemaLinkSet(table.getTbl_id());
-					String[] keys = db.getTableKeys(table.getTbl_type(), table.getTbl_id(), data_id, linkSet);
+					LinkedList<Integer> linkSet = db.getSchemaLinkSet(table.getTbl_id());					
 					
 					// Generate Partition Id
 					int target_partition = data_id % db.getDb_dbs().getDbs_nodes().size();
 					Partition partition = table.getPartition(target_partition+1);
 					
 					// Create a new Data Row Object
-					Data data = new Data(data_id, keys[0], keys[1], partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false);				
+					Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false);				
 					data.setData_pk(partition.getPartition_table_id());
 					data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id()-1]);
 					
