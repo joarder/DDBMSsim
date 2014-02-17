@@ -35,21 +35,20 @@ public class DBMSSimulator {
 	public final static int TRANSACTIONS = 100;
 	public final static int SIMULATION_RUNS = 2;
 
-	public final static int TPCC_WAREHOUSE = 2; // # of Warehouse, W = 1+
-	public final static int TPCC_ITEM = 100000; // # of Items, I = 100000
+	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
 	public final static int[] TPCC_TABLE_TYPE = {0, 0, 1, 1, 1, 1, 1, 1, 2}; // 0: Primary, 1: Secondary, 2: Dependent
-	public final static int[] TPCC_TABLE_DATA = { // Should be multiplied by W and scale value
-												1, 			// Warehouse
-												100000,		// Item 
-												10, 		// District
-												100000, 	// Stock
-												30000, 		// Customer
-												30000, 		// History
-												30000, 		// Order
-												5000, 		// New-Order
-												300000		// Order-Line
-												};
+	public final static int[][] TPCC_SCHEMA = new int[][]{
+											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // Warehouse (Primary:0)
+											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // Item (Primary:0)
+											{1, 0, 0, 0, 0, 0, 0, 0, 0}, // District (Secondary:1) - Warehouse
+											{1, 1, 0, 0, 0, 0, 0, 0, 0}, // Stock (Secondary:1) - Item, Warehouse
+											{0, 0, 1, 0, 0, 0, 0, 0, 0}, // Customer (Secondary:1) - District
+											{0, 0, 1, 0, 1, 0, 0, 0, 0}, // History (Secondary:1) - Customer, District
+											{0, 0, 0, 0, 1, 0, 0, 0, 0}, // Order (Secondary:1) - Customer
+											{0, 0, 0, 0, 0, 0, 1, 0, 0}, // New-Order (Secondary:1) - Order
+											{0, 0, 0, 1, 0, 0, 0, 1, 0}  // Order-Line (Dependent:2) - New-Order, Stock											
+											};
 	public final static double[] TPCC_DATA_ROW_SIZE = { // values are in MegaBytes
 													0.000078201, // Warehouse
 													0.000043869, // Item
@@ -61,17 +60,7 @@ public class DBMSSimulator {
 													0.000022888, // New-Order
 													0.000051498	 // Order-Line
 													};
-	public final static int[][] TPCC_SCHEMA = new int[][]{
-											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // Warehouse (Primary:0)
-											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // Item (Primary:0)
-											{1, 0, 0, 0, 0, 0, 0, 0, 0}, // District (Secondary:1) - Warehouse
-											{1, 1, 0, 0, 0, 0, 0, 0, 0}, // Stock (Secondary:1) - Item, Warehouse
-											{0, 0, 1, 0, 0, 0, 0, 0, 0}, // Customer (Secondary:1) - District
-											{0, 0, 1, 0, 1, 0, 0, 0, 0}, // History (Secondary:1) - Customer, District
-											{0, 0, 0, 0, 1, 0, 0, 0, 0}, // Order (Secondary:1) - Customer
-											{0, 0, 0, 0, 0, 0, 1, 0, 0}, // New-Order (Secondary:1) - Order
-											{0, 0, 0, 1, 0, 0, 0, 1, 0}  // Order-Line (Dependent:2) - New-Order, Stock											
-											};	
+	
 	public final static double[] TPCC_TRANSACTION_PROPORTION = {0.45, 0.43, 0.04, 0.04, 0.04};
 	public final static int[][] TPCC_TRANSACTION_DATA_DIST = new int[][]{
 											// New-Order Transaction(10) (Read/Write|High Frequency) : Place a new Order 

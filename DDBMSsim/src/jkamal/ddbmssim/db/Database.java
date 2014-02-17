@@ -5,6 +5,7 @@
 package jkamal.ddbmssim.db;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -198,8 +199,8 @@ public class Database implements Comparable<Database> {
 	}
 	
 	// Getting the dependency information for the target table
-	public LinkedList<Integer> getSchemaLinkSet(int table_id) {
-		LinkedList<Integer> linkSet = new LinkedList<Integer>();
+	public ArrayList<Integer> getSchemaLinkSet(int table_id) {
+		ArrayList<Integer> linkSet = new ArrayList<Integer>();
 		
 		for(int i = 0; i < DBMSSimulator.TPCC_SCHEMA[table_id - 1].length; i++) {
 			int link = DBMSSimulator.TPCC_SCHEMA[table_id - 1][i];					
