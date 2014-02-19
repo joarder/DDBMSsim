@@ -151,13 +151,11 @@ public class DataPopularityProfile {
 	}
 	
 	private void configureZipfExponent(Database db) {		
-		for(Table tbl : db.getDb_tables()) {
-			int table_data_size = DBMSSimulator.TPCC_TABLE_DATA[tbl.getTbl_id()-1];
-			
-			if(tbl.getTbl_id() == 2 || tbl.getTbl_id() == 4 || tbl.getTbl_id() == 9)
-				this.getZipf_exponent().put(tbl.getTbl_id(), 2.0d);	    		
+		for(Table table : db.getDb_tables()) {			
+			if(table.getTbl_id() == 2 || table.getTbl_id() == 4 || table.getTbl_id() == 9)
+				this.getZipf_exponent().put(table.getTbl_id(), 2.0d);	    		
 			else
-				this.getZipf_exponent().put(tbl.getTbl_id(), 2.0d+scale(table_data_size, 0, 1, 1, 300));						
+				this.getZipf_exponent().put(table.getTbl_id(), 2.0d+scale(table.getTbl_data_count(), 0, 1, 1, 300));						
 		}	
 	}
 	

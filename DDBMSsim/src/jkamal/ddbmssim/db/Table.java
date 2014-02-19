@@ -15,6 +15,7 @@ public class Table implements Comparable<Table>{
 	private int tbl_data_count;
 	private double tbl_size;
 	private Set<Partition> tbl_partitions;
+	private Set<Integer> tbl_foreign_tables;
 	private double tbl_max_cp;
 	private double tbl_min_cp;
 	
@@ -26,6 +27,7 @@ public class Table implements Comparable<Table>{
 		this.setTbl_data_count(0);
 		this.setTbl_size(0.0d);
 		this.setTbl_partitions(new TreeSet<Partition>());
+		this.setTbl_foreign_tables(new TreeSet<Integer>());
 		this.setTbl_max_cp(Double.MIN_VALUE);
 		this.setTbl_min_cp(Double.MAX_VALUE);
 	}
@@ -43,6 +45,11 @@ public class Table implements Comparable<Table>{
 		for(Partition clonePartition : table.getTbl_partitions())
 			clone_partitions.add(clonePartition);
 		this.setTbl_partitions(clone_partitions);
+		
+		Set<Integer> clone_foreign_tables = new TreeSet<Integer>();		
+		for(Integer foreign_table : table.getTbl_foreign_tables())
+			clone_foreign_tables.add(foreign_table);
+		this.setTbl_foreign_tables(clone_foreign_tables);
 		
 		this.setTbl_max_cp(table.getTbl_max_cp());
 		this.setTbl_min_cp(table.getTbl_min_cp());
@@ -104,6 +111,14 @@ public class Table implements Comparable<Table>{
 		this.tbl_partitions = tbl_partitions;
 	}
 	
+	public Set<Integer> getTbl_foreign_tables() {
+		return tbl_foreign_tables;
+	}
+
+	public void setTbl_foreign_tables(Set<Integer> tbl_foreign_tables) {
+		this.tbl_foreign_tables = tbl_foreign_tables;
+	}
+
 	public double getTbl_max_cp() {
 		return tbl_max_cp;
 	}

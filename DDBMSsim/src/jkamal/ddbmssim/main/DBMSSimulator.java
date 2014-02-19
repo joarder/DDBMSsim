@@ -47,7 +47,7 @@ public class DBMSSimulator {
 											{0, 0, 1, 0, 1, 0, 0, 0, 0}, // History (Secondary:1) - Customer, District
 											{0, 0, 0, 0, 1, 0, 0, 0, 0}, // Order (Secondary:1) - Customer
 											{0, 0, 0, 0, 0, 0, 1, 0, 0}, // New-Order (Secondary:1) - Order
-											{0, 0, 0, 1, 0, 0, 0, 1, 0}  // Order-Line (Dependent:2) - New-Order, Stock											
+											{0, 0, 0, 1, 0, 0, 1, 0, 0}  // Order-Line (Dependent:2) - Order, Stock											
 											};
 	public final static double[] TPCC_DATA_ROW_SIZE = { // values are in MegaBytes
 													0.000078201, // Warehouse

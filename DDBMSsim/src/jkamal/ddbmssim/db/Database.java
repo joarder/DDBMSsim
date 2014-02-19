@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
-
 import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class Database implements Comparable<Database> {
@@ -24,7 +23,7 @@ public class Database implements Comparable<Database> {
 	private int db_partition_size;
 	private int db_partitions;
 	private String db_partitioing;
-	private Set<Table> db_tables;		
+	private Set<Table> db_tables;
 	private Map<Integer, Set<Integer>> db_nodes;
 	private double[] db_normalised_cumalitive_zipf_probability;
 	private PrintWriter workload_log;
@@ -198,18 +197,28 @@ public class Database implements Comparable<Database> {
 		this.db_normalised_cumalitive_zipf_probability = db_normalised_cumalitive_zipf_probability;
 	}
 	
-	// Getting the dependency information for the target table
-	public ArrayList<Integer> getSchemaLinkSet(int table_id) {
-		ArrayList<Integer> linkSet = new ArrayList<Integer>();
+	// Return the number of Data for the target Table
+	public int getTableData(int table_id) {
+		for(Table table : this.getDb_tables()) {
+			if(table.getTbl_id() == table_id){System.out.println(">> keys = "+table.getTbl_data_count());
+				return table.getTbl_data_count();}
+		}
+		
+		return -1;
+	}
+	
+	// Getting the dependency information for the target Table
+	public ArrayList<Integer> getLinkedTables(int table_id) {
+		ArrayList<Integer> linkedTables = new ArrayList<Integer>();
 		
 		for(int i = 0; i < DBMSSimulator.TPCC_SCHEMA[table_id - 1].length; i++) {
 			int link = DBMSSimulator.TPCC_SCHEMA[table_id - 1][i];					
 			
 			if(link == 1)
-				linkSet.add(i);
+				linkedTables.add(i+1); // i+1 = Table id
 		}
 		
-		return linkSet;
+		return linkedTables;
 	}
 	
 	// For Primary Table

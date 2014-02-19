@@ -5,7 +5,6 @@
 package jkamal.ddbmssim.bootstrap;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.Node;
@@ -30,7 +29,7 @@ public class Bootstrapping {
 		int global_partition_id = 1;
 		int partition_nums = 0;
 		int[] table_data = new int[DBMSSimulator.TPCC_TABLE_TYPE.length];
-		String[] table_names = {"Warehouse", "Item", "District", "Stock", "Customer", "History", "Order", "New-Order", "Order-Line"};
+		String[] table_names = {"Warehouse", "Item", "District", "Stock", "Customer", "History", "Orders", "New-Order", "Order-Line"};
 		
 		for(table_id = 1; table_id <= DBMSSimulator.TPCC_TABLE_TYPE.length; table_id++) {
 			Table table = new Table(table_id, DBMSSimulator.TPCC_TABLE_TYPE[table_id-1], db.getDb_id(), table_names[table_id-1]);
@@ -44,7 +43,7 @@ public class Bootstrapping {
 					table_data[table.getTbl_id()-1] = DBMSSimulator.TPCC_WAREHOUSE;
 					break;
 				case "Item":
-					table_data[table.getTbl_id()-1] = (int) (DBMSSimulator.TPCC_ITEM * DBMSSimulator.TPCC_Scale);
+					table_data[table.getTbl_id()-1] = (int) (100000 * DBMSSimulator.TPCC_Scale);					
 					break;
 				case "District":
 					table_data[table.getTbl_id()-1] = 10 * DBMSSimulator.TPCC_WAREHOUSE;
@@ -52,20 +51,20 @@ public class Bootstrapping {
 				case "Stock":
 					table_data[table.getTbl_id()-1] = (int) (100000 * DBMSSimulator.TPCC_WAREHOUSE * DBMSSimulator.TPCC_Scale);
 					break;
-				case "Customer":
-					table_data[table.getTbl_id()-1] = (int) (3000 * table_data[2] * DBMSSimulator.TPCC_Scale); // District Table
+				case "Customer": // District Table
+					table_data[table.getTbl_id()-1] = (int) (3000 * table_data[2] * DBMSSimulator.TPCC_Scale);
 					break;
-				case "History":
-					table_data[table.getTbl_id()-1] = table_data[4]; // Customer Table
+				case "History": // Customer Table
+					table_data[table.getTbl_id()-1] = table_data[4]; 
 					break;
-				case "Order":
+				case "Orders":
 					table_data[table.getTbl_id()-1] = (int) (30000 * DBMSSimulator.TPCC_WAREHOUSE * DBMSSimulator.TPCC_Scale);
 					break;
-				case "New-Order":
-					table_data[table.getTbl_id()-1] = (int) (Math.pow(10.0d, (this.getBase(table_data[6]) -1)) - Math.pow(10.0d, (this.getBase(table_data[6]) -2))); // Customer Table (the last 1/3 values from the Order table)
+				case "New-Order": // Customer Table (the last 1/3 values from the Order table)					
+					table_data[table.getTbl_id()-1] =  (int) (Math.pow(10.0d, (this.getBase(table_data[6]) -1)) - Math.pow(10.0d, (this.getBase(table_data[6]) -2)));					
 					break;
-				case "Order-Line":
-					table_data[table.getTbl_id()-1] =  table_data[6] * 10; // Stock Table (10 most popular values from the Stock table)
+				case "Order-Line": // Stock Table (10 most popular values from the Stock table)
+					table_data[table.getTbl_id()-1] =  table_data[6] * 10;
 					break;
 			}
 			
@@ -98,63 +97,53 @@ public class Bootstrapping {
 		db.setDb_partitions(global_partition_id - 1);				
 				
 		// Populating Data into Table Partitions
-		ArrayList<Integer> linkSet = null;
-		ArrayList<Integer> end = null;
-		int table_foreign_key = 0;
-		int foreign_table = 0;
-		int table_link = 0;
-		int table_type = -1;
+		ArrayList<Integer> linkedTables = null;
 		int data_id = 1;
 		
-		for(Table table : db.getDb_tables()) {
-			System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table_data[table.getTbl_id() - 1]);
-			table_type = table.getTbl_type();
+		for(Table table : db.getDb_tables()) {			
+			table.setTbl_data_count(table_data[table.getTbl_id() - 1]);			
+			System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());//+table_data[table.getTbl_id() - 1]);			
 			
 			// Get the table dependencies and associations for the non-primary tables
-			if(table_type != 0) {
-				linkSet = db.getSchemaLinkSet(table.getTbl_id());
-				
-				for(Integer i : linkSet) {
-					end.add(table_data[i+1]);
-				}
-			}
+			linkedTables = db.getLinkedTables(table.getTbl_id());			
+			int[] f_key = new int[linkedTables.size()];												
 			
-			for(int d = 1; d <= table_data[table.getTbl_id() - 1]; d++) {				
-				// Generate Partition Id
-				int target_partition = (data_id % db.getDb_dbs().getDbs_nodes().size());
-				Partition partition = table.getPartition(target_partition + 1);
+			for(int d = 1; d <= table_data[table.getTbl_id() - 1]; d++) {
+				Data data = this.createNewDataObject(db, table, data_id);
+				++data_id;
 				
-				// Create a new Data Row Object
-				Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false);				
-				data.setData_pk(table.getTbl_id());				
-				data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id() - 1]);
-				
-				if(table_type != 2) {
+				if(table.getTbl_type() != 2) { // Primary Tables					
 					data.getData_primary_key().put(table.getTbl_id(), d);
 					// No foreign key for the Primary tables i.e. Warehouse and Item tables
-					if(table_type == 1) {
-						for(Integer i : linkSet) {
-							int foreign_key = table_data[i+1];
-						}
+					
+					if(table.getTbl_type() == 1) { // Secondary Tables
+						for(int i = 0; i < f_key.length; i++) {														
+							if(f_key[i] == table_data[linkedTables.get(i) - 1])
+								f_key[i] = 0;
+							
+							int tmp = f_key[i];
+							++tmp;
+							f_key[i] = tmp;
+							
+							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+						}						
 					}					
 					
 				} else {
-					// No primary key for the Dependent table i.e. History table
-					data.getData_foreign_key().put(foreign_table, table_foreign_key);	
+					for(int i = 0; i < f_key.length; i++) {														
+						if(f_key[i] == table_data[linkedTables.get(i) - 1])
+							f_key[i] = 0;
+						
+						int tmp = f_key[i];
+						++tmp;
+						f_key[i] = tmp;
+						
+						data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+					}
 				}
 				
-				// Put an entry into the Partition Data lookup table and add in the Data object into the Partition Data Set
-				partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_globalId());
-				partition.getPartition_dataSet().add(data);
-				partition.updatePartitionLoad();
-				
-				// Increment Node Data count by 1
-				db.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();
-				System.out.println("\t\t @-- "+data.getData_id()+"|fk("+data.getData_foreign_key()+")");
-				++data_id;
-				++table_foreign_key;
-				--table_link;
-			}
+				System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");				
+			} //--end for()
 			
 			table.setTbl_data_count(data_id - 1);
 			table.updateTableLoad();
@@ -162,8 +151,44 @@ public class Bootstrapping {
 		
 		db.setDb_data_numbers(data_id - 1);
 		db.getDb_dbs().updateNodeLoad();
-	}	
+	}
 	
+	// Create a new Data object and attach it with the designated Table and Partition within a given Database
+	private Data createNewDataObject(Database db, Table table, int data_id) {
+		// Generate Partition Id
+		int target_partition = (data_id % db.getDb_dbs().getDbs_nodes().size());
+		Partition partition = table.getPartition(target_partition + 1);
+		
+		// Create a new Data Row Object
+		Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false, table.getTbl_type());				
+		data.setData_pk(table.getTbl_id());				
+		data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id() - 1]);				
+		
+		// Put an entry into the Partition Data lookup table and add in the Data object into the Partition Data Set
+		partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_globalId());
+		partition.getPartition_dataSet().add(data);
+		partition.updatePartitionLoad();
+		
+		// Increment Node Data count by 1
+		db.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();		
+		
+		return data;
+	}
+	
+	private void insertForeignKey(ArrayList<Integer> linkedTables, int[] table_data, int[] f_key, Data data) {
+		for(int i = 0; i < f_key.length; i++) {														
+			if(f_key[i] == table_data[linkedTables.get(i) - 1])
+				f_key[i] = 0;
+			
+			int tmp = f_key[i];
+			++tmp;
+			f_key[i] = tmp;
+			
+			data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+		}
+	}
+	
+	// Start bootstrapping process
 	public void bootstrapping(Database db) {
 		switch(db.getDb_name()) {
 		case "tpcc":

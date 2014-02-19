@@ -51,7 +51,7 @@ public class Data implements Comparable<Data> {
 	private boolean data_isRoaming;							
 	
 	// Default Constructor
-	public Data(int id, int lpid, int gpid, int tid, int nid, boolean roaming) {
+	public Data(int id, int lpid, int gpid, int tid, int nid, boolean roaming, int table_type) {
 		this.setData_id(id); // default data id = -1 means undefined.
 		this.setData_label("d"+id);
 		this.setData_value(this.getData_label());
@@ -61,8 +61,18 @@ public class Data implements Comparable<Data> {
 		this.setData_pk(-1);
 		this.setData_isMoveable(false);	
 		
-		this.setData_primary_key(new HashMap<Integer, Integer>());
-		this.setData_foreign_key(new HashMap<Integer, Integer>());
+		if(table_type != 2) {			
+			this.setData_primary_key(new HashMap<Integer, Integer>());
+			// No foreign key for the Primary tables i.e. Warehouse and Item tables
+			
+			if(table_type == 1)
+				this.setData_foreign_key(new HashMap<Integer, Integer>());			
+		} else {
+			// No primary key for the Dependent table i.e. History table
+			this.setData_foreign_key(new HashMap<Integer, Integer>());	
+		}
+		//this.setData_primary_key(new HashMap<Integer, Integer>());
+		//this.setData_foreign_key(new HashMap<Integer, Integer>());
 		
 		this.setData_zipfProbability(0.0);
 		this.setData_cumulativeZipfProbability(0.0);
