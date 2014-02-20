@@ -37,14 +37,14 @@ public class DBMSSimulator {
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
-	public final static int[] TPCC_TABLE_TYPE = {0, 0, 1, 1, 1, 1, 1, 1, 2}; // 0: Primary, 1: Secondary, 2: Dependent
+	public final static int[] TPCC_TABLE_TYPE = {0, 0, 1, 1, 1, 2, 1, 1, 2}; // 0: Primary, 1: Secondary, 2: Dependent
 	public final static int[][] TPCC_SCHEMA = new int[][]{
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // Warehouse (Primary:0)
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // Item (Primary:0)
 											{1, 0, 0, 0, 0, 0, 0, 0, 0}, // District (Secondary:1) - Warehouse
 											{1, 1, 0, 0, 0, 0, 0, 0, 0}, // Stock (Secondary:1) - Item, Warehouse
 											{0, 0, 1, 0, 0, 0, 0, 0, 0}, // Customer (Secondary:1) - District
-											{0, 0, 1, 0, 1, 0, 0, 0, 0}, // History (Secondary:1) - Customer, District
+											{0, 0, 1, 0, 1, 0, 0, 0, 0}, // History (Dependent:2) - Customer, District
 											{0, 0, 0, 0, 1, 0, 0, 0, 0}, // Order (Secondary:1) - Customer
 											{0, 0, 0, 0, 0, 0, 1, 0, 0}, // New-Order (Secondary:1) - Order
 											{0, 0, 0, 1, 0, 0, 1, 0, 0}  // Order-Line (Dependent:2) - Order, Stock											

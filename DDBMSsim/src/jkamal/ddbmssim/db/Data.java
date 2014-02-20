@@ -51,34 +51,32 @@ public class Data implements Comparable<Data> {
 	private boolean data_isRoaming;							
 	
 	// Default Constructor
-	public Data(int id, int lpid, int gpid, int tid, int nid, boolean roaming, int table_type) {
+	public Data(Table table, int id, int lpid, int gpid, int nid, boolean roaming) {
 		this.setData_id(id); // default data id = -1 means undefined.
 		this.setData_label("d"+id);
 		this.setData_value(this.getData_label());
 		this.setData_size(0); // Values in MegaBytes
-		//this.setData_frequency(0);
 		this.setData_weight(1);
 		this.setData_pk(-1);
 		this.setData_isMoveable(false);	
 		
-		if(table_type != 2) {			
+		if(table.getTbl_type() != 2) {			
 			this.setData_primary_key(new HashMap<Integer, Integer>());
 			// No foreign key for the Primary tables i.e. Warehouse and Item tables
 			
-			if(table_type == 1)
+			if(table.getTbl_type() == 1)
 				this.setData_foreign_key(new HashMap<Integer, Integer>());			
 		} else {
 			// No primary key for the Dependent table i.e. History table
-			this.setData_foreign_key(new HashMap<Integer, Integer>());	
+			this.setData_foreign_key(new HashMap<Integer, Integer>());
+			
+			if(table.getTbl_name() == "Order-Line")
+				this.setData_primary_key(new HashMap<Integer, Integer>());
 		}
-		//this.setData_primary_key(new HashMap<Integer, Integer>());
-		//this.setData_foreign_key(new HashMap<Integer, Integer>());
 		
 		this.setData_zipfProbability(0.0);
 		this.setData_cumulativeZipfProbability(0.0);
 		this.setData_normalisedCumulativeZipfProbability(0.0);
-				
-		//this.setData_transactions_involved(new TreeSet<Integer>());
 		
 		this.setData_hmetisClusterId(-1);
 		this.setData_chmetisClusterId(-1);
@@ -87,7 +85,7 @@ public class Data implements Comparable<Data> {
 		this.setData_hasShadowId(false);
 		this.setData_virtual_node_id(-1);
 		
-		this.setData_table_id(tid);
+		this.setData_table_id(table.getTbl_id());
 		
 		this.setData_localPartitionId(lpid);
 		this.setData_globalPartitionId(gpid); // default partition id = -1 means undefined.

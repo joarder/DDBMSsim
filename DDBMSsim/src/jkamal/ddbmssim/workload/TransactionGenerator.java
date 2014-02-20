@@ -5,7 +5,6 @@
 package jkamal.ddbmssim.workload;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -143,7 +142,7 @@ public class TransactionGenerator {
 					Partition partition = table.getPartition(target_partition+1);
 					
 					// Create a new Data Row Object
-					Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false, table.getTbl_type());				
+					Data data = new Data(table, data_id, partition.getPartition_id(), partition.getPartition_globalId(), partition.getPartition_nodeId(), false);				
 					data.setData_pk(partition.getPartition_table_id());
 					data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id()-1]);
 					

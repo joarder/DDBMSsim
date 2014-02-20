@@ -106,7 +106,13 @@ public class Bootstrapping {
 			
 			// Get the table dependencies and associations for the non-primary tables
 			linkedTables = db.getLinkedTables(table.getTbl_id());			
-			int[] f_key = new int[linkedTables.size()];												
+			int[] f_key = new int[linkedTables.size()];
+			
+			boolean[] f_key_state = new boolean[linkedTables.size()];
+			for(int i = 0; i < f_key_state.length; i++)
+				f_key_state[i] = true;
+			
+			boolean first_time = true;
 			
 			for(int d = 1; d <= table_data[table.getTbl_id() - 1]; d++) {
 				Data data = this.createNewDataObject(db, table, data_id);
@@ -117,6 +123,57 @@ public class Bootstrapping {
 					// No foreign key for the Primary tables i.e. Warehouse and Item tables
 					
 					if(table.getTbl_type() == 1) { // Secondary Tables
+						for(int i = 0; i < f_key.length; i++) {																					
+							if(linkedTables.size() > 1) { // having multiple foreign keys
+								
+								if(i == 0) {									
+									if(f_key[i+1] == table_data[linkedTables.get(i+1) - 1]) {
+										f_key_state[i] = true;
+										first_time = true;										
+									}
+								}
+								
+								if(f_key[i] == table_data[linkedTables.get(i) - 1]) {	
+									if(i == 0 && f_key[i+1] < table_data[linkedTables.get(i+1) - 1]) {
+										// Do nothing
+									} else {									
+										f_key[i] = 0;									
+										f_key_state[i] = true;
+									}									
+								} else if(f_key[i] < table_data[linkedTables.get(i) - 1]) {
+									if(i > 0)
+										f_key_state[i] = true; 
+									else if(f_key[i] < table_data[linkedTables.get(i) - 1] && i == 0 && !(first_time))
+										f_key_state[i] = false;
+								}
+							} else { // having a single foreign key
+								if(f_key[i] == table_data[linkedTables.get(i) - 1]) {
+									f_key[i] = 0;
+									f_key_state[i] = true;
+								}
+							}						
+							
+							// Generating foreign keys
+							if(f_key_state[i] == true) {								
+								int tmp = f_key[i];
+								++tmp;
+								f_key[i] = tmp;
+								
+								if(linkedTables.size() > 1)
+									f_key_state[i] = false;
+							}														
+							
+							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+							
+							if(first_time)
+								first_time = false;
+						}						
+					}					
+					
+				} else {
+					if(table.getTbl_name() == "Order-Line") {
+						data.getData_primary_key().put(table.getTbl_id(), d);
+					
 						for(int i = 0; i < f_key.length; i++) {														
 							if(f_key[i] == table_data[linkedTables.get(i) - 1])
 								f_key[i] = 0;
@@ -126,19 +183,18 @@ public class Bootstrapping {
 							f_key[i] = tmp;
 							
 							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
-						}						
-					}					
-					
-				} else {
-					for(int i = 0; i < f_key.length; i++) {														
-						if(f_key[i] == table_data[linkedTables.get(i) - 1])
-							f_key[i] = 0;
-						
-						int tmp = f_key[i];
-						++tmp;
-						f_key[i] = tmp;
-						
-						data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+						}
+					} else if (table.getTbl_name() == "History") {
+						for(int i = 0; i < f_key.length; i++) {														
+							if(f_key[i] == table_data[linkedTables.get(i) - 1])
+								f_key[i] = 0;
+							
+							int tmp = f_key[i];
+							++tmp;
+							f_key[i] = tmp;
+							
+							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+						}
 					}
 				}
 				
@@ -160,7 +216,7 @@ public class Bootstrapping {
 		Partition partition = table.getPartition(target_partition + 1);
 		
 		// Create a new Data Row Object
-		Data data = new Data(data_id, partition.getPartition_id(), partition.getPartition_globalId(), table.getTbl_id(), partition.getPartition_nodeId(), false, table.getTbl_type());				
+		Data data = new Data(table, data_id, partition.getPartition_id(), partition.getPartition_globalId(), partition.getPartition_nodeId(), false);				
 		data.setData_pk(table.getTbl_id());				
 		data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id() - 1]);				
 		
@@ -173,20 +229,7 @@ public class Bootstrapping {
 		db.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();		
 		
 		return data;
-	}
-	
-	private void insertForeignKey(ArrayList<Integer> linkedTables, int[] table_data, int[] f_key, Data data) {
-		for(int i = 0; i < f_key.length; i++) {														
-			if(f_key[i] == table_data[linkedTables.get(i) - 1])
-				f_key[i] = 0;
-			
-			int tmp = f_key[i];
-			++tmp;
-			f_key[i] = tmp;
-			
-			data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
-		}
-	}
+	}	
 	
 	// Start bootstrapping process
 	public void bootstrapping(Database db) {
