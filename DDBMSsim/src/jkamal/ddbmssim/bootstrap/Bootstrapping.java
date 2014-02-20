@@ -105,7 +105,7 @@ public class Bootstrapping {
 			System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());//+table_data[table.getTbl_id() - 1]);			
 			
 			// Get the table dependencies and associations for the non-primary tables
-			linkedTables = db.getLinkedTables(table.getTbl_id());			
+			linkedTables = db.getLinkedTables(table);			
 			int[] f_key = new int[linkedTables.size()];
 			
 			boolean[] f_key_state = new boolean[linkedTables.size()];
@@ -116,10 +116,10 @@ public class Bootstrapping {
 			
 			for(int d = 1; d <= table_data[table.getTbl_id() - 1]; d++) {
 				Data data = this.createNewDataObject(db, table, data_id);
-				++data_id;
+				
 				
 				if(table.getTbl_type() != 2) { // Primary Tables					
-					data.getData_primary_key().put(table.getTbl_id(), d);
+					data.getData_primary_key().put(table.getTbl_id(), data_id);
 					// No foreign key for the Primary tables i.e. Warehouse and Item tables
 					
 					if(table.getTbl_type() == 1) { // Secondary Tables
@@ -171,9 +171,10 @@ public class Bootstrapping {
 					}					
 					
 				} else {
-					if(table.getTbl_name() == "Order-Line") {
+					if(table.getTbl_name() == "Order-Line")
 						data.getData_primary_key().put(table.getTbl_id(), d);
 					
+						ArrayList<Integer> f_keys = new ArrayList<Integer>();
 						for(int i = 0; i < f_key.length; i++) {														
 							if(f_key[i] == table_data[linkedTables.get(i) - 1])
 								f_key[i] = 0;
@@ -183,22 +184,15 @@ public class Bootstrapping {
 							f_key[i] = tmp;
 							
 							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
-						}
-					} else if (table.getTbl_name() == "History") {
-						for(int i = 0; i < f_key.length; i++) {														
-							if(f_key[i] == table_data[linkedTables.get(i) - 1])
-								f_key[i] = 0;
 							
-							int tmp = f_key[i];
-							++tmp;
-							f_key[i] = tmp;
-							
-							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+							f_keys.add(f_key[i]);
 						}
-					}
+						
+						table.getTbl_data_map_d().put(f_keys.get(0), f_keys.get(1), data_id);
 				}
 				
-				System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");				
+				System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
+				++data_id;
 			} //--end for()
 			
 			table.setTbl_data_count(data_id - 1);

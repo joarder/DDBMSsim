@@ -4,8 +4,15 @@
 
 package jkamal.ddbmssim.db;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.apache.commons.collections4.MapIterator;
+import org.apache.commons.collections4.keyvalue.MultiKey;
+import org.apache.commons.collections4.map.MultiKeyMap;
 
 public class Table implements Comparable<Table>{
 	private int tbl_id;
@@ -16,6 +23,8 @@ public class Table implements Comparable<Table>{
 	private double tbl_size;
 	private Set<Partition> tbl_partitions;
 	private Set<Integer> tbl_foreign_tables;
+	private Map<Integer, Integer> tbl_data_map_s; // For the secondary tables
+	private MultiKeyMap tbl_data_map_d; // For the dependent tables
 	private double tbl_max_cp;
 	private double tbl_min_cp;
 	
@@ -28,6 +37,15 @@ public class Table implements Comparable<Table>{
 		this.setTbl_size(0.0d);
 		this.setTbl_partitions(new TreeSet<Partition>());
 		this.setTbl_foreign_tables(new TreeSet<Integer>());
+		
+		if(this.getTbl_type() != 2) {
+			if(this.getTbl_type() == 1) {
+				this.setTbl_data_map_s(new HashMap<Integer, Integer>());
+			}
+		} else {
+			this.setTbl_data_map_d(new MultiKeyMap());
+		}		
+		
 		this.setTbl_max_cp(Double.MIN_VALUE);
 		this.setTbl_min_cp(Double.MAX_VALUE);
 	}
@@ -50,6 +68,15 @@ public class Table implements Comparable<Table>{
 		for(Integer foreign_table : table.getTbl_foreign_tables())
 			clone_foreign_tables.add(foreign_table);
 		this.setTbl_foreign_tables(clone_foreign_tables);
+		
+		MultiKeyMap clone_data_map_d = new MultiKeyMap();
+		MapIterator it = table.getTbl_data_map_d().mapIterator();
+		while(it.hasNext()) {
+			it.next();
+		    MultiKey mk = (MultiKey) it.getKey();
+		    clone_data_map_d.put(mk.getKey(0), mk.getKey(1), it.getValue());		    
+		}
+		this.setTbl_data_map_d(clone_data_map_d);		
 		
 		this.setTbl_max_cp(table.getTbl_max_cp());
 		this.setTbl_min_cp(table.getTbl_min_cp());
@@ -117,6 +144,22 @@ public class Table implements Comparable<Table>{
 
 	public void setTbl_foreign_tables(Set<Integer> tbl_foreign_tables) {
 		this.tbl_foreign_tables = tbl_foreign_tables;
+	}
+
+	public Map<Integer, Integer> getTbl_data_map_s() {
+		return tbl_data_map_s;
+	}
+
+	public void setTbl_data_map_s(HashMap<Integer, Integer> tbl_data_map_ps) {
+		this.tbl_data_map_s = tbl_data_map_ps;
+	}
+
+	public MultiKeyMap getTbl_data_map_d() {
+		return tbl_data_map_d;
+	}
+
+	public void setTbl_data_map_d(MultiKeyMap tbl_data_map) {
+		this.tbl_data_map_d = tbl_data_map;
 	}
 
 	public double getTbl_max_cp() {

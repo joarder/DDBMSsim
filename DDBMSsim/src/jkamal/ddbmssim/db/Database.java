@@ -208,14 +208,16 @@ public class Database implements Comparable<Database> {
 	}
 	
 	// Getting the dependency information for the target Table
-	public ArrayList<Integer> getLinkedTables(int table_id) {
+	public ArrayList<Integer> getLinkedTables(Table table) {
 		ArrayList<Integer> linkedTables = new ArrayList<Integer>();
 		
-		for(int i = 0; i < DBMSSimulator.TPCC_SCHEMA[table_id - 1].length; i++) {
-			int link = DBMSSimulator.TPCC_SCHEMA[table_id - 1][i];					
+		for(int i = 0; i < DBMSSimulator.TPCC_SCHEMA[table.getTbl_id() - 1].length; i++) {
+			int link = DBMSSimulator.TPCC_SCHEMA[table.getTbl_id() - 1][i];					
 			
-			if(link == 1)
+			if(link == 1) {
 				linkedTables.add(i+1); // i+1 = Table id
+				table.getTbl_foreign_tables().add(i+1);
+			}
 		}
 		
 		return linkedTables;

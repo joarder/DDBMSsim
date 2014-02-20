@@ -135,7 +135,7 @@ public class TransactionGenerator {
 					data_id = db.getDb_data_numbers()+1;
 					
 					// Generate Primary and Foreign Keys
-					ArrayList<Integer> linkSet = db.getLinkedTables(table.getTbl_id());					
+					ArrayList<Integer> linkSet = db.getLinkedTables(table);					
 					
 					// Generate Partition Id
 					int target_partition = data_id % db.getDb_dbs().getDbs_nodes().size();
