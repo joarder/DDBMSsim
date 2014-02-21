@@ -207,31 +207,43 @@ public class Table implements Comparable<Table>{
 	}
 
 	// Returns the Data id 
-	public int getTableData(int rank) {		
-		return this.getTbl_data_rank()[rank];
+	public ArrayList<Integer> getTableData(int rank) {
+		ArrayList<Integer> data_id = new ArrayList<Integer>();
+		data_id.add(this.getTbl_data_rank()[rank]);
+		
+		return data_id;
 	}
 
 	@SuppressWarnings("unchecked")
-	public int getTableData(ArrayList<Integer> keyList, int table_type) {
+	public ArrayList<Integer> getTableData(ArrayList<Integer> keyList) {
 		ArrayList<Integer> dataList = new ArrayList<Integer>();
-		int index = 0;
-		int data_id = -1;
+		int rand_selection = 0;
+		ArrayList<Integer> data_id = new ArrayList<Integer>();
+		int d = -1;
 		
-		switch(table_type) {
+		switch(this.getTbl_type()) {
 			case 1:
 				for(Integer i : keyList)
-					dataList.addAll((Collection<? extends Integer>) getTbl_data_map_s().get(i));				
+					dataList.addAll((Collection<? extends Integer>) getTbl_data_map_s().get(i));
 				
 				if(dataList.size() > 1) {
-					index = DBMSSimulator.random.nextInt(dataList.size());
-					data_id = dataList.get(index);
+					rand_selection = DBMSSimulator.random.nextInt(dataList.size());					
+					d = dataList.get(rand_selection);
+										
+					//System.out.println("@-- "+rand_selection+"|d="+d+"|size="+dataList.size());
 				} else
-					data_id = dataList.get(0);
+					d = dataList.get(0);				
 				
 				break;
 			case 2:
+				d = this.getTbl_data_map_d().get(keyList.get(0), keyList.get(1));				
 				break;
 		}
+				
+		System.out.println("\t\t@-- d="+d+"|"+this.getTbl_data_id_map().get(d));
+		
+		data_id.add(this.getTbl_data_id_map().get(d));
+		data_id.add(d);
 		
 		return data_id;
 	}

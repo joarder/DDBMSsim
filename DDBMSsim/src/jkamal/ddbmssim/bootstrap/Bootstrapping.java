@@ -101,7 +101,7 @@ public class Bootstrapping {
 		int data_id = 1;
 		
 		for(Table table : db.getDb_tables()) {			
-			table.setTbl_data_count(table_data[table.getTbl_id() - 1]);			
+			//table.setTbl_data_count(table_data[table.getTbl_id() - 1]);			
 			//System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());//+table_data[table.getTbl_id() - 1]);			
 			
 			// Get the table dependencies and associations for the non-primary tables
@@ -115,13 +115,11 @@ public class Bootstrapping {
 			boolean first_time = true;
 			
 			for(int d = 1; d <= table_data[table.getTbl_id() - 1]; d++) {
-				table.setTbl_data_count(d);
-				Data data = this.createNewDataObject(db, table, data_id);
-				
+				Data data = db.createNewDataObject(table, data_id);
+				table.getTbl_data_id_map().put(d, data_id);
 				
 				if(table.getTbl_type() != 2) { // Primary Tables					
-					data.setData_primary_key(d);
-					table.getTbl_data_id_map().put(d, data_id);
+					data.setData_primary_key(d);					
 					// No foreign key for the Primary tables i.e. Warehouse and Item tables
 					
 					if(table.getTbl_type() == 1) { // Secondary Tables
@@ -193,7 +191,7 @@ public class Bootstrapping {
 					table.getTbl_data_map_d().put(f_keys.get(0), f_keys.get(1), d);	
 				}
 				
-				//System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
+				System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
 				++data_id;
 			} //--end for()
 			
@@ -203,28 +201,6 @@ public class Bootstrapping {
 		
 		db.setDb_data_numbers(data_id - 1);
 		db.getDb_dbs().updateNodeLoad();
-	}
-	
-	// Create a new Data object and attach it with the designated Table and Partition within a given Database
-	private Data createNewDataObject(Database db, Table table, int data_id) {
-		// Generate Partition Id
-		int target_partition = (table.getTbl_data_count() % db.getDb_dbs().getDbs_nodes().size());
-		Partition partition = table.getPartition(target_partition + 1);
-		
-		// Create a new Data Row Object
-		Data data = new Data(table, data_id, partition.getPartition_id(), partition.getPartition_globalId(), partition.getPartition_nodeId(), false);				
-		data.setData_pk(table.getTbl_id());				
-		data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id() - 1]);				
-		
-		// Put an entry into the Partition Data lookup table and add in the Data object into the Partition Data Set
-		partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_globalId());
-		partition.getPartition_dataSet().add(data);
-		partition.updatePartitionLoad();
-		
-		// Increment Node Data count by 1
-		db.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();		
-		
-		return data;
 	}	
 	
 	// Start bootstrapping process

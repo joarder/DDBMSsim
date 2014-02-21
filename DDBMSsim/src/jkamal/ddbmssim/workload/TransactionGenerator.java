@@ -16,22 +16,7 @@ import jkamal.ddbmssim.db.Partition;
 import jkamal.ddbmssim.db.Table;
 import jkamal.ddbmssim.main.DBMSSimulator;
 
-public class TransactionGenerator {
-	private Map<Double, Map<Integer, Integer>> normalised_cumulative_probability_to_data_map;
-	
-	public TransactionGenerator(){
-		this.setNormalised_cumulative_probability_to_data_map(new TreeMap<Double, Map<Integer, Integer>>());
-	}
-	
-	public Map<Double, Map<Integer, Integer>> getNormalised_cumulative_probability_to_data_map() {
-		return this.normalised_cumulative_probability_to_data_map;
-	}
-
-	public void setNormalised_cumulative_probability_to_data_map(
-			Map<Double, Map<Integer, Integer>> normalised_cumulative_probability_to_data_map) {
-		this.normalised_cumulative_probability_to_data_map = normalised_cumulative_probability_to_data_map;
-	}
-
+public class TransactionGenerator {	
 	// Generates the required number of Transactions for a specific Workload with a specific Database
 	public int generateTransaction(Database db, Workload workload, int global_tr_id) {				
 		ArrayList<Transaction> transactionList;
@@ -83,7 +68,13 @@ public class TransactionGenerator {
 		
 		db.getDb_dbs().updateNodeLoad();
 		return new_tr;
-	}	
+	}			
+	
+	// last accessed values
+	private int _warehouse;
+	private int _district;
+	private int _stock;
+	private int _order;
 	
 	// Create a data set for a specific transaction of type i
 	private Set<Integer> getTransactionalDataSet(Database db, int i, Workload workload) {
@@ -91,7 +82,8 @@ public class TransactionGenerator {
 		Set<Integer> trDataSet = new TreeSet<Integer>();
 		ArrayList<Integer> trDataList = new ArrayList<Integer>();
 		ArrayList<Integer> keyList;
-		int data_id = 0;
+		ArrayList<Integer> dataList = null;
+		int data_id = -1;
 		int _w_rank, _i_rank = 0;
 		int _w = 0, _i = 0, _d = 0, _s = 0, _c = 0, _h, _o = 0, _no, _ol = 0;
 		
@@ -117,23 +109,28 @@ public class TransactionGenerator {
 							switch(table.getTbl_name()) {
 								case "Warehouse":
 									_w_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.0);
-									data_id = table.getTableData(_w_rank);
-									_w = data_id;
+									dataList = table.getTableData(_w_rank);
+									_w = dataList.get(0);
+									this._warehouse = _w;
+									
 									System.out.println("\t\t--> W("+_w+")");
 									break;
 									
 								case "Item":									
 									_i_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.5);
-									data_id = table.getTableData(_i_rank);
-									_i = data_id;
+									dataList = table.getTableData(_i_rank);
+									_i = dataList.get(0);
+									
 									System.out.println("\t\t--> I("+_i+")");
 									break;
 									
 								case "District":
 									keyList = new ArrayList<Integer>();
 									keyList.add(_w);
-									data_id = table.getTableData(keyList, 1);
-									_d = data_id;
+									dataList = table.getTableData(keyList);
+									_d = dataList.get(1);
+									this._district = _d;
+									
 									System.out.println("\t\t--> D("+_d+") for W("+_w+")");
 									break;
 									
@@ -141,17 +138,24 @@ public class TransactionGenerator {
 									keyList = new ArrayList<Integer>();
 									keyList.add(_w);
 									keyList.add(_i);
-									data_id = table.getTableData(keyList, 1);
-									_s = data_id;
+									dataList = table.getTableData(keyList);
+									_s = dataList.get(1);
+									this._stock = _s;
+									
 									System.out.println("\t\t--> S("+_s+") for W("+_w+") and I("+_i+")");
 									break;
 									
 								case "Customer": // District Table
+									if(i > 1)
+										_d = this._district;
+									
+									//System.out.println("i="+i+"|D="+_d);
 									keyList = new ArrayList<Integer>();
 									keyList.add(_d);
-									data_id = table.getTableData(keyList, 1);
-									_c = data_id;
-									System.out.println("\t\t--> C("+_c+") for D("+_d+")");
+									dataList = table.getTableData(keyList);
+									_c = dataList.get(1);
+									
+									System.out.println("\t\t--> C("+_c+") for D("+_d+") -- "+dataList.get(0));										
 									break;
 									
 								case "History": // Customer Table
@@ -159,70 +163,84 @@ public class TransactionGenerator {
 									break;
 									
 								case "Orders":
-									/*keyList = new ArrayList<Integer>();
+									keyList = new ArrayList<Integer>();
 									keyList.add(_c);
-									data_id = table.getTableData(keyList, 1);
-									_o = data_id;
-									System.out.println("\t\t--> O("+_o+") for C("+_c+")");
-									*/break;
+									dataList = table.getTableData(keyList);
+									_o = dataList.get(1);
+									this._order = _o;
+									
+									System.out.println("\t\t--> O("+_o+") for C("+_c+") -- "+dataList.get(0));
+									break;
 									
 								case "New-Order": // Customer Table (the last 1/3 values from the Order table)					
 									// Nothing to do
 									break;
 									
 								case "Order-Line": // Stock Table (10 most popular values from the Stock table)
-									/*keyList = new ArrayList<Integer>();
-									keyList.add(_s);
+									if(i > 1)
+										_s = this._stock;
+									
+									keyList = new ArrayList<Integer>();
 									keyList.add(_o);
-									data_id = table.getTableData(keyList, 1);
-									_ol = data_id;
-									System.out.println("\t\t--> OL("+_ol+") for S("+_s+") and O("+_o+")");
-									*/break;
+									keyList.add(_o);
+									System.out.println("\t\t* _o="+_o);
+									dataList = table.getTableData(keyList);
+									_ol = dataList.get(1);
+									
+									System.out.println("\t\t--> OL("+_ol+") for S("+_o+") and O("+_o+") -- "+dataList.get(0));
+									break;
 							}
 							
 							
-							if(trDataList.contains(data_id) && d > 0) {
+							if(trDataList.contains(dataList.get(0)) && d > 0) {
 								--d;
-								//System.out.println("@ *d"+data_id);
 							} else {
-								trDataList.add(data_id);
-								trDataSet.add(data_id);
-																
-								//System.out.println("\t\t# rand = "+rand+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
-								//System.out.println("\t\t@ d"+data_id);
-								//Data x = db.search(data_id);								
-								/*System.out.println("\t\t@-- "+x.getData_id()+" | "
-										+x.getData_zipfProbability()+" | "
-										+x.getData_cumulativeZipfProbability()+" | "
-										+x.getData_normalisedCumulativeZipfProbability());*/								
+								trDataList.add(dataList.get(0));
+								trDataSet.add(dataList.get(0));								
 							}
 						}
 					}
 					break;
 			
 			case 1:					
+					// Create a new Data object
 					data_id = db.getDb_data_numbers()+1;
+					Data data = db.createNewDataObject(table, data_id);
 					
-					// Generate Primary and Foreign Keys
-					ArrayList<Integer> linkSet = db.getLinkedTables(table);					
-					
-					// Generate Partition Id
-					int target_partition = data_id % db.getDb_dbs().getDbs_nodes().size();
-					Partition partition = table.getPartition(target_partition+1);
-					
-					// Create a new Data Row Object
-					Data data = new Data(table, data_id, partition.getPartition_id(), partition.getPartition_globalId(), partition.getPartition_nodeId(), false);				
-					data.setData_pk(partition.getPartition_table_id());
-					data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id()-1]);
-					
-					// Put an entry into the Partition Data lookup table and add in the Data object into the Partition Data Set
-					partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_globalId());
-					partition.getPartition_dataSet().add(data);
-					partition.updatePartitionLoad();
-					
-					// Increment Data counts at Node and Database level
-					db.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();					
-					db.setDb_data_numbers(data_id);
+					switch(table.getTbl_name()) {
+						case("History"):
+							data.getData_foreign_key().put(3, _d); // 3: District Table
+							data.getData_foreign_key().put(5, _c); // 5: Customer Table
+						
+							table.getTbl_data_map_d().put(_d, _c, table.getTbl_data_count());
+							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
+							break;
+						
+						case("Orders"):
+							data.setData_primary_key(table.getTbl_data_count());							
+							data.getData_foreign_key().put(5, _c); // 5: Customer Table
+							
+							table.getTbl_data_map_s().put(_c, table.getTbl_data_count());
+							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
+							break;
+						
+						case("New-Order"):
+							data.setData_primary_key(table.getTbl_data_count());							
+							data.getData_foreign_key().put(7, _o); // 7: Orders Table
+						
+							table.getTbl_data_map_s().put(_o, table.getTbl_data_count());
+							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
+							break;
+							
+						case("Order-Line"):
+							data.setData_primary_key(table.getTbl_data_count());								
+							data.getData_foreign_key().put(4, _s); // 4: Stock Table
+							data.getData_foreign_key().put(7, _o); // 7: Order Table
+							
+							table.getTbl_data_map_d().put(_s, _o, table.getTbl_data_count());
+							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
+							break;													
+					}			
 					
 					trDataSet.add(data_id);
 					
@@ -231,7 +249,7 @@ public class TransactionGenerator {
 					
 			case -1:
 					double rand = DBMSSimulator.randomDataGenerator.nextUniform(0, 1, false);				
-					data_id = db.getRandomData(rand, table);
+					//data_id = db.getRandomData(rand, table);
 					
 					Data _data = db.search(data_id);
 					Partition _partition = table.getPartition(_data.getData_localPartitionId());

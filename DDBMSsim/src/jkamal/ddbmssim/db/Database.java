@@ -196,6 +196,31 @@ public class Database implements Comparable<Database> {
 			double[] db_normalised_cumalitive_zipf_probability) {
 		this.db_normalised_cumalitive_zipf_probability = db_normalised_cumalitive_zipf_probability;
 	}
+		
+	// Create a new Data object and attach it with the designated Table and Partition within a given Database
+	public Data createNewDataObject(Table table, int data_id) {
+		// Generate Partition Id
+		int target_partition = (table.getTbl_data_count() % this.getDb_dbs().getDbs_nodes().size());
+		Partition partition = table.getPartition(target_partition + 1);
+		
+		// Create a new Data Row Object
+		Data data = new Data(table, data_id, partition.getPartition_id(), partition.getPartition_globalId(), partition.getPartition_nodeId(), false);				
+		data.setData_pk(table.getTbl_id());				
+		data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id() - 1]);				
+		
+		// Put an entry into the Partition Data lookup table and add in the Data object into the Partition Data Set
+		partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_globalId());
+		partition.getPartition_dataSet().add(data);
+		partition.updatePartitionLoad();
+		
+		// Increment Data counts at Node, Database and Table level
+		this.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();					
+		this.setDb_data_numbers(data_id);
+		int d = table.getTbl_data_count();
+		table.setTbl_data_count(++d);
+		
+		return data;
+	}
 	
 	// Return the number of Data for the target Table
 	public int getTableData(int table_id) {
@@ -331,35 +356,6 @@ public class Database implements Comparable<Database> {
 		}
 		
 		return node_partitions;
-	}
-	
-	public int getRandomData(double rand, Table table) {		
-		for(Partition partition : table.getTbl_partitions()) {
-			Data[] dataArray = partition.getPartition_dataSet()
-					.toArray(new Data[partition.getPartition_dataSet().size()]);
-			
-			for(int i = 0; i < (dataArray.length - 1); i++) {
-				double d_i = this.getDb_normalisedCumalitiveZipfProbabilityArray()[dataArray[i].getData_id()];
-				double d_i1 = this.getDb_normalisedCumalitiveZipfProbabilityArray()[dataArray[i+1].getData_id()];
-				
-				if(d_i <= rand && rand < d_i1){						
-					
-					/*if(dataArray[i].getData_id() == 30 || dataArray[i+1].getData_id() == 30) {
-						System.out.println(">-- (i) "+dataArray[i].toString()+"|"+dataArray[i+1].getData_normalisedCumulativeZipfProbability());
-						System.out.println(">-- (i+1) "+dataArray[i+1].toString()+"|"+dataArray[i+1].getData_normalisedCumulativeZipfProbability());
-					}*/
-					
-					if(dataArray[i].getData_zipfProbability() > dataArray[i].getData_zipfProbability())
-						return (dataArray[i].getData_id());
-					else 
-						return (dataArray[i+1].getData_id());						
-				}
-				else if(d_i > rand)
-					return dataArray[0].getData_id();
-			}
-		}	
-		
-		return -1;
 	}
 	
 	public void show() {		

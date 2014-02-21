@@ -137,8 +137,8 @@ public class DBMSSimulator {
 		
 		//test
 		for(Table table : db.getDb_tables()){
-			if(table.getTbl_id() == 3)
-				System.out.println(table.getTbl_data_map_s().get(3));
+			if(table.getTbl_id() == 7)
+				System.out.println(table.getTbl_data_map_s().get(69));
 				//System.out.println(table.getTbl_data_map_d().get(981, 281));
 		}
 		

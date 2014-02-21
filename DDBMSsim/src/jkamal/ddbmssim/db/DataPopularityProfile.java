@@ -31,8 +31,8 @@ public class DataPopularityProfile {
 	    	if(table.getTbl_type() == 0) {
 	    		this.getZipfProbability(table, exponent);
 	    		
-	    		for(int i = 1; i <= table.getTbl_data_count(); i++)
-	    			System.out.println("--> rank("+i+") | PK="+table.getTbl_data_rank()[i]);
+	    		//for(int i = 1; i <= table.getTbl_data_count(); i++)
+	    			//System.out.println("--> rank("+i+") | PK="+table.getTbl_data_rank()[i]);
 	    	}
 		}
 	}
