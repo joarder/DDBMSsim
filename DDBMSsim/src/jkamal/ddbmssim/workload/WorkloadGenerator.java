@@ -7,6 +7,8 @@ package jkamal.ddbmssim.workload;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
+
+import jkamal.ddbmssim.db.DataPopularityProfile;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.DatabaseServer;
 import jkamal.ddbmssim.main.DBMSSimulator;
@@ -63,8 +65,6 @@ public class WorkloadGenerator {
 			System.out.println("--------------------------------------------------------------------------");
 			System.out.println("[ACT] Starting workload generation for simulation round "+workload_id+"...");
 			if(workload_id != 0) {
-				//popularityProfile.generateDataPopularity(db);
-				
 				workload = new Workload(this.getWorkload_map().get(workload_id -1));
 				workload.setWrl_id(workload_id);
 				workload.setWrl_label("W"+workload_id);
@@ -103,7 +103,7 @@ public class WorkloadGenerator {
 				
 				workload.reInitialise(db);
 			} else {
-				popularityProfile.generateDataPopularity(db);
+				popularityProfile.generateDataPopularity(db); // Only for Primary tables
 				
 				// === Workload Generation Round 0 ===
 				workload = this.workloadInitialisation(db, DBMSSimulator.WORKLOAD_TYPE, workload_id);				

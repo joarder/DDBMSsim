@@ -102,7 +102,7 @@ public class Bootstrapping {
 		
 		for(Table table : db.getDb_tables()) {			
 			table.setTbl_data_count(table_data[table.getTbl_id() - 1]);			
-			System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());//+table_data[table.getTbl_id() - 1]);			
+			//System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());//+table_data[table.getTbl_id() - 1]);			
 			
 			// Get the table dependencies and associations for the non-primary tables
 			linkedTables = db.getLinkedTables(table);			
@@ -115,11 +115,13 @@ public class Bootstrapping {
 			boolean first_time = true;
 			
 			for(int d = 1; d <= table_data[table.getTbl_id() - 1]; d++) {
+				table.setTbl_data_count(d);
 				Data data = this.createNewDataObject(db, table, data_id);
 				
 				
 				if(table.getTbl_type() != 2) { // Primary Tables					
-					data.getData_primary_key().put(table.getTbl_id(), data_id);
+					data.setData_primary_key(d);
+					table.getTbl_data_id_map().put(d, data_id);
 					// No foreign key for the Primary tables i.e. Warehouse and Item tables
 					
 					if(table.getTbl_type() == 1) { // Secondary Tables
@@ -164,38 +166,38 @@ public class Bootstrapping {
 							}														
 							
 							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+							table.getTbl_data_map_s().put(f_key[i], d);
 							
 							if(first_time)
 								first_time = false;
 						}						
 					}					
-					
 				} else {
 					if(table.getTbl_name() == "Order-Line")
-						data.getData_primary_key().put(table.getTbl_id(), d);
+						data.setData_primary_key(d);
 					
-						ArrayList<Integer> f_keys = new ArrayList<Integer>();
-						for(int i = 0; i < f_key.length; i++) {														
-							if(f_key[i] == table_data[linkedTables.get(i) - 1])
-								f_key[i] = 0;
-							
-							int tmp = f_key[i];
-							++tmp;
-							f_key[i] = tmp;
-							
-							data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
-							
-							f_keys.add(f_key[i]);
-						}
+					ArrayList<Integer> f_keys = new ArrayList<Integer>();
+					for(int i = 0; i < f_key.length; i++) {														
+						if(f_key[i] == table_data[linkedTables.get(i) - 1])
+							f_key[i] = 0;
 						
-						table.getTbl_data_map_d().put(f_keys.get(0), f_keys.get(1), data_id);
+						int tmp = f_key[i];
+						++tmp;
+						f_key[i] = tmp;
+						
+						data.getData_foreign_key().put(linkedTables.get(i), f_key[i]);
+						
+						f_keys.add(f_key[i]);
+					}
+					
+					table.getTbl_data_map_d().put(f_keys.get(0), f_keys.get(1), d);	
 				}
 				
-				System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
+				//System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
 				++data_id;
 			} //--end for()
 			
-			table.setTbl_data_count(data_id - 1);
+			//table.setTbl_data_count(data_id - 1);
 			table.updateTableLoad();
 		}
 		
@@ -206,7 +208,7 @@ public class Bootstrapping {
 	// Create a new Data object and attach it with the designated Table and Partition within a given Database
 	private Data createNewDataObject(Database db, Table table, int data_id) {
 		// Generate Partition Id
-		int target_partition = (data_id % db.getDb_dbs().getDbs_nodes().size());
+		int target_partition = (table.getTbl_data_count() % db.getDb_dbs().getDbs_nodes().size());
 		Partition partition = table.getPartition(target_partition + 1);
 		
 		// Create a new Data Row Object

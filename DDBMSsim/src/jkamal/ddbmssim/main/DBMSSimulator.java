@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -67,9 +68,9 @@ public class DBMSSimulator {
 											// New-Order Transaction(10) (Read/Write|High Frequency) : Place a new Order 
 											// For a randomly selected District and a randomly selected Customer from that District 
 											{1, 1, 2, 2, 1, 0, 1, 1, 1},
-											// Payment Transaction(9) (Read/Write|High Frequency) : Updates Customer's balance
+											// Payment Transaction(5) (Read/Write|High Frequency) : Updates Customer's balance
 											// For a randomly selected District and a randomly selected Customer from that District
-											{1, 0, 1, 0, 5, 1, 0, 0, 0}, 
+											{1, 0, 1, 0, 2, 1, 0, 0, 0}, 
 											// Order-Status Transaction(3) (Read Only|Low Frequency) : Queries the status of a Customer's last Order
 											// For a randomly selected District and a randomly selected Customer from that District
 											{0, 0, 0, 0, 1, 0, 1, 0, 1}, 
@@ -95,8 +96,7 @@ public class DBMSSimulator {
 	public final static String HMETIS = "kmetis";
 	public final static String METIS = "pmetis";
 	
-	public static RandomDataGenerator random_birth;
-	public static RandomDataGenerator random_death;
+	public static Random random;
 	public static RandomDataGenerator randomDataGenerator;
 	
 	private static int global_tr_id;
@@ -115,6 +115,8 @@ public class DBMSSimulator {
 	}
 	
 	public static void main(String[] args) throws IOException {
+		random = new Random();
+		random.setSeed(0);
 		randomDataGenerator = new RandomDataGenerator();				
 		
 		// Database Server and Tenant Database Creation
@@ -136,7 +138,8 @@ public class DBMSSimulator {
 		//test
 		for(Table table : db.getDb_tables()){
 			if(table.getTbl_id() == 3)
-				System.out.println(table.getTbl_data_map_d().get(981, 281));
+				System.out.println(table.getTbl_data_map_s().get(3));
+				//System.out.println(table.getTbl_data_map_d().get(981, 281));
 		}
 		
 		

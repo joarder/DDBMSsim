@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import jkamal.ddbmssim.db.Data;
+import jkamal.ddbmssim.db.DataPopularityProfile;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.Partition;
 import jkamal.ddbmssim.db.Table;
@@ -86,20 +87,23 @@ public class TransactionGenerator {
 	
 	// Create a data set for a specific transaction of type i
 	private Set<Integer> getTransactionalDataSet(Database db, int i, Workload workload) {
-		DataPopularityProfile popularityProfile = new DataPopularityProfile();
+		//DataPopularityProfile popularityProfile = new DataPopularityProfile();
 		Set<Integer> trDataSet = new TreeSet<Integer>();
 		ArrayList<Integer> trDataList = new ArrayList<Integer>();
+		ArrayList<Integer> keyList;
 		int data_id = 0;
+		int _w_rank, _i_rank = 0;
+		int _w = 0, _i = 0, _d = 0, _s = 0, _c = 0, _h, _o = 0, _no, _ol = 0;
 		
 		for(Table table : db.getDb_tables()) {			
 			int data_nums = DBMSSimulator.TPCC_TRANSACTION_DATA_DIST[i][table.getTbl_id()-1];
 			int action = DBMSSimulator.TPCC_TRANSACTIONAL_CHANGE[i][table.getTbl_id()-1];
 			
-			//System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
+			System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
 			
 			switch(action) {
 			case 0:						
-					if(table.getTbl_partitions().size() == 1 && data_nums != 0) { // e.g. for the <Warehouse> table
+					if(table.getTbl_partitions().size() == 1 && data_nums != 0) { // e.g. for <Warehouse> table; W=1
 						for(Partition partition : table.getTbl_partitions()) {
 							for(Data data : partition.getPartition_dataSet()) {
 								trDataSet.add(data.getData_id());
@@ -109,8 +113,73 @@ public class TransactionGenerator {
 						}
 					} else {
 						for(int d = 0; d < data_nums; d++) {
-							double rand = DBMSSimulator.randomDataGenerator.nextUniform(table.getTbl_min_cp(), table.getTbl_max_cp(), false);				
-							data_id = db.getRandomData(rand, table);				
+							//================new
+							switch(table.getTbl_name()) {
+								case "Warehouse":
+									_w_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.0);
+									data_id = table.getTableData(_w_rank);
+									_w = data_id;
+									System.out.println("\t\t--> W("+_w+")");
+									break;
+									
+								case "Item":									
+									_i_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.5);
+									data_id = table.getTableData(_i_rank);
+									_i = data_id;
+									System.out.println("\t\t--> I("+_i+")");
+									break;
+									
+								case "District":
+									keyList = new ArrayList<Integer>();
+									keyList.add(_w);
+									data_id = table.getTableData(keyList, 1);
+									_d = data_id;
+									System.out.println("\t\t--> D("+_d+") for W("+_w+")");
+									break;
+									
+								case "Stock":
+									keyList = new ArrayList<Integer>();
+									keyList.add(_w);
+									keyList.add(_i);
+									data_id = table.getTableData(keyList, 1);
+									_s = data_id;
+									System.out.println("\t\t--> S("+_s+") for W("+_w+") and I("+_i+")");
+									break;
+									
+								case "Customer": // District Table
+									keyList = new ArrayList<Integer>();
+									keyList.add(_d);
+									data_id = table.getTableData(keyList, 1);
+									_c = data_id;
+									System.out.println("\t\t--> C("+_c+") for D("+_d+")");
+									break;
+									
+								case "History": // Customer Table
+									// Nothing to do
+									break;
+									
+								case "Orders":
+									/*keyList = new ArrayList<Integer>();
+									keyList.add(_c);
+									data_id = table.getTableData(keyList, 1);
+									_o = data_id;
+									System.out.println("\t\t--> O("+_o+") for C("+_c+")");
+									*/break;
+									
+								case "New-Order": // Customer Table (the last 1/3 values from the Order table)					
+									// Nothing to do
+									break;
+									
+								case "Order-Line": // Stock Table (10 most popular values from the Stock table)
+									/*keyList = new ArrayList<Integer>();
+									keyList.add(_s);
+									keyList.add(_o);
+									data_id = table.getTableData(keyList, 1);
+									_ol = data_id;
+									System.out.println("\t\t--> OL("+_ol+") for S("+_s+") and O("+_o+")");
+									*/break;
+							}
+							
 							
 							if(trDataList.contains(data_id) && d > 0) {
 								--d;
@@ -158,12 +227,10 @@ public class TransactionGenerator {
 					trDataSet.add(data_id);
 					
 					//System.out.println("@ Inserting d"+data_id+" into "+partition.getPartition_label());
-					// Update Data Popularity
-					popularityProfile.generateDataPopularity(db);
 					break;
 					
 			case -1:
-					double rand = DBMSSimulator.randomDataGenerator.nextUniform(table.getTbl_min_cp(), table.getTbl_max_cp(), false);				
+					double rand = DBMSSimulator.randomDataGenerator.nextUniform(0, 1, false);				
 					data_id = db.getRandomData(rand, table);
 					
 					Data _data = db.search(data_id);
@@ -183,13 +250,12 @@ public class TransactionGenerator {
 					db.setDb_data_numbers(--data_counts);
 										
 					//System.out.println("@ Deleting d"+data_id+" from "+_partition.getPartition_label());
-					// Update Data Popularity
-					popularityProfile.generateDataPopularity(db);
 					break;
 			}
 			
 			table.updateTableLoad();
 		}
+		
 		return trDataSet;
 	}
 }

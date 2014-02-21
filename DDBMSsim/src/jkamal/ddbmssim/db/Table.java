@@ -4,15 +4,17 @@
 
 package jkamal.ddbmssim.db;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-
+import jkamal.ddbmssim.main.DBMSSimulator;
 import org.apache.commons.collections4.MapIterator;
 import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.commons.collections4.map.MultiValueMap;
 
 public class Table implements Comparable<Table>{
 	private int tbl_id;
@@ -23,10 +25,10 @@ public class Table implements Comparable<Table>{
 	private double tbl_size;
 	private Set<Partition> tbl_partitions;
 	private Set<Integer> tbl_foreign_tables;
-	private Map<Integer, Integer> tbl_data_map_s; // For the secondary tables
-	private MultiKeyMap tbl_data_map_d; // For the dependent tables
-	private double tbl_max_cp;
-	private double tbl_min_cp;
+	private MultiValueMap<Integer, Integer> tbl_data_map_s; // For the secondary tables
+	private MultiKeyMap<Integer, Integer> tbl_data_map_d; // For the dependent tables
+	private HashMap<Integer, Integer> tbl_data_id_map;
+	private int[] tbl_data_rank;
 	
 	public Table(int id, int type, int db_id, String name) {
 		this.setTbl_id(id);
@@ -36,18 +38,24 @@ public class Table implements Comparable<Table>{
 		this.setTbl_data_count(0);
 		this.setTbl_size(0.0d);
 		this.setTbl_partitions(new TreeSet<Partition>());
-		this.setTbl_foreign_tables(new TreeSet<Integer>());
+		
+		if(this.getTbl_type() != 0)
+			this.setTbl_foreign_tables(new TreeSet<Integer>());
 		
 		if(this.getTbl_type() != 2) {
 			if(this.getTbl_type() == 1) {
-				this.setTbl_data_map_s(new HashMap<Integer, Integer>());
+				this.setTbl_data_map_s(new MultiValueMap<Integer, Integer>());
 			}
 		} else {
-			this.setTbl_data_map_d(new MultiKeyMap());
+			this.setTbl_data_map_d(new MultiKeyMap<Integer, Integer>());
 		}		
 		
-		this.setTbl_max_cp(Double.MIN_VALUE);
-		this.setTbl_min_cp(Double.MAX_VALUE);
+		this.setTbl_data_id_map(new HashMap<Integer, Integer>());
+		
+		if(this.getTbl_id() == 1)
+			this.setTbl_data_rank(new int[(DBMSSimulator.TPCC_WAREHOUSE) + 1]);
+		else if(this.getTbl_id() == 2)
+			this.setTbl_data_rank(new int[((int) (100000 * DBMSSimulator.TPCC_Scale)) + 1]);
 	}
 	
 	// Copy Constructor
@@ -64,22 +72,42 @@ public class Table implements Comparable<Table>{
 			clone_partitions.add(clonePartition);
 		this.setTbl_partitions(clone_partitions);
 		
-		Set<Integer> clone_foreign_tables = new TreeSet<Integer>();		
-		for(Integer foreign_table : table.getTbl_foreign_tables())
-			clone_foreign_tables.add(foreign_table);
-		this.setTbl_foreign_tables(clone_foreign_tables);
-		
-		MultiKeyMap clone_data_map_d = new MultiKeyMap();
-		MapIterator it = table.getTbl_data_map_d().mapIterator();
-		while(it.hasNext()) {
-			it.next();
-		    MultiKey mk = (MultiKey) it.getKey();
-		    clone_data_map_d.put(mk.getKey(0), mk.getKey(1), it.getValue());		    
+		if(this.getTbl_type() != 0) {
+			Set<Integer> clone_foreign_tables = new TreeSet<Integer>();		
+			for(Integer foreign_table : table.getTbl_foreign_tables())
+				clone_foreign_tables.add(foreign_table);
+			this.setTbl_foreign_tables(clone_foreign_tables);
 		}
-		this.setTbl_data_map_d(clone_data_map_d);		
 		
-		this.setTbl_max_cp(table.getTbl_max_cp());
-		this.setTbl_min_cp(table.getTbl_min_cp());
+		if(this.getTbl_type() != 2) {
+			if(this.getTbl_type() == 1) {
+				MultiValueMap<Integer, Integer> clone_data_map_s = new MultiValueMap<Integer, Integer>();
+				for(Object key : table.getTbl_data_map_s().keySet())
+					clone_data_map_s.put((Integer) key, table.getTbl_data_map_s().get(key));
+				
+				this.setTbl_data_map_s(clone_data_map_s);
+			}			
+		} else {
+			MultiKeyMap<Integer, Integer> clone_data_map_d = new MultiKeyMap<Integer, Integer>();
+			MapIterator<MultiKey<? extends Integer>, Integer> it = table.getTbl_data_map_d().mapIterator();
+			while(it.hasNext()) {
+				it.next();
+			    @SuppressWarnings("unchecked")
+				MultiKey<Integer> mk = (MultiKey<Integer>) it.getKey();
+			    clone_data_map_d.put(mk.getKey(0), mk.getKey(1), it.getValue());		    
+			}
+			this.setTbl_data_map_d(clone_data_map_d);
+		}
+		
+		HashMap<Integer, Integer> clone_data_id_map = new HashMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : table.getTbl_data_id_map().entrySet())
+			clone_data_id_map.put(entry.getKey(), entry.getValue());
+		this.setTbl_data_id_map(clone_data_id_map);
+		
+		int[] clone_data_rank = new int[table.getTbl_data_rank().length];
+		for(int i = 0; i < table.getTbl_data_rank().length; i++)
+			clone_data_rank[i] = table.getTbl_data_rank()[i];		
+		this.setTbl_data_rank(clone_data_rank);
 	}
 	
 	public int getTbl_id() {
@@ -146,38 +174,68 @@ public class Table implements Comparable<Table>{
 		this.tbl_foreign_tables = tbl_foreign_tables;
 	}
 
-	public Map<Integer, Integer> getTbl_data_map_s() {
+	public MultiValueMap<Integer, Integer> getTbl_data_map_s() {
 		return tbl_data_map_s;
 	}
 
-	public void setTbl_data_map_s(HashMap<Integer, Integer> tbl_data_map_ps) {
-		this.tbl_data_map_s = tbl_data_map_ps;
+	public void setTbl_data_map_s(MultiValueMap<Integer, Integer> tbl_data_map_s) {
+		this.tbl_data_map_s = tbl_data_map_s;
 	}
 
-	public MultiKeyMap getTbl_data_map_d() {
+	public MultiKeyMap<Integer, Integer> getTbl_data_map_d() {
 		return tbl_data_map_d;
 	}
 
-	public void setTbl_data_map_d(MultiKeyMap tbl_data_map) {
-		this.tbl_data_map_d = tbl_data_map;
+	public void setTbl_data_map_d(MultiKeyMap<Integer, Integer> tbl_data_map_d) {
+		this.tbl_data_map_d = tbl_data_map_d;
 	}
 
-	public double getTbl_max_cp() {
-		return tbl_max_cp;
+	public HashMap<Integer, Integer> getTbl_data_id_map() {
+		return tbl_data_id_map;
 	}
 
-	public void setTbl_max_cp(double tbl_max_cp) {
-		this.tbl_max_cp = tbl_max_cp;
+	public void setTbl_data_id_map(HashMap<Integer, Integer> tbl_data_id_map) {
+		this.tbl_data_id_map = tbl_data_id_map;
+	}
+	
+	public int[] getTbl_data_rank() {
+		return tbl_data_rank;
 	}
 
-	public double getTbl_min_cp() {
-		return tbl_min_cp;
+	public void setTbl_data_rank(int[] tbl_data_rank) {
+		this.tbl_data_rank = tbl_data_rank;
 	}
 
-	public void setTbl_min_cp(double tbl_min_cp) {
-		this.tbl_min_cp = tbl_min_cp;
+	// Returns the Data id 
+	public int getTableData(int rank) {		
+		return this.getTbl_data_rank()[rank];
 	}
 
+	@SuppressWarnings("unchecked")
+	public int getTableData(ArrayList<Integer> keyList, int table_type) {
+		ArrayList<Integer> dataList = new ArrayList<Integer>();
+		int index = 0;
+		int data_id = -1;
+		
+		switch(table_type) {
+			case 1:
+				for(Integer i : keyList)
+					dataList.addAll((Collection<? extends Integer>) getTbl_data_map_s().get(i));				
+				
+				if(dataList.size() > 1) {
+					index = DBMSSimulator.random.nextInt(dataList.size());
+					data_id = dataList.get(index);
+				} else
+					data_id = dataList.get(0);
+				
+				break;
+			case 2:
+				break;
+		}
+		
+		return data_id;
+	}
+	
 	public Partition getPartition(int partition_id) {// search by local partition id from the Table level		
 		for(Partition partition : this.getTbl_partitions()) {						
 			if(partition.getPartition_id() == partition_id) 

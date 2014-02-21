@@ -19,14 +19,14 @@ public class Data implements Comparable<Data> {
 	private int data_pk;
 	private boolean data_isMoveable;
 
-	private Map<Integer, Integer> data_primary_key;
+	private int data_primary_key;
 	private Map<Integer, Integer> data_foreign_key;
 	
 	// Workload Attributes
 	private double data_zipf_probability;
 	private double data_cumulative_zipf_probability;
 	private double data_normalised_cumulative_zipf_probability;
-	private double data_popularity;
+	private int data_rank;
 	private double data_cumulative_beta_probability;
 	
 	// HyperGraph and Graph Partitioning Attributes
@@ -61,7 +61,7 @@ public class Data implements Comparable<Data> {
 		this.setData_isMoveable(false);	
 		
 		if(table.getTbl_type() != 2) {			
-			this.setData_primary_key(new HashMap<Integer, Integer>());
+			this.setData_primary_key(table.getTbl_data_count());
 			// No foreign key for the Primary tables i.e. Warehouse and Item tables
 			
 			if(table.getTbl_type() == 1)
@@ -71,12 +71,13 @@ public class Data implements Comparable<Data> {
 			this.setData_foreign_key(new HashMap<Integer, Integer>());
 			
 			if(table.getTbl_name() == "Order-Line")
-				this.setData_primary_key(new HashMap<Integer, Integer>());
+				this.setData_primary_key(table.getTbl_data_count());
 		}
 		
 		this.setData_zipfProbability(0.0);
 		this.setData_cumulativeZipfProbability(0.0);
 		this.setData_normalisedCumulativeZipfProbability(0.0);
+		this.setData_rank(0);
 		
 		this.setData_hmetisClusterId(-1);
 		this.setData_chmetisClusterId(-1);
@@ -103,7 +104,6 @@ public class Data implements Comparable<Data> {
 		this.setData_label(data.getData_label());
 		this.setData_value(data.getData_value());
 		this.setData_size(data.getData_size());
-		//this.setData_frequency(data.getData_frequency());
 		this.setData_weight(data.getData_weight());
 		this.setData_pk(data.getData_pk());
 		this.setData_isMoveable(data.isData_isMoveable());		
@@ -178,11 +178,11 @@ public class Data implements Comparable<Data> {
 		this.data_pk = data_pk;
 	}
 
-	public Map<Integer, Integer> getData_primary_key() {
+	public int getData_primary_key() {
 		return data_primary_key;
 	}
 
-	public void setData_primary_key(Map<Integer, Integer> data_primary_key) {
+	public void setData_primary_key(int data_primary_key) {
 		this.data_primary_key = data_primary_key;
 	}
 
@@ -218,21 +218,12 @@ public class Data implements Comparable<Data> {
 		this.data_normalised_cumulative_zipf_probability = data_normalised_cdf;
 	}
 
-	/*public Set<Integer> getData_transactions_involved() {
-		return data_transactions_involved;
+	public int getData_rank() {
+		return data_rank;
 	}
 
-	public void setData_transactions_involved(
-			Set<Integer> data_transaction_involved) {
-		this.data_transactions_involved = data_transaction_involved;
-	}*/
-
-	public double getData_popularity() {
-		return data_popularity;
-	}
-
-	public void setData_popularity(double data_popularity) {
-		this.data_popularity = data_popularity;
+	public void setData_rank(int data_rank) {
+		this.data_rank = data_rank;
 	}
 
 	public double getData_cumulative_beta_probability() {
@@ -355,30 +346,17 @@ public class Data implements Comparable<Data> {
 	public void setData_isMoveable(boolean data_isMoveable) {
 		this.data_isMoveable = data_isMoveable;
 	}
-	
-	/*public void incData_frequency(int data_frequency) {	
-		this.setData_frequency(++data_frequency);
-	}
-	
-	public void incData_frequency() {
-		int data_frequency = this.getData_frequency();
-		this.setData_frequency(++data_frequency);
-	}*/
-	
-	/*public void calculateData_weight() {
-		this.setData_weight(1);
-	}*/
 
 	@Override
 	public String toString() {		
-		if(this.isData_isRoaming())
-			return (this.data_label+"|PK-"+this.data_pk//+"|"+this.getData_hmetisClusterId()
+		//if(this.isData_isRoaming())
+			return (this.data_label+"|PK-"+this.data_primary_key//+"|"+this.getData_hmetisClusterId()
 					+"|(LP-"+this.data_local_partition_id+")(GP-"+this.data_global_partition_id+")(HP-"+this.data_home_partition_id
 					+")/N"+this.data_node_id+"("+this.data_home_node_id+"))");// @C("+this.data_hmetis_cluster_id+") @h("+this.data_shadow_hmetis_id+")");
-		else
-			return (this.data_label+"|PK-"+this.data_pk//+"|"+this.getData_hmetisClusterId()
-					+"|GP-"+this.data_global_partition_id
-					+"/N"+this.data_node_id+")");// @C("+this.data_hmetis_cluster_id+") //@h("+this.data_shadow_hmetis_id+")");
+		//else
+			//return (this.data_label+"|PK-"+this.data_primary_key//+"|"+this.getData_hmetisClusterId()
+					//+"|GP-"+this.data_local_partition_id
+					//+"/N"+this.data_node_id+")");// @C("+this.data_hmetis_cluster_id+") //@h("+this.data_shadow_hmetis_id+")");
 	}
 		
 	@Override
