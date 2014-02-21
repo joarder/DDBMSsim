@@ -65,9 +65,9 @@ public class DBMSSimulator {
 	
 	public final static double[] TPCC_TRANSACTION_PROPORTION = {0.45, 0.43, 0.04, 0.04, 0.04};
 	public final static int[][] TPCC_TRANSACTION_DATA_DIST = new int[][]{
-											// New-Order Transaction(10) (Read/Write|High Frequency) : Place a new Order 
+											// New-Order Transaction(8) (Read/Write|High Frequency) : Place a new Order 
 											// For a randomly selected District and a randomly selected Customer from that District 
-											{1, 1, 2, 2, 1, 0, 1, 1, 1},
+											{1, 1, 2, 2, 1, 0, 1, 0, 0},
 											// Payment Transaction(5) (Read/Write|High Frequency) : Updates Customer's balance
 											// For a randomly selected District and a randomly selected Customer from that District
 											{1, 0, 1, 0, 2, 1, 0, 0, 0}, 
@@ -82,7 +82,7 @@ public class DBMSSimulator {
 											{0, 0, 1, 1, 0, 0, 0, 0, 1}  
 											};
 	public final static int[][] TPCC_TRANSACTIONAL_CHANGE = new int[][]{
-											{0, 0, 0, 0, 0, 0, 1, 1, 1}, // 3: Insert (Order, New-Order, Order-Line)
+											{0, 0, 0, 0, 0, 0, 1, 0, 0}, // 3: Insert (Order, New-Order, Order-Line)
 											{0, 0, 0, 0, 0, 1, 0, 0, 0}, // 1: Insert (History)
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}, // 0
 											{0, 0, 0, 0, 0, 0, 0, -1, 0},// 1: Delete (New-Order)

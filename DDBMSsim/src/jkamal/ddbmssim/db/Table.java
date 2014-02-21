@@ -230,13 +230,17 @@ public class Table implements Comparable<Table>{
 					rand_selection = DBMSSimulator.random.nextInt(dataList.size());					
 					d = dataList.get(rand_selection);
 										
-					//System.out.println("@-- "+rand_selection+"|d="+d+"|size="+dataList.size());
+					System.out.println("@-- rand_selection = "+rand_selection+"|d="+d+"|size="+dataList.size());
 				} else
 					d = dataList.get(0);				
 				
 				break;
 			case 2:
-				d = this.getTbl_data_map_d().get(keyList.get(0), keyList.get(1));				
+				System.out.println("@-- d="+d+"|keyList.get(0)="+keyList.get(0)+"|keyList.get(1)="+keyList.get(1));
+				System.out.println(">>>---"+this.getTbl_data_map_d().get(69, 897));
+				System.out.println(">>>---"+this.getTbl_data_map_d().get(345, 897));
+				d = this.getTbl_data_map_d().get(keyList.get(0), keyList.get(1));
+				System.out.println("@-- d="+d+"|keyList.get(0)="+keyList.get(0)+"|keyList.get(1)="+keyList.get(1));
 				break;
 		}
 				

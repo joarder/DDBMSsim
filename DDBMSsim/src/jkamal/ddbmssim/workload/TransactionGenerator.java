@@ -182,12 +182,13 @@ public class TransactionGenerator {
 									
 									keyList = new ArrayList<Integer>();
 									keyList.add(_o);
-									keyList.add(_o);
-									System.out.println("\t\t* _o="+_o);
+									keyList.add(_s);
+									System.out.println("\t\t* _o="+_o+"|_s="+_s);
+									
 									dataList = table.getTableData(keyList);
 									_ol = dataList.get(1);
 									
-									System.out.println("\t\t--> OL("+_ol+") for S("+_o+") and O("+_o+") -- "+dataList.get(0));
+									System.out.println("\t\t--> OL("+_ol+") for S("+_s+") and O("+_o+") -- "+dataList.get(0));
 									break;
 							}
 							
@@ -222,23 +223,48 @@ public class TransactionGenerator {
 							
 							table.getTbl_data_map_s().put(_c, table.getTbl_data_count());
 							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
-							break;
-						
-						case("New-Order"):
-							data.setData_primary_key(table.getTbl_data_count());							
-							data.getData_foreign_key().put(7, _o); // 7: Orders Table
-						
-							table.getTbl_data_map_s().put(_o, table.getTbl_data_count());
-							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
-							break;
+							//break;
 							
-						case("Order-Line"):
-							data.setData_primary_key(table.getTbl_data_count());								
-							data.getData_foreign_key().put(4, _s); // 4: Stock Table
-							data.getData_foreign_key().put(7, _o); // 7: Order Table
+							// Also put an entry in the New-Order and Order-Line Table
+							_o = table.getTbl_data_count();							
 							
-							table.getTbl_data_map_d().put(_s, _o, table.getTbl_data_count());
-							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
+							
+						//case("New-Order"):
+							Table t_no = db.getTable(8);
+							int no_data_id = data_id;
+							++no_data_id;
+							Data no_data = db.createNewDataObject(t_no, no_data_id);
+							
+							no_data.setData_primary_key(t_no.getTbl_data_count());							
+							no_data.getData_foreign_key().put(7, _o); // 7: Orders Table
+						
+							t_no.getTbl_data_map_s().put(_o, t_no.getTbl_data_count());
+							t_no.getTbl_data_id_map().put(t_no.getTbl_data_count(), no_data_id);
+							//break;
+							
+						//case("Order-Line"):
+							Table t_ol = db.getTable(9); 
+							int ol_data_id = data_id;
+							++ol_data_id;
+							Data ol_data = db.createNewDataObject(t_ol, ol_data_id);
+							
+							ol_data.setData_primary_key(table.getTbl_data_count());								
+							ol_data.getData_foreign_key().put(4, _s); // 4: Stock Table
+							ol_data.getData_foreign_key().put(7, _o); // 7: Order Table
+							
+							t_ol.getTbl_data_map_d().put(_s, _o, t_ol.getTbl_data_count());
+							t_ol.getTbl_data_id_map().put(t_ol.getTbl_data_count(), ol_data_id);
+							
+							System.out.println(">>>---"+t_ol.getTbl_data_map_d().get(345, 897));
+							
+							if(t_ol.getTbl_data_count() == 3045)
+								System.out.println("*** key = "+t_ol.getTbl_data_count()+"|val="+ol_data_id);
+
+							if(table.getTbl_data_count() == 345)
+								System.out.println("*** c="+_c+"|o="+_o+"|s="+_s
+										+"|ol_data_id="+ol_data_id+"|o_data_id="+data_id
+										+"|t_ol.getTbl_data_count()="+t_ol.getTbl_data_count());
+							
 							break;													
 					}			
 					
