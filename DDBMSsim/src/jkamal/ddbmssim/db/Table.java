@@ -220,6 +220,7 @@ public class Table implements Comparable<Table>{
 		int rand_selection = 0;
 		ArrayList<Integer> data_id = new ArrayList<Integer>();
 		int d = -1;
+		boolean _null = false;
 		
 		switch(this.getTbl_type()) {
 			case 1:
@@ -230,23 +231,29 @@ public class Table implements Comparable<Table>{
 					rand_selection = DBMSSimulator.random.nextInt(dataList.size());					
 					d = dataList.get(rand_selection);
 										
-					System.out.println("@-- rand_selection = "+rand_selection+"|d="+d+"|size="+dataList.size());
+					//System.out.println("@-- rand_selection = "+rand_selection+"|d="+d+"|size="+dataList.size());
 				} else
 					d = dataList.get(0);				
 				
 				break;
 			case 2:
-				System.out.println("@-- d="+d+"|keyList.get(0)="+keyList.get(0)+"|keyList.get(1)="+keyList.get(1));
-				System.out.println(">>>---"+this.getTbl_data_map_d().get(69, 897));
-				System.out.println(">>>---"+this.getTbl_data_map_d().get(345, 897));
-				d = this.getTbl_data_map_d().get(keyList.get(0), keyList.get(1));
-				System.out.println("@-- d="+d+"|keyList.get(0)="+keyList.get(0)+"|keyList.get(1)="+keyList.get(1));
+				//System.out.println("\t\t### _s="+keyList.get(0)+"|_o="+keyList.get(1));
+				
+				if(this.getTbl_data_map_d().get(keyList.get(0), keyList.get(1)) == null)
+					_null = true;
+				else					
+					d = this.getTbl_data_map_d().get(keyList.get(0), keyList.get(1));				
+				
 				break;
 		}
 				
-		System.out.println("\t\t@-- d="+d+"|"+this.getTbl_data_id_map().get(d));
+		//System.out.println("\t\t@-- d="+d+"|"+this.getTbl_data_id_map().get(d));
 		
-		data_id.add(this.getTbl_data_id_map().get(d));
+		if(_null)
+			data_id.add(-1);
+		else
+			data_id.add(this.getTbl_data_id_map().get(d));
+		
 		data_id.add(d);
 		
 		return data_id;

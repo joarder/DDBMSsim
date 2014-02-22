@@ -100,9 +100,8 @@ public class Bootstrapping {
 		ArrayList<Integer> linkedTables = null;
 		int data_id = 1;
 		
-		for(Table table : db.getDb_tables()) {			
-			//table.setTbl_data_count(table_data[table.getTbl_id() - 1]);			
-			//System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());//+table_data[table.getTbl_id() - 1]);			
+		for(Table table : db.getDb_tables()) {					
+			System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());			
 			
 			// Get the table dependencies and associations for the non-primary tables
 			linkedTables = db.getLinkedTables(table);			

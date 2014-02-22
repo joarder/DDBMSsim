@@ -200,7 +200,7 @@ public class Database implements Comparable<Database> {
 	// Create a new Data object and attach it with the designated Table and Partition within a given Database
 	public Data createNewDataObject(Table table, int data_id) {
 		// Generate Partition Id
-		int target_partition = (table.getTbl_data_count() % this.getDb_dbs().getDbs_nodes().size());
+		int target_partition = (data_id % this.getDb_dbs().getDbs_nodes().size());
 		Partition partition = table.getPartition(target_partition + 1);
 		
 		// Create a new Data Row Object
@@ -218,6 +218,9 @@ public class Database implements Comparable<Database> {
 		this.setDb_data_numbers(data_id);
 		int d = table.getTbl_data_count();
 		table.setTbl_data_count(++d);
+		
+		if(data_id == 5270)
+		System.out.println(">> "+data.toString());
 		
 		return data;
 	}
