@@ -18,7 +18,6 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 import jkamal.ddbmssim.db.DataMovement;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.db.DatabaseServer;
-import jkamal.ddbmssim.db.Table;
 import jkamal.ddbmssim.graph.GraphMinCut;
 import jkamal.ddbmssim.hgraph.HGraphMinCut;
 import jkamal.ddbmssim.bootstrap.Bootstrapping;
@@ -136,11 +135,11 @@ public class DBMSSimulator {
 		System.out.println("[MSG] Data creation and placement into partitions have been done.");
 		
 		//test
-		for(Table table : db.getDb_tables()){
-			if(table.getTbl_id() == 7)
-				System.out.println(table.getTbl_data_map_s().get(69));
+		//for(Table table : db.getDb_tables()){
+			//if(table.getTbl_id() == 7)
+				//System.out.println(table.getTbl_data_map_s().get(69));
 				//System.out.println(table.getTbl_data_map_d().get(981, 281));
-		}
+		//}
 		
 		
 		// Printing out details after data loading

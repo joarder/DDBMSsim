@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-
-import jkamal.ddbmssim.db.Data;
-import jkamal.ddbmssim.main.DBMSSimulator;
-
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.random.RandomDataGenerator;
  
@@ -64,6 +60,7 @@ public class PitmanYor {
 		return ((((b - a) * (x - min))/(max - min)) + a);
 	}	
 	
+	@SuppressWarnings("unused")
 	public void generateDataPopularity(int n) {
 		
 		//for(int i = 0; i < DBMSSimulator.PK_ARRAY.length; i++) {

@@ -331,6 +331,7 @@ public class WorkloadFileGenerator {
 	} 
 	
 	// Generates Workload File for Compressed Hyper-graph partitioning
+	@SuppressWarnings("unused")
 	private boolean generateCHGraphWorkloadFile(Database db, Workload workload) {
 		Map<Integer, Set<Integer>> virtual_vertexMap = new TreeMap<Integer, Set<Integer>>();
 		Map<Integer, Integer> virtual_vertexToHashMap = new TreeMap<Integer, Integer>();

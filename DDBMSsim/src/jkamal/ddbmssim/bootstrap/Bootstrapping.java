@@ -35,7 +35,7 @@ public class Bootstrapping {
 			Table table = new Table(table_id, DBMSSimulator.TPCC_TABLE_TYPE[table_id-1], db.getDb_id(), table_names[table_id-1]);
 			db.getDb_tables().add(table);
 			
-			System.out.println("[ACT] Creating <"+table.getTbl_name()+"> Table T"+table.getTbl_id()+" ...");
+			//System.out.println("[ACT] Creating <"+table.getTbl_name()+"> Table T"+table.getTbl_id()+" ...");
 			
 			// Determine the number of Data rows to be populated for each individual table
 			switch(table.getTbl_name()) {
@@ -101,7 +101,7 @@ public class Bootstrapping {
 		int data_id = 1;
 		
 		for(Table table : db.getDb_tables()) {					
-			System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());			
+			//System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());			
 			
 			// Get the table dependencies and associations for the non-primary tables
 			linkedTables = db.getLinkedTables(table);			
@@ -190,11 +190,10 @@ public class Bootstrapping {
 					table.getTbl_data_map_d().put(f_keys.get(0), f_keys.get(1), d);	
 				}
 				
-				System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
+				//System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
 				++data_id;
 			} //--end for()
 			
-			//table.setTbl_data_count(data_id - 1);
 			table.updateTableLoad();
 		}
 		

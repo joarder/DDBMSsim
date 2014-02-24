@@ -6,7 +6,6 @@ package jkamal.ddbmssim.workload;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
 import jkamal.ddbmssim.db.Data;
@@ -16,6 +15,8 @@ import jkamal.ddbmssim.db.Table;
 import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class TransactionGenerator {	
+	private HashMap<Integer, ArrayList<Integer>> _cache;
+	private ArrayList<Integer> _district_cache;
 	
 	public TransactionGenerator() {
 		this._cache = new HashMap<Integer, ArrayList<Integer>>();
@@ -45,7 +46,7 @@ public class TransactionGenerator {
 			
 			int typedTransactions = 0;
 			// j -- a specific Transaction type in the Transaction proportion array
-			for(int j = 0; j < prop[i]; j++) { //System.out.println(">> "+prop[i]);
+			for(int j = 0; j < prop[i]; j++) { ////System.out.println(">> "+prop[i]);
 				++global_tr_id;
 				DBMSSimulator.incGlobal_tr_id();
 				// Gather Data objects from a Transaction
@@ -56,7 +57,7 @@ public class TransactionGenerator {
 				workload.incWrl_totalTransaction();
 				++new_tr;
 				
-				System.out.println(">> T"+global_tr_id+"|"+trDataSet.size());
+				//System.out.println(">> T"+global_tr_id+"|"+trDataSet.size()+"|i("+i+")");
 				
 				if(workload.getWrl_transactionMap().containsKey(i)) {
 					workload.getWrl_transactionMap().get(i).add(transaction);
@@ -73,15 +74,7 @@ public class TransactionGenerator {
 		
 		db.getDb_dbs().updateNodeLoad();
 		return new_tr;
-	}			
-	
-	// last accessed values
-	private int _warehouse;
-	private int _district;
-	private int _stock;
-	private int _order;
-	private HashMap<Integer, ArrayList<Integer>> _cache;
-	private ArrayList<Integer> _district_cache;
+	}	
 	
 	// Create a data set for a specific transaction of type i
 	private Set<Integer> getTransactionalDataSet(Database db, int i, Workload workload) {
@@ -93,13 +86,13 @@ public class TransactionGenerator {
 		ArrayList<Integer> _cache_items = null;
 		int data_id = -1;
 		int _w_rank, _i_rank = 0;
-		int _w = 0, _i = 0, _d = 0, _s = 0, _c = 0, _h, _o = 0, _no, _ol = 0;
+		int _w = 0, _i = 0, _d = 0, _s = 0, _c = 0, _o = 0, _no = 0, _ol = 0, index = 0;
 		
 		for(Table table : db.getDb_tables()) {			
 			int data_nums = DBMSSimulator.TPCC_TRANSACTION_DATA_DIST[i][table.getTbl_id()-1];
 			int action = DBMSSimulator.TPCC_TRANSACTIONAL_CHANGE[i][table.getTbl_id()-1];
 			
-			System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
+			//System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
 			
 			switch(action) {
 			case 0:						
@@ -108,7 +101,7 @@ public class TransactionGenerator {
 							for(Data data : partition.getPartition_dataSet()) {
 								trDataSet.add(data.getData_id());
 								
-								//System.out.println("\t\t* d"+data.getData_id());
+								////System.out.println("\t\t* d"+data.getData_id());
 							}
 						}
 					} else {
@@ -119,9 +112,8 @@ public class TransactionGenerator {
 									_w_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.0);
 									dataList = table.getTableData(_w_rank);
 									_w = dataList.get(0);
-									this._warehouse = _w;
 									
-									System.out.println("\t\t--> W("+_w+")");
+									//System.out.println("\t\t--> W("+_w+")");
 									break;
 									
 								case "Item":									
@@ -129,28 +121,55 @@ public class TransactionGenerator {
 									dataList = table.getTableData(_i_rank);
 									_i = dataList.get(0);
 									
-									System.out.println("\t\t--> I("+_i+")");
+									//System.out.println("\t\t--> I("+_i+")");
 									break;
 									
 								case "District":
-									keyList = new ArrayList<Integer>();
-									keyList.add(_w);
-									dataList = table.getTableData(keyList);
-									_d = dataList.get(1);
-									this._district = _d;
+									if(i <= 1) {
+										keyList = new ArrayList<Integer>();
+										keyList.add(_w);
+										dataList = table.getTableData(keyList);
+										_d = dataList.get(1);
+									} else {
+										index = DBMSSimulator.random.nextInt(_cache.size());
+										_d = this._district_cache.get(index);
+										//System.out.println("index="+index+"|_d="+_d+"|cache size="+_cache.size());
+										
+										while(!this._cache.containsKey(_d)) {
+											index = DBMSSimulator.random.nextInt(_cache.size());
+											_d = this._district_cache.get(index);
+										}
+										
+										//System.out.println("index="+index+"|_d="+_d+"|cache size="+_cache.size());
+										_cache_items = this._cache.get(_d);
+										_c = _cache_items.get(0);
+										_o = _cache_items.get(1);
+										_no = _cache_items.get(2);
+										_ol = _cache_items.get(3);
+										_s = _cache_items.get(4);
+										
+										//System.out.println("\t\t>> Retrieving cached data <D("+_d+")|C("+_c+")|O("+_o+")|NO("+_no+")|OL("+_ol+")|S("+_s+")>");
+										
+										dataList = new ArrayList<Integer>();
+										dataList.add(_d);
+									}
 									
-									System.out.println("\t\t--> D("+_d+") for W("+_w+")");
+									//System.out.println("\t\t--> D("+_d+") for W("+_w+")");
 									break;
 									
 								case "Stock":
-									keyList = new ArrayList<Integer>();
-									keyList.add(_w);
-									keyList.add(_i);
-									dataList = table.getTableData(keyList);
-									_s = dataList.get(1);
-									this._stock = _s;
+									if(i <= 1) {
+										keyList = new ArrayList<Integer>();
+										keyList.add(_w);
+										keyList.add(_i);
+										dataList = table.getTableData(keyList);
+										_s = dataList.get(1);
+									} else {
+										dataList = new ArrayList<Integer>();
+										dataList.add(_s);
+									}
 									
-									System.out.println("\t\t--> S("+_s+") for W("+_w+") and I("+_i+")");
+									//System.out.println("\t\t--> S("+_s+") for W("+_w+") and I("+_i+")");
 									break;
 									
 								case "Customer": // District Table
@@ -160,7 +179,7 @@ public class TransactionGenerator {
 										dataList = table.getTableData(keyList);
 										_c = dataList.get(1);										
 									} else {																													
-										int index = DBMSSimulator.random.nextInt(_cache.size());
+										index = DBMSSimulator.random.nextInt(_cache.size());
 										_d = this._district_cache.get(index);
 										_cache_items = this._cache.get(_d);
 										_c = _cache_items.get(0);
@@ -169,13 +188,13 @@ public class TransactionGenerator {
 										_ol = _cache_items.get(3);
 										_s = _cache_items.get(4);
 										
-										System.out.println(">> Retrieving cached data <D("+_d+")|C("+_c+")|O("+_o+")|NO("+_no+")|OL("+_ol+")|S("+_s+")>");
+										//System.out.println("\t\t>> Retrieving cached data <D("+_d+")|C("+_c+")|O("+_o+")|NO("+_no+")|OL("+_ol+")|S("+_s+")>");
 										
 										dataList = new ArrayList<Integer>();
 										dataList.add(_c);
 									}
 									
-									System.out.println("\t\t--> C("+_c+") for D("+_d+") -- "+dataList.get(0));										
+									//System.out.println("\t\t--> C("+_c+") for D("+_d+") -- "+dataList.get(0));										
 									break;
 									
 								case "History": // Customer Table
@@ -188,7 +207,6 @@ public class TransactionGenerator {
 										keyList.add(_c);
 										dataList = table.getTableData(keyList);
 										_o = dataList.get(1);
-										this._order = _o;
 									} else {
 										int d_id = table.getTbl_data_id_map().get(_o);										
 										dataList = new ArrayList<Integer>();										
@@ -196,7 +214,7 @@ public class TransactionGenerator {
 										dataList.add(_o);										
 									}
 									
-									System.out.println("\t\t--> O("+_o+") for C("+_c+") -- "+dataList.get(0));
+									//System.out.println("\t\t--> O("+_o+") for C("+_c+") -- "+dataList.get(0));
 									break;
 									
 								case "New-Order": // Customer Table (the last 1/3 values from the Order table)					
@@ -211,7 +229,7 @@ public class TransactionGenerator {
 									dataList = table.getTableData(keyList);
 									_ol = dataList.get(1);	
 									
-									System.out.println("\t\t--> OL("+_ol+") for S("+_s+") and O("+_o+") -- "+dataList.get(0));
+									//System.out.println("\t\t--> OL("+_ol+") for S("+_s+") and O("+_o+") -- "+dataList.get(0));
 									break;
 							}
 														
@@ -227,7 +245,7 @@ public class TransactionGenerator {
 			
 			case 1:					
 					// Create a new Data object
-					data_id = db.getDb_data_numbers() + 1;
+					data_id = db.getDb_data_numbers() + 1;					
 					Data data = db.createNewDataObject(table, data_id);
 					
 					switch(table.getTbl_name()) {
@@ -240,7 +258,7 @@ public class TransactionGenerator {
 							break;
 						
 						case("Orders"):
-							System.out.println(">> Inserting O("+table.getTbl_data_count()+") for C("+_c+"|D-"+_d+") with Global Data Id ["+data_id+"]");
+							//System.out.println("\t\t>> Inserting O("+table.getTbl_data_count()+") for C("+_c+"|D-"+_d+") with global data_id ["+data_id+"]");
 							_o = table.getTbl_data_count();
 							
 							data.setData_primary_key(_o);							
@@ -253,13 +271,12 @@ public class TransactionGenerator {
 							// New-Order
 							Table t_no = db.getTable(8);
 							int no_data_id = data_id;
-							++no_data_id;
-							System.out.println(">> "+no_data_id+"| data_id"+data_id);
-							Data no_data = db.createNewDataObject(t_no, no_data_id);
-							
-							System.out.println(">> Inserting NO("+t_no.getTbl_data_count()+") for O("+_o+") with Global Data Id ["+no_data_id+"]");
-							
+							++no_data_id;							
+														
+							Data no_data = db.createNewDataObject(t_no, no_data_id);							
 							_no = t_no.getTbl_data_count();
+							//System.out.println("\t\t>> Inserting NO("+_no+") for O("+_o+") with global data_id ["+no_data_id+"]");
+							
 							no_data.setData_primary_key(_no);							
 							no_data.getData_foreign_key().put(7, _o); // 7: Orders Table
 						
@@ -268,18 +285,18 @@ public class TransactionGenerator {
 							
 							// Order-Line
 							Table t_ol = db.getTable(9); 
-							int ol_data_id = data_id;
-							++ol_data_id;
-							Data ol_data = db.createNewDataObject(t_ol, ol_data_id);
-							_ol = t_ol.getTbl_data_count();
-							
-							System.out.println(">> Inserting OL("+_ol+") for O("+_o+") and S("+_s+") with global data_id ["+no_data_id+"]");
+							int ol_data_id = no_data_id;
+							++ol_data_id;													
 														
+							Data ol_data = db.createNewDataObject(t_ol, ol_data_id);							
+							_ol = t_ol.getTbl_data_count();
+							//System.out.println("\t\t>> Inserting OL("+_ol+") for O("+_o+") and S("+_s+") with global data_id ["+ol_data_id+"]");
+							
 							ol_data.setData_primary_key(_ol);								
 							ol_data.getData_foreign_key().put(4, _s); // 4: Stock Table
 							ol_data.getData_foreign_key().put(7, _o); // 7: Order Table
 							
-							System.out.println(">>-- _o="+_o+"|_s="+_s+"|Id="+t_ol.getTbl_data_count());
+							//System.out.println(">>-- _o="+_o+"|_s="+_s+"|Id="+t_ol.getTbl_data_count());
 							t_ol.getTbl_data_map_d().put(_s, _o, ol_data.getData_primary_key());
 							t_ol.getTbl_data_id_map().put(ol_data.getData_primary_key(), ol_data_id);
 							
@@ -290,36 +307,20 @@ public class TransactionGenerator {
 							_cache_items.add(_no);
 							_cache_items.add(_ol);
 							_cache_items.add(_s);
-							_cache.put(_d, _cache_items);
 							_district_cache.add(_d);
+							_cache.put(_d, _cache_items);							
 							
-							System.out.println(">> Caching D-"+_d+"|C-"+_c+"|O-"+_o+"|NO-"+_no+"|OL-"+_ol+"|S-"+_s);							
+							//System.out.println("\t\t>> Caching D-"+_d+"|C-"+_c+"|O-"+_o+"|NO-"+_no+"|OL-"+_ol+"|S-"+_s);							
 							break;													
 					}			
 					
 					trDataSet.add(data_id);					
 					break;
 					
-			case -1:
-					//double rand = DBMSSimulator.randomDataGenerator.nextUniform(0, 1, false);				
-					//data_id = db.getRandomData(rand, table);
-					
-					int index = DBMSSimulator.random.nextInt(_cache.size());
-					_d = this._district_cache.get(index);
-					_cache_items = this._cache.get(_d);
-					_c = _cache_items.get(0);
-					_o = _cache_items.get(1);
-					_no = _cache_items.get(2);
-					_ol = _cache_items.get(3);
-					_s = _cache_items.get(4);
-				
-					System.out.println(">> Retrieving cached data <D("+_d+")|C("+_c+")|O("+_o+")|NO("+_no+")|OL("+_ol+")|S("+_s+")>");
-					data_id = table.getTbl_data_id_map().get(_no);
-					System.out.println("@ "+data_id);
-					
-					Data _data = db.search(data_id);
-					System.out.println("@ "+_data.getData_globalPartitionId());
-					Partition _partition = table.getPartition(_data.getData_globalPartitionId());
+			case -1:					
+					data_id = table.getTbl_data_id_map().get(_no);					
+					Data _data = db.search(data_id);					
+					Partition _partition = table.getPartition(_data.getData_localPartitionId());
 					
 					// Remove the entry from the Partition Data lookup table and remove the Data object from the Partition Data Set
 					_partition.getPartition_dataLookupTable().put(_data.getData_id(), _partition.getPartition_globalId());
@@ -331,7 +332,9 @@ public class TransactionGenerator {
 					table.getTbl_data_id_map().remove(_no);
 					
 					// Remove cache entry
+					this._district_cache.remove((Object)_d);
 					this._cache.remove(_d);
+					//System.out.println("\t\t@ Removed D("+_d+") from cache | index ("+index+")"+"|cache size="+_cache.size());					
 					
 					// Remove the data id from the workload transactions
 					workload.removeDataFromTransactions(data_id, workload.getTransactionListForSearchedData(data_id));
@@ -341,9 +344,10 @@ public class TransactionGenerator {
 					int data_counts = db.getDb_data_numbers();
 					db.setDb_data_numbers(--data_counts);
 										
-					System.out.println("@ Deleting d"+data_id+" from "+_partition.getPartition_label());
+					//System.out.println("\t\t@ Deleting d"+data_id+" from "+_partition.getPartition_label());
 					break;
-			}			
+			}
+			
 			table.updateTableLoad();
 		}
 		

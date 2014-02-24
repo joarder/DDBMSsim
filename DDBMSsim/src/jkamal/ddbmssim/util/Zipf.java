@@ -102,6 +102,7 @@ public class Zipf
 	/**
 	 * @param args
 	 */
+	@SuppressWarnings("unused")
 	public static void main(String[] args) 
 	{
 		double total = 0.0;

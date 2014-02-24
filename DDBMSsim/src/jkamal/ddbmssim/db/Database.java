@@ -216,11 +216,10 @@ public class Database implements Comparable<Database> {
 		// Increment Data counts at Node, Database and Table level
 		this.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();					
 		this.setDb_data_numbers(data_id);
-		int d = table.getTbl_data_count();
-		table.setTbl_data_count(++d);
 		
-		if(data_id == 5270)
-		System.out.println(">> "+data.toString());
+		table.setTbl_data_count(data.getData_primary_key());
+		
+		//System.out.println(">> "+data.toString());
 		
 		return data;
 	}

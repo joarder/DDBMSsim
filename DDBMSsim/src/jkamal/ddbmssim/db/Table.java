@@ -104,10 +104,12 @@ public class Table implements Comparable<Table>{
 			clone_data_id_map.put(entry.getKey(), entry.getValue());
 		this.setTbl_data_id_map(clone_data_id_map);
 		
-		int[] clone_data_rank = new int[table.getTbl_data_rank().length];
-		for(int i = 0; i < table.getTbl_data_rank().length; i++)
-			clone_data_rank[i] = table.getTbl_data_rank()[i];		
-		this.setTbl_data_rank(clone_data_rank);
+		if(this.getTbl_id() == 1 || this.getTbl_id() == 2) {
+			int[] clone_data_rank = new int[table.getTbl_data_rank().length];
+			for(int i = 0; i < table.getTbl_data_rank().length; i++)
+				clone_data_rank[i] = table.getTbl_data_rank()[i];		
+			this.setTbl_data_rank(clone_data_rank);
+		}
 	}
 	
 	public int getTbl_id() {
@@ -229,16 +231,12 @@ public class Table implements Comparable<Table>{
 				
 				if(dataList.size() > 1) {
 					rand_selection = DBMSSimulator.random.nextInt(dataList.size());					
-					d = dataList.get(rand_selection);
-										
-					//System.out.println("@-- rand_selection = "+rand_selection+"|d="+d+"|size="+dataList.size());
+					d = dataList.get(rand_selection);					
 				} else
 					d = dataList.get(0);				
 				
 				break;
 			case 2:
-				//System.out.println("\t\t### _s="+keyList.get(0)+"|_o="+keyList.get(1));
-				
 				if(this.getTbl_data_map_d().get(keyList.get(0), keyList.get(1)) == null)
 					_null = true;
 				else					
@@ -246,8 +244,6 @@ public class Table implements Comparable<Table>{
 				
 				break;
 		}
-				
-		//System.out.println("\t\t@-- d="+d+"|"+this.getTbl_data_id_map().get(d));
 		
 		if(_null)
 			data_id.add(-1);

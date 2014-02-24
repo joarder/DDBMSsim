@@ -61,7 +61,7 @@ public class Data implements Comparable<Data> {
 		this.setData_isMoveable(false);	
 		
 		if(table.getTbl_type() != 2) {			
-			this.setData_primary_key(table.getTbl_data_count());
+			this.setData_primary_key(table.getTbl_data_count()+1);
 			// No foreign key for the Primary tables i.e. Warehouse and Item tables
 			
 			if(table.getTbl_type() == 1)
@@ -71,7 +71,7 @@ public class Data implements Comparable<Data> {
 			this.setData_foreign_key(new HashMap<Integer, Integer>());
 			
 			if(table.getTbl_name() == "Order-Line")
-				this.setData_primary_key(table.getTbl_data_count());
+				this.setData_primary_key(table.getTbl_data_count()+1);
 		}
 		
 		this.setData_zipfProbability(0.0);
