@@ -792,7 +792,7 @@ public class Workload implements Comparable<Workload> {
 			for(Transaction transaction : entry.getValue()) {
 				if(transaction.getTr_dtCost() > 0)
 					sum += transaction.getTr_dtImpact();
-				//System.out.println("@ "+sum+"| "+transaction.getTr_dtImpact());
+				System.out.println("@ "+sum+"| "+transaction.getTr_dtImpact());
 			}
 		}
 		

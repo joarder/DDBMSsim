@@ -92,7 +92,7 @@ public class DBMSSimulator {
 	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
 	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
-	public final static String HMETIS = "kmetis";
+	public final static String HMETIS = "hmetis";
 	public final static String METIS = "pmetis";
 	
 	public static Random random;

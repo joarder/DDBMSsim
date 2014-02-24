@@ -213,9 +213,7 @@ public class Transaction implements Comparable<Transaction> {
 	
 	// Prints out all of the contents of the representative Transaction
 	public void show(Database db) {
-		System.out.print(" "+this.getTr_label()+"("+this.getTr_dtCost()+")["
-				+this.getTr_frequency()
-				+"|Data("+this.getTr_dataSet().size()+")]");
+		this.toString();
 		
 		System.out.print("{");
 		Iterator<Integer> data =  this.getTr_dataSet().iterator();		
@@ -230,9 +228,10 @@ public class Transaction implements Comparable<Transaction> {
 	
 	@Override
 	public String toString() {	
-		return (this.getTr_label()+"("+this.getTr_dtCost()+")["
-				+this.getTr_frequency()
-				+"|Data("+this.getTr_dataSet().size()+")]");
+		return (this.getTr_label()+"("
+				+this.getTr_dtCost()+"|"
+				+this.getTr_frequency()+"|"
+				+this.getTr_dataSet().size()+")");
 	}
 
 	@Override
