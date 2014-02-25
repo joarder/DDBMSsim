@@ -45,7 +45,16 @@ public class ClusterIdMapper {
 		}
 		
 		//part_file_name = wrl_file_name+".part."+partition_numbers;	
-		File part_file = new File(dir+"\\"+part_file_name);		
+		File file = new File(dir+"\\"+part_file_name);
+		
+		if(!file.exists() && partitioner == "chg") {
+			if(virtual_data >= db.getDb_tables().size())
+				part_file_name = wrl_file_name+".part."+(db.getDb_tables().size()-1);
+			else
+				part_file_name = wrl_file_name+".part."+(virtual_data-1);
+		}
+			
+		File part_file = new File(dir+"\\"+part_file_name);
 		
 		int key = 1;		
 		//System.out.println("@ - "+part_file_name);
@@ -85,7 +94,7 @@ public class ClusterIdMapper {
 							else
 								x = (virtual_id % virtual_data)+1;
 							
-							System.out.println(">> x="+"|keyMap.get(x)="+keyMap.get(x));
+							//System.out.println(">> x="+"|keyMap.get(x)="+keyMap.get(x));
 							cluster_id = (keyMap.get(x)*3)+1;
 							data.setData_chmetisClusterId(cluster_id);
 							workload.getWrl_chg_virtualDataId_clusterId_map().put(data.getData_virtual_data_id(), cluster_id);

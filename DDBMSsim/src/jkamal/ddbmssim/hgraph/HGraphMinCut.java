@@ -55,7 +55,7 @@ public class HGraphMinCut {
 			else
 				this.num_partitions = Integer.toString(virtual_data);
 			
-			System.out.println("--** virtual data = "+virtual_data+"|"+this.num_partitions);
+			//System.out.println("--** virtual data = "+virtual_data+"|"+this.num_partitions);
 			this.setChgraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile());
 			this.setChg_fixfile(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphFixFile());
 			System.out.println("[MSG] Workload file: "+this.getChgraph_file());

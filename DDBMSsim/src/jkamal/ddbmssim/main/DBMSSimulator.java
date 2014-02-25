@@ -35,7 +35,7 @@ public class DBMSSimulator {
 	public final static String WORKLOAD_TYPE = "tpcc";
 	
 	public final static int TRANSACTIONS = 100;
-	public final static int SIMULATION_RUNS = 2;
+	public final static int SIMULATION_RUNS = 12;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -93,7 +93,7 @@ public class DBMSSimulator {
 	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
 	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
-	public final static String HMETIS = "hmetis";
+	public final static String HMETIS = "khmetis";
 	public final static String METIS = "pmetis";
 	
 	public static Random random;
@@ -255,7 +255,7 @@ public class DBMSSimulator {
 		int virtual_data = 0;
 		if(partitioner == "chg") {
 			virtual_data = workloadFileGenerator.getVirtual_data();
-			System.out.println("-->> virtual data = "+virtual_data);
+			//System.out.println("-->> virtual data = "+virtual_data);
 		}
 		
 		if(!empty) {
