@@ -19,7 +19,7 @@ import jkamal.ddbmssim.db.Database;
 public class ClusterIdMapper {	
 	public ClusterIdMapper() { }
 	
-	public void processPartFile(Database db, Workload workload, int partition_numbers, String dir, String partitioner) throws IOException {		
+	public void processPartFile(Database db, Workload workload, int partition_numbers, String dir, String partitioner, int virtual_data) throws IOException {		
 		Map<Integer, Integer> keyMap = new TreeMap<Integer, Integer>();		
 		String wrl_file_name = null;
 		String part_file_name = null;
@@ -27,16 +27,24 @@ public class ClusterIdMapper {
 		switch(partitioner) {
 		case "hgr":
 			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphWorkloadFile();
+			part_file_name = wrl_file_name+".part."+partition_numbers;
 			break;
-		case "chg":
+		case "chg":			
 			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile();
+			
+			if(virtual_data >= db.getDb_tables().size())
+				part_file_name = wrl_file_name+".part."+db.getDb_tables().size();
+			else
+				part_file_name = wrl_file_name+".part."+virtual_data;
+			
 			break;
-		case "gr":
+		case "gr":			
 			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_graphWorkloadFile();
+			part_file_name = wrl_file_name+".part."+partition_numbers;
 			break;
 		}
 		
-		part_file_name = wrl_file_name+".part."+partition_numbers;	
+		//part_file_name = wrl_file_name+".part."+partition_numbers;	
 		File part_file = new File(dir+"\\"+part_file_name);		
 		
 		int key = 1;		
@@ -61,7 +69,7 @@ public class ClusterIdMapper {
 					if(!dataSet.contains(data_id)) {
 						int shadow_id = workload.getWrl_dataId_shadowId_map().get(data.getData_id());
 						int cluster_id = -1;
-						int virtual_id = data.getData_virtual_node_id();
+						int virtual_id = data.getData_virtual_data_id();
 						
 						switch(partitioner) {
 						case "hgr":
@@ -71,9 +79,16 @@ public class ClusterIdMapper {
 							break;
 							
 						case "chg":
-							cluster_id = keyMap.get(virtual_id)+1;
+							int x = 0;
+							if(virtual_data >= db.getDb_tables().size())
+								x = (virtual_id % db.getDb_tables().size())+1;
+							else
+								x = (virtual_id % virtual_data)+1;
+							
+							System.out.println(">> x="+"|keyMap.get(x)="+keyMap.get(x));
+							cluster_id = (keyMap.get(x)*3)+1;
 							data.setData_chmetisClusterId(cluster_id);
-							workload.getWrl_chg_virtualDataId_clusterId_map().put(data.getData_virtual_node_id(), cluster_id);
+							workload.getWrl_chg_virtualDataId_clusterId_map().put(data.getData_virtual_data_id(), cluster_id);
 							workload.getWrl_chg_dataId_clusterId_map().put(data.getData_id(), cluster_id);
 							break;
 							

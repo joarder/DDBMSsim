@@ -51,12 +51,9 @@ public class Database implements Comparable<Database> {
 		this.setDb_data_numbers(db.getDb_data_numbers());		
 		this.setDb_partitions(db.getDb_partitions());
 		
-		Set<Table> cloneDbTables = new TreeSet<Table>();
-		Table cloneTable;
-		for(Table table : db.getDb_tables()) {
-			cloneTable = new Table(table);
-			cloneDbTables.add(cloneTable);
-		}		
+		Set<Table> cloneDbTables = new TreeSet<Table>();		
+		for(Table table : db.getDb_tables())
+			cloneDbTables.add(new Table(table));
 		this.setDb_tables(cloneDbTables);
 		
 		Map<Integer, Integer> clone_db_table_partitions = new HashMap<Integer, Integer>();		
@@ -282,8 +279,9 @@ public class Database implements Comparable<Database> {
 	public Data getData(int data_id) {
 		int global_partition_id = this.getDb_partition_data().get(data_id);		
 		Partition partition = this.getPartition(global_partition_id);
-		
+		//System.out.println("@ "+data_id+"|"+partition.toString());
 		Data data = partition.getData(data_id);
+		//System.out.println("@ "+data.toString());
 							
 		return data;
 	}		
@@ -293,12 +291,7 @@ public class Database implements Comparable<Database> {
 		int table_id = this.getDb_table_partitions().get(global_partition_id);
 		Table table = this.getTable(table_id);
 				
-		for(Partition partition : table.getTbl_partitions()) {						
-			if(partition.getPartition_globalId() == global_partition_id) 
-				return partition;
-		}			
-		
-		return null;
+		return (this.getPartition(table, global_partition_id));
 	}
 	
 	// Search by global partition id within a specific Table from the Database level

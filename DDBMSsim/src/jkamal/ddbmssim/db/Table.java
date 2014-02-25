@@ -69,7 +69,7 @@ public class Table implements Comparable<Table>{
 		
 		Set<Partition> clone_partitions = new TreeSet<Partition>();		
 		for(Partition clonePartition : table.getTbl_partitions())
-			clone_partitions.add(clonePartition);
+			clone_partitions.add(new Partition(clonePartition));
 		this.setTbl_partitions(clone_partitions);
 		
 		if(this.getTbl_type() != 0) {

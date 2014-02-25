@@ -17,10 +17,12 @@ import jkamal.ddbmssim.main.DBMSSimulator;
 public class TransactionGenerator {	
 	private HashMap<Integer, ArrayList<Integer>> _cache;
 	private ArrayList<Integer> _district_cache;
+	private Set<Integer> _removed_d;
 	
 	public TransactionGenerator() {
 		this._cache = new HashMap<Integer, ArrayList<Integer>>();
 		this._district_cache = new ArrayList<Integer>();
+		this._removed_d = new TreeSet<Integer>();
 	}
 	
 	// Generates the required number of Transactions for a specific Workload with a specific Database
@@ -46,13 +48,14 @@ public class TransactionGenerator {
 			
 			int typedTransactions = 0;
 			// j -- a specific Transaction type in the Transaction proportion array
-			for(int j = 0; j < prop[i]; j++) { ////System.out.println(">> "+prop[i]);
+			for(int j = 0; j < prop[i]; j++) { //System.out.println(">> "+prop[i]);
 				++global_tr_id;
 				DBMSSimulator.incGlobal_tr_id();
 				// Gather Data objects from a Transaction
 				trDataSet = this.getTransactionalDataSet(db, i, workload);				
 				// Create a new Transaction												
-				transaction = new Transaction(global_tr_id, trDataSet);				
+				transaction = new Transaction(global_tr_id, trDataSet);
+				transaction.incTr_frequency();
 				transaction.setTr_ranking(i+1);				
 				workload.incWrl_totalTransaction();
 				++new_tr;
@@ -130,12 +133,12 @@ public class TransactionGenerator {
 										keyList.add(_w);
 										dataList = table.getTableData(keyList);
 										_d = dataList.get(1);
-									} else {
+									} else {										
 										index = DBMSSimulator.random.nextInt(_cache.size());
 										_d = this._district_cache.get(index);
 										//System.out.println("index="+index+"|_d="+_d+"|cache size="+_cache.size());
 										
-										while(!this._cache.containsKey(_d)) {
+										while(!this._cache.containsKey(_d)){
 											index = DBMSSimulator.random.nextInt(_cache.size());
 											_d = this._district_cache.get(index);
 										}
@@ -178,9 +181,17 @@ public class TransactionGenerator {
 										keyList.add(_d);
 										dataList = table.getTableData(keyList);
 										_c = dataList.get(1);										
-									} else {																													
+									} else {
 										index = DBMSSimulator.random.nextInt(_cache.size());
 										_d = this._district_cache.get(index);
+										
+										while(!this._cache.containsKey(_d)){
+											index = DBMSSimulator.random.nextInt(_cache.size());
+											_d = this._district_cache.get(index);											
+										}
+										
+										//System.out.println("\t\t>> Retrieving cached data <D("+_d+")|index="+index+"|s="+_cache.size());
+										
 										_cache_items = this._cache.get(_d);
 										_c = _cache_items.get(0);
 										_o = _cache_items.get(1);
@@ -329,12 +340,13 @@ public class TransactionGenerator {
 					
 					// Remove from table
 					table.getTbl_data_map_s().remove(_o);
-					table.getTbl_data_id_map().remove(_no);
+					table.getTbl_data_id_map().remove(_no);					
 					
 					// Remove cache entry
-					this._district_cache.remove((Object)_d);
+					this._removed_d.add(_d);
+					this._district_cache.remove(new Integer(_d));
 					this._cache.remove(_d);
-					//System.out.println("\t\t@ Removed D("+_d+") from cache | index ("+index+")"+"|cache size="+_cache.size());					
+					//System.out.println("\t\t@ Removed D("+_d+") from cache | index ("+index+")"+"|cache size="+_cache.size());
 					
 					// Remove the data id from the workload transactions
 					workload.removeDataFromTransactions(data_id, workload.getTransactionListForSearchedData(data_id));

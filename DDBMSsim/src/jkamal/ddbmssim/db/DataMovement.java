@@ -75,7 +75,7 @@ public class DataMovement {
 		workload.setMessage(message);				
 		workload.calculateDistributedTransactions();	
 		workload.calculateMeanDTI();
-		workload.show(db, type);
+		//workload.show(db, type);
 	}
 	
 	public void performDataMovement(Database db, Workload workload, String strategy, String partitioner) {
@@ -210,7 +210,10 @@ public class DataMovement {
         
         // Update Lookup Table
         home_partition.getPartition_dataLookupTable().remove(data.getData_id());
-        home_partition.getPartition_dataLookupTable().put(data.getData_id(), dst_partition_id);                                                
+        home_partition.getPartition_dataLookupTable().put(data.getData_id(), dst_partition_id);
+        
+        // Update the entry into the Partition Data lookup table
+        db.getDb_partition_data().put(data.getData_id(), data.getData_globalPartitionId());
 	}
 	
 	private void updateMovementCounts(Database db, int dst_node_id, int current_node_id, int dst_partition_id, int current_partition_id) {
@@ -281,7 +284,7 @@ public class DataMovement {
 								if(dst_partition_id == home_partition_id) {
 									this.updateData(data, dst_partition_id, dst_node_id, false);
 									this.updatePartition(db, data, current_partition_id, dst_partition_id);
-									this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);
+									this.updateMovementCounts(db, dst_node_id, current_node_id, dst_partition_id, current_partition_id);																		
 									
 									current_partition.decPartition_foreign_data();
 									home_partition.decPartition_roaming_data();

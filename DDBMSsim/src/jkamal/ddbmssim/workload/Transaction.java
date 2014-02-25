@@ -16,7 +16,6 @@ public class Transaction implements Comparable<Transaction> {
 	private String tr_label;	
 	private int tr_ranking;
 	private int tr_frequency;	
-	private int tr_weight;	
 	private int tr_dtCost; // Node Span Cost or, Distributed Transaction Cost
 	private int tr_psCost; // Partition Span Cost
 	private int tr_dtImpact;
@@ -27,8 +26,7 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_id(id);
 		this.setTr_label("T"+Integer.toString(this.getTr_id()));
 		this.setTr_ranking(0);
-		this.setTr_frequency(0);
-		this.setTr_weight(0); 		
+		this.setTr_frequency(0);		 	
 		this.setTr_dtCost(0);
 		this.setTr_psCost(0);
 		this.setTr_dtImpact(0);
@@ -41,18 +39,14 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_id(transaction.getTr_id());
 		this.setTr_label(transaction.getTr_label());
 		this.setTr_ranking(transaction.getTr_ranking());
-		this.setTr_frequency(transaction.getTr_frequency());
-		this.setTr_weight(transaction.getTr_weight());		
+		this.setTr_frequency(transaction.getTr_frequency());				
 		this.setTr_dtCost(transaction.getTr_dtCost());
 		this.setTr_psCost(transaction.getTr_psCost());
 		this.setTr_dtImpact(transaction.getTr_dtImpact());
 		this.setTr_class(transaction.getTr_class());
 		
-		//Data cloneData;
 		Set<Integer> cloneDataSet = new TreeSet<Integer>();
 		for(Integer data_id : transaction.getTr_dataSet()) {
-			//cloneData = new Data(data);
-			//cloneDataSet.add(cloneData);
 			cloneDataSet.add(data_id);
 		}		
 		this.setTr_dataSet(cloneDataSet);
@@ -88,14 +82,6 @@ public class Transaction implements Comparable<Transaction> {
 
 	public void setTr_frequency(int tr_frequency) {
 		this.tr_frequency = tr_frequency;
-	}
-
-	public void setTr_weight(int tr_weight) {
-		this.tr_weight = tr_weight;
-	}
-
-	public int getTr_weight() {
-		return tr_weight;
 	}
 
 	public int getTr_dtCost() {
@@ -141,15 +127,6 @@ public class Transaction implements Comparable<Transaction> {
 	public void incTr_frequency() {
 		int tr_frequency = this.getTr_frequency();
 		this.setTr_frequency(++tr_frequency);
-	}
-	
-	public void decTr_frequency() {
-		int tr_frequency = this.getTr_frequency();
-		this.setTr_frequency(--tr_frequency);
-	}
-	
-	public void calculateTr_weight() {
-		this.setTr_weight(this.getTr_frequency());
 	}
 	
 	// This function will calculate the Node and Partition Span Cost for the representative Transaction

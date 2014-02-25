@@ -99,9 +99,6 @@ public class WorkloadGenerator {
 				int new_tr = transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());	
 				
 				System.out.println("[ACT] Varying current workload by generating "+new_tr+" new transactions ...");
-				this.print(workload);				
-				
-				workload.reInitialise(db);
 			} else {
 				popularityProfile.generateDataPopularity(db); // Only for Primary tables
 				
@@ -114,10 +111,11 @@ public class WorkloadGenerator {
 				// Generating New Workload Transactions						
 				TransactionGenerator transactionGenerator = new TransactionGenerator();
 				transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());
-				workload.reInitialise(db);
-				this.print(workload);
 			}						
-				
+			
+			//workload.reInitialise(db);	
+			this.print(workload);
+			
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);						
 			

@@ -247,14 +247,20 @@ public class DBMSSimulator {
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);
 		
 		write("Total "+target_transactions+" transactions having "+sampled_workload.getWrl_totalDataObjects()+" data objects have been identified for partitioning.", "MSG");
-		sampled_workload.show(db, "");
+		
+		//sampled_workload.show(db, "");
 		
 		// Generate workload and fix-files for partitioning
-		boolean empty = workloadFileGenerator.generateWorkloadFile(db, sampled_workload, partitioner);		
+		boolean empty = workloadFileGenerator.generateWorkloadFile(db, sampled_workload, partitioner);
+		int virtual_data = 0;
+		if(partitioner == "chg") {
+			virtual_data = workloadFileGenerator.getVirtual_data();
+			System.out.println("-->> virtual data = "+virtual_data);
+		}
 		
 		if(!empty) {
 		// Perform hyper-graph/graph/compressed hyper-graph partitioning
-		runPartitioner(db, sampled_workload, partitioner);		
+		runPartitioner(db, sampled_workload, partitioner, virtual_data);		
 
 		write("Applying data movement strategies for database ("+db.getDb_name()+") ...", "ACT");
 		write("***********************************************************************************************************************", null);
@@ -264,7 +270,7 @@ public class DBMSSimulator {
 		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 		
 		// Mapping cluster id to partition id
-		cluster_id_mapper.processPartFile(db, sampled_workload, db.getDb_partitions(), directory, partitioner);		
+		cluster_id_mapper.processPartFile(db, sampled_workload, db.getDb_partitions(), directory, partitioner, virtual_data);		
 		//db.show();
 		
 		// Perform data movement		
@@ -281,11 +287,11 @@ public class DBMSSimulator {
 		}
 	}
 	
-	private static void runPartitioner(Database db, Workload workload, String partitioner) throws IOException {		
+	private static void runPartitioner(Database db, Workload workload, String partitioner, int virtual_data) throws IOException {		
 		switch(partitioner) {
 		case "hgr":
 			// Run hMetis HyperGraph Partitioning
-			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "hgr"); 		
+			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "hgr", virtual_data); 		
 			hgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
@@ -298,7 +304,7 @@ public class DBMSSimulator {
 			break;
 			
 		case "chg":			
-			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "chg"); 		
+			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "chg", virtual_data); 		
 			chgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly

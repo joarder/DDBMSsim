@@ -84,7 +84,7 @@ public class Data implements Comparable<Data> {
 		this.setData_metisClusterId(-1);
 		this.setData_shadowId(-1);
 		this.setData_hasShadowId(false);
-		this.setData_virtual_node_id(-1);
+		this.setData_virtual_data_id(-1);
 		
 		this.setData_table_id(table.getTbl_id());
 		
@@ -116,7 +116,7 @@ public class Data implements Comparable<Data> {
 		this.setData_chmetisClusterId(data.getData_chmetisClusterId());
 		this.setData_shadowId(data.getData_shadowId());
 		this.setData_hasShadowId(data.isData_hasShadowId());
-		this.setData_virtual_node_id(data.getData_virtual_node_id());
+		this.setData_virtual_data_id(data.getData_virtual_data_id());
 				
 		this.setData_table_id(data.getData_table_id());
 		
@@ -299,11 +299,11 @@ public class Data implements Comparable<Data> {
 		this.data_hasShadowId = data_hasShadowId;
 	}
 	
-	public int getData_virtual_node_id() {
+	public int getData_virtual_data_id() {
 		return data_virtual_node_id;
 	}
 
-	public void setData_virtual_node_id(int data_virtual_node_id) {
+	public void setData_virtual_data_id(int data_virtual_node_id) {
 		this.data_virtual_node_id = data_virtual_node_id;
 	}
 
@@ -350,8 +350,9 @@ public class Data implements Comparable<Data> {
 	@Override
 	public String toString() {		
 		//if(this.isData_isRoaming())
-			return (this.data_label+"|PK-"+this.data_primary_key//+"|"+this.getData_hmetisClusterId()
-					+"|(LP-"+this.data_local_partition_id+")(GP-"+this.data_global_partition_id+")(HP-"+this.data_home_partition_id
+			return (this.data_label
+					+"(GP-"+this.data_global_partition_id
+					+"|HP-"+this.data_home_partition_id
 					+")/N"+this.data_node_id+"("+this.data_home_node_id+"))");// @C("+this.data_hmetis_cluster_id+") @h("+this.data_shadow_hmetis_id+")");
 		//else
 			//return (this.data_label+"|PK-"+this.data_primary_key//+"|"+this.getData_hmetisClusterId()

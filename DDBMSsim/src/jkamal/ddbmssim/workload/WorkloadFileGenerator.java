@@ -24,6 +24,16 @@ import org.apache.commons.lang3.StringUtils;
 
 public class WorkloadFileGenerator {
 	
+	private int virtual_data = 0;
+	
+	public int getVirtual_data() {
+		return virtual_data;
+	}
+
+	public void setVirtual_data(int virtual_data) {
+		this.virtual_data = virtual_data;
+	}
+
 	// Assigns Shadow HMetis Data Id for Hypergraph partitioning
 	public void assignShadowDataId(Database db, Workload workload) {
 		// Cleanup
@@ -383,7 +393,7 @@ public class WorkloadFileGenerator {
 							virtual_vertexToHashMap.put(virtual_vertex_id, i+1);
 							virtual_vertexWeightToHashMap.put(virtual_vertex_id, i+1);
 							
-							trData.setData_virtual_node_id(virtual_vertex_id);
+							trData.setData_virtual_data_id(virtual_vertex_id);
 							
 							
 							//System.out.println("@ vid = "+virtual_vertex_id+" (i+1) = "+(i+1)+" | "+trData.toString());
@@ -396,6 +406,7 @@ public class WorkloadFileGenerator {
 		}
 		
 		System.out.println("[OUT] Total "+virtual_vertexMap.size()+" virtual data objects have been created.");
+		this.setVirtual_data(virtual_vertexMap.size());
 		
 //====== Check -- Found OK
 		/*
@@ -432,7 +443,7 @@ public class WorkloadFileGenerator {
 					Iterator<Integer> data_id_itr2 =  transaction.getTr_dataSet().iterator();
 					while(data_id_itr2.hasNext()) {												
 						trData = db.getData(data_id_itr2.next());
-							virtual_vertex_id = trData.getData_virtual_node_id();							
+							virtual_vertex_id = trData.getData_virtual_data_id();							
 							
 							// Virtual Edge - Vertices
 							if(!edgeSet.contains(virtual_edge_id)) {								

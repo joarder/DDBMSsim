@@ -60,12 +60,9 @@ public class Partition implements Comparable<Partition> {
 		this.setPartition_table_id(partition.getPartition_table_id());
 		this.setPartition_node_id(partition.getPartition_nodeId());
 		
-		Set<Data> clonePartitionDataSet = new TreeSet<Data>();
-		Data cloneData;
-		for(Data data : partition.getPartition_dataSet()) {
-			cloneData = new Data(data);
-			clonePartitionDataSet.add(cloneData);
-		}
+		Set<Data> clonePartitionDataSet = new TreeSet<Data>();		
+		for(Data data : partition.getPartition_dataSet())
+			clonePartitionDataSet.add(new Data(data));		
 		this.setPartition_dataSet(clonePartitionDataSet);
 				
 		Map<Integer, Integer> clone_data_lookup_table = new TreeMap<Integer, Integer>();
@@ -279,6 +276,7 @@ public class Partition implements Comparable<Partition> {
 	// Returns a Data object queried by it's Data Id from the Partition
 	public Data getData(int data_id) {		
 		for(Data data : this.getPartition_dataSet()) {
+			//System.out.println(">> "+data.toString());
 			if(data.getData_id() == data_id)				
 				return data;
 		}

@@ -792,7 +792,6 @@ public class Workload implements Comparable<Workload> {
 			for(Transaction transaction : entry.getValue()) {
 				if(transaction.getTr_dtCost() > 0)
 					sum += transaction.getTr_dtImpact();
-				System.out.println("@ "+sum+"| "+transaction.getTr_dtImpact());
 			}
 		}
 		
@@ -834,7 +833,7 @@ public class Workload implements Comparable<Workload> {
 			for(Transaction transaction : entry.getValue()) {
 				if(transaction.getTr_dataSet().contains(data_id)) {
 					transaction.getTr_dataSet().remove(data_id);
-					System.out.println("@ d"+data_id+" has been removed from T"+transaction.getTr_id());
+					//System.out.println("@ d"+data_id+" has been removed from T"+transaction.getTr_id());
 				}
 			}
 		}
@@ -900,8 +899,9 @@ public class Workload implements Comparable<Workload> {
 				
 		System.out.println("\n      -----------------------------------------------------------------------------------------------------------------");
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
+			for(Transaction transaction : entry.getValue()) {				
 				transaction.calculateDTCost(db);
+				
 				System.out.print("     ");
 				transaction.show(db);
 			} // end -- for()-Transaction
@@ -922,7 +922,7 @@ public class Workload implements Comparable<Workload> {
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_hg_interNodeDataMovements());
 			}
 			
-			db.show();		
+			db.getDb_dbs().show();		
 			break;
 	
 		case "chg":
@@ -931,7 +931,7 @@ public class Workload implements Comparable<Workload> {
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_chg_interNodeDataMovements());
 			}
 			
-			db.show();		
+			db.getDb_dbs().show();		
 			break;
 			
 		case "gr":
@@ -940,7 +940,7 @@ public class Workload implements Comparable<Workload> {
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_gr_interNodeDataMovements());
 			}
 			
-			db.show();		
+			db.getDb_dbs().show();		
 			break;
 		
 		default:
