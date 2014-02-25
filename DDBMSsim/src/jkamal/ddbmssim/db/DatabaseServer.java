@@ -23,7 +23,7 @@ public class DatabaseServer {
 		this.setDbs_tenants(new TreeSet<Database>());
 		
 		for(int i = 1; i <= nodes; i++)			
-			this.getDbs_nodes().add(new Node(i, i));
+			this.getDbs_nodes().add(new Node(i));
 	}
 
 	public int getDbs_id() {
@@ -73,10 +73,10 @@ public class DatabaseServer {
 	public void updateNodeLoad() {
 		double sum = 0.0d;
 		for(Node node : this.getDbs_nodes()) {
+			sum = 0.0d;
 			for(int pid : node.getNode_partitions()) {
-				for(Database db : this.getDbs_tenants()) {					
-					sum += db.getPartition(pid).getPartition_size();
-				}
+				for(Database db : this.getDbs_tenants())
+					sum += db.getPartition(pid).getPartition_dataSet().size();
 			}
 			
 			node.setNode_size(sum);
@@ -89,15 +89,45 @@ public class DatabaseServer {
 		System.out.println("      Database Server: "+this.getDbs_name());
 		System.out.println("      Number of Nodes: "+this.getDbs_nodes().size());
 		
+		Set<Integer> overloadedPartition = new TreeSet<Integer>();
+		int comma = -1;
+		
 		// Node Details
-		System.out.print("[OUT] Node Details===");
+		System.out.println("[OUT] Node Details===");
 		for(Node node : this.getDbs_nodes()) {						
-			System.out.print("\n      "+node.getNode_label()
-			+" with "
-			+node.getNode_partitions().size()+" Partitions."
-			+" Current Load "
-			+((double)node.getNode_partitions().size()/(double)Node.getNODE_MAX_CAPACITY())*100+"%");			
+			System.out.println("    --"+node.toString()
+			+" | Load "
+			+((double)node.getNode_size()/(double)Node.NODE_MAX_CAPACITY)*100+"%");
+			
+			for(int partition_id : node.getNode_partitions()) {
+				for(Database db : this.getDbs_tenants()) {
+					Partition partition = db.getPartition(partition_id);
+					
+					System.out.println("    ----"+partition.toString());
+					//partition.show();
+					
+					if(partition.isPartition_overloaded())
+						overloadedPartition.add(partition.getPartition_globalId());
+				}
+			}
+			
+		}		
+		
+		if(overloadedPartition.size() != 0) {			
+			System.out.print("[ALM] Overloaded Partition: ");
+			
+			comma = overloadedPartition.size();
+			
+			for(Integer pid : overloadedPartition) {
+				System.out.print("P"+pid);
+				
+				if(comma != 1)
+					System.out.print(", ");
+			
+				--comma;
+			}
+			
+			System.out.print("\n");
 		}
-		System.out.print("\n");
 	}
 }

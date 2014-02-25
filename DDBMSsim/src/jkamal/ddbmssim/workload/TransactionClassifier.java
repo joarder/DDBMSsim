@@ -153,7 +153,7 @@ public class TransactionClassifier {
 				} else {
 					Iterator<Integer> data_iterator = transaction.getTr_dataSet().iterator();					
 					while(data_iterator.hasNext()) {
-						Data data = db.search(data_iterator.next());
+						Data data = db.getData(data_iterator.next());
 						//int tr_counts = data.getData_transactions_involved().size();
 						//System.out.println("@@ "+data.getData_id());
 						int tr_counts = workload.getWrl_dataTransactionsInvolved().get(data.getData_id()).size();

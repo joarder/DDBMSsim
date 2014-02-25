@@ -78,9 +78,11 @@ public class Bootstrapping {
 			for(int p = 1; p <= partition_nums; p++) {
 				Node node = db.getDb_dbs().getDbs_node(p);
 				// Creating a new Partition
-				Partition partition = new Partition(global_partition_id, partition_id, table_id, node.getNode_id(), db.getDb_partitionSize());
+				Partition partition = new Partition(global_partition_id, partition_id, table_id, node.getNode_id());
 				// Adding Partition to the Table
-				table.getTbl_partitions().add(partition);				
+				table.getTbl_partitions().add(partition);
+				// Adding the partition id into the table-partition map at the db level
+				db.getDb_table_partitions().put(partition.getPartition_globalId(), table.getTbl_id());
 				// Adding partition to the Node
 				node.getNode_partitions().add(partition.getPartition_globalId());		
 				

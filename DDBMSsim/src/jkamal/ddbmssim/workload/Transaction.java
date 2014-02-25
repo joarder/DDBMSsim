@@ -163,7 +163,7 @@ public class Transaction implements Comparable<Transaction> {
 		// Calculate Node Span Cost which is equivalent to the Distributed Transaction Cost
 		Iterator<Integer> ns = dataSet.iterator();
 		while(ns.hasNext()) {
-			data = db.search(ns.next());
+			data = db.getData(ns.next());
 			
 			if(data.isData_isRoaming())
 				pid = data.getData_globalPartitionId();				
@@ -182,7 +182,7 @@ public class Transaction implements Comparable<Transaction> {
 	
 		Iterator<Integer> ps = dataSet.iterator();
 		while(ps.hasNext()) {
-			data = db.search(ps.next());
+			data = db.getData(ps.next());
 			if(data.isData_isRoaming())
 				pid = data.getData_globalPartitionId();
 			else 
@@ -202,7 +202,7 @@ public class Transaction implements Comparable<Transaction> {
 	// Given a Data Id this function returns the corresponding Data from the Transaction
 	public Data lookup(Database db, int id) {		
 		for(Integer data_id : this.tr_dataSet) {
-			Data data = db.search(data_id);
+			Data data = db.getData(data_id);
 					
 			if(data.getData_id() == id)
 				return data;
@@ -213,12 +213,12 @@ public class Transaction implements Comparable<Transaction> {
 	
 	// Prints out all of the contents of the representative Transaction
 	public void show(Database db) {
-		this.toString();
+		System.out.print(this.toString());
 		
 		System.out.print("{");
 		Iterator<Integer> data =  this.getTr_dataSet().iterator();		
 		while(data.hasNext()) {
-			System.out.print(db.search(data.next()).toString());
+			System.out.print(db.getData(data.next()).toString());
 			if(data.hasNext())
 				System.out.print(", ");
 		}				

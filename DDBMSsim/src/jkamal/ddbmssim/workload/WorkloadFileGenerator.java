@@ -30,7 +30,7 @@ public class WorkloadFileGenerator {
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
 				for(Integer data_id : transaction.getTr_dataSet()) {
-					Data data = db.search(data_id);
+					Data data = db.getData(data_id);
 					
 					if(data.isData_hasShadowId()) {					
 						data.setData_shadowId(-1);
@@ -45,7 +45,7 @@ public class WorkloadFileGenerator {
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				for(Integer data_id : transaction.getTr_dataSet()) {
-					Data data = db.search(data_id);
+					Data data = db.getData(data_id);
 					
 					if(!data.isData_hasShadowId()) {
 						workload.getWrl_dataId_shadowId_map().put(data.getData_id(), shadow_id);
@@ -115,7 +115,7 @@ public class WorkloadFileGenerator {
 								//System.out.println("@@ "+transaction.getTr_frequency()+"* ");
 								Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
 								while(data.hasNext()) {
-									trData = db.search(data.next());
+									trData = db.getData(data.next());
 									
 									writer.write(Integer.toString(trData.getData_shadowId()));							
 									
@@ -139,7 +139,7 @@ public class WorkloadFileGenerator {
 								Iterator<Integer> data =  transaction.getTr_dataSet().iterator();							
 								
 								while(data.hasNext()) {
-									trData = db.search(data.next());								
+									trData = db.getData(data.next());								
 									
 									if(!uniqueDataSet.contains(trData.getData_shadowId())) {
 										++newline;
@@ -195,7 +195,7 @@ public class WorkloadFileGenerator {
 							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();							
 							
 							while(data.hasNext()) {
-								trData = db.search(data.next());								
+								trData = db.getData(data.next());								
 								
 								if(!uniqueDataSet.contains(trData.getData_shadowId())) {
 									++newline;
@@ -248,7 +248,7 @@ public class WorkloadFileGenerator {
 					
 					Iterator<Integer> data_id_itr =  transaction.getTr_dataSet().iterator();
 					while(data_id_itr.hasNext()) {
-						trData = db.search(data_id_itr.next());
+						trData = db.getData(data_id_itr.next());
 											
 						if(!dataSet.contains(trData.getData_id())) {
 							dataSet.add(trData.getData_id());							
@@ -264,7 +264,7 @@ public class WorkloadFileGenerator {
 									
 									if(tr != null) {
 										for(int trInvolvedDataId : tr.getTr_dataSet()) {
-											trInvolvedData = db.search(trInvolvedDataId);													
+											trInvolvedData = db.getData(trInvolvedDataId);													
 											
 											if(!dataIdSet.contains(trInvolvedDataId) && trInvolvedData.getData_id() != trData.getData_id()) {
 												str += Integer.toString(trInvolvedData.getData_shadowId())+" ";							
@@ -355,7 +355,7 @@ public class WorkloadFileGenerator {
 				if(transaction.getTr_class() != "green") {
 					Iterator<Integer> data_id_itr1 =  transaction.getTr_dataSet().iterator();
 					while(data_id_itr1.hasNext()) {												
-						trData = db.search(data_id_itr1.next());
+						trData = db.getData(data_id_itr1.next());
 						
 						if(!dataSet.contains(trData.getData_id())) {
 							dataSet.add(trData.getData_id());							
@@ -431,7 +431,7 @@ public class WorkloadFileGenerator {
 					
 					Iterator<Integer> data_id_itr2 =  transaction.getTr_dataSet().iterator();
 					while(data_id_itr2.hasNext()) {												
-						trData = db.search(data_id_itr2.next());
+						trData = db.getData(data_id_itr2.next());
 							virtual_vertex_id = trData.getData_virtual_node_id();							
 							
 							// Virtual Edge - Vertices
@@ -687,7 +687,7 @@ public class WorkloadFileGenerator {
 							Iterator<Integer> data =  transaction.getTr_dataSet().iterator();							
 							
 							while(data.hasNext()) {
-								trData = db.search(data.next());								
+								trData = db.getData(data.next());								
 								
 								if(!uniqueDataSet.contains(trData.getData_shadowId())) {
 									++newline;

@@ -53,7 +53,7 @@ public class TransactionGenerator {
 				trDataSet = this.getTransactionalDataSet(db, i, workload);				
 				// Create a new Transaction												
 				transaction = new Transaction(global_tr_id, trDataSet);				
-				transaction.setTr_ranking(i+1);
+				transaction.setTr_ranking(i+1);				
 				workload.incWrl_totalTransaction();
 				++new_tr;
 				
@@ -319,7 +319,7 @@ public class TransactionGenerator {
 					
 			case -1:					
 					data_id = table.getTbl_data_id_map().get(_no);					
-					Data _data = db.search(data_id);					
+					Data _data = table.getData(db, data_id);
 					Partition _partition = table.getPartition(_data.getData_localPartitionId());
 					
 					// Remove the entry from the Partition Data lookup table and remove the Data object from the Partition Data Set

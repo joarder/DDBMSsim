@@ -255,7 +255,15 @@ public class Table implements Comparable<Table>{
 		return data_id;
 	}
 	
-	public Partition getPartition(int partition_id) {// search by local partition id from the Table level		
+	public Data getData(Database db, int data_id) {
+		int local_partition_id = (data_id % db.getDb_dbs().getDbs_nodes().size()) + 1;
+		Partition partition = this.getPartition(local_partition_id);
+		Data data = partition.getData(data_id);
+		
+		return data;
+	}		
+	
+	public Partition getPartition(int partition_id) {// search by local partition id from the Table level			
 		for(Partition partition : this.getTbl_partitions()) {						
 			if(partition.getPartition_id() == partition_id) 
 				return partition;
@@ -267,7 +275,7 @@ public class Table implements Comparable<Table>{
 	public void updateTableLoad() {
 		double sum = 0.0d;
 		for(Partition partition : this.getTbl_partitions()) {
-			sum += partition.getPartition_size();
+			sum += partition.getPartition_dataSet().size();
 		}
 		
 		this.setTbl_size(sum);
@@ -279,7 +287,7 @@ public class Table implements Comparable<Table>{
 	
 	@Override
 	public String toString() {
-		return (this.getTbl_name()+"|"+this.getTbl_size()+" MB");
+		return ("T"+this.getTbl_id()+"<"+this.getTbl_name()+">");
 	}
 	
 	@Override

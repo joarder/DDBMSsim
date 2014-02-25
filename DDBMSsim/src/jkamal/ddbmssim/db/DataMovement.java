@@ -246,7 +246,7 @@ public class DataMovement {
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
 				for(Integer data_id : transaction.getTr_dataSet()) {					
-					Data data = db.search(data_id);
+					Data data = db.getData(data_id);
 					if(data == null) System.out.println("@ "+data_id+"| T"+transaction.getTr_id());
 					if(!dataSet.contains(data.getData_id())) {
 						dataSet.add(data.getData_id());

@@ -16,8 +16,7 @@ public class Partition implements Comparable<Partition> {
 	private String partition_label;
 	private int partition_table_id;	
 	private int partition_node_id;
-	private int partition_capacity;
-	private double partition_size; // in MB
+	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	private Set<Data> partition_data_set;
 	private Map<Integer, Integer> partition_data_lookup_table;
@@ -32,14 +31,12 @@ public class Partition implements Comparable<Partition> {
 	private int partition_inflow;
 	private int partition_outflow;
 	
-	public Partition(int global_id, int p_id, int table_id, int node_id, int partition_capacity) {
+	public Partition(int global_id, int p_id, int table_id, int node_id) {
 		this.setPartition_globalId(global_id);
 		this.setPartition_id(p_id);		
 		this.setPartition_table_id(table_id);
 		this.setPartition_node_id(node_id);
 		this.setPartition_label("P"+p_id+"("+global_id+")-T"+table_id);
-		this.setPartition_capacity(partition_capacity);
-		this.setPartition_size(0.0d);
 		
 		this.setPartition_dataSet(new TreeSet<Data>());
 		this.setPartition_dataLookupTable(new TreeMap<Integer, Integer>());
@@ -62,8 +59,6 @@ public class Partition implements Comparable<Partition> {
 		this.setPartition_label(partition.getPartition_label());
 		this.setPartition_table_id(partition.getPartition_table_id());
 		this.setPartition_node_id(partition.getPartition_nodeId());
-		this.setPartition_capacity(partition.getPartition_capacity());				
-		this.setPartition_size(partition.getPartition_size());
 		
 		Set<Data> clonePartitionDataSet = new TreeSet<Data>();
 		Data cloneData;
@@ -128,22 +123,6 @@ public class Partition implements Comparable<Partition> {
 
 	public void setPartition_node_id(int partition_node_id) {
 		this.partition_node_id = partition_node_id;
-	}
-
-	public int getPartition_capacity() {
-		return partition_capacity;
-	}
-
-	public void setPartition_capacity(int partition_capacity) {
-		this.partition_capacity = partition_capacity;
-	}
-	
-	public double getPartition_size() {
-		return partition_size;
-	}
-
-	public void setPartition_size(double partition_size) {
-		this.partition_size = partition_size;
 	}
 
 	public Set<Data> getPartition_dataSet() {
@@ -287,37 +266,18 @@ public class Partition implements Comparable<Partition> {
 	public void updatePartitionLoad() {
 		int totalData = this.getPartition_dataSet().size();
 		
-		if(totalData > this.getPartition_capacity()*0.9)//.getPartition_size_overloaded())
+		if(totalData > Partition.PARTITION_MAX_CAPACITY * 0.9)
 			this.setPartition_overloaded(true);
 		else 
 			this.setPartition_overloaded(false);
 		
-		double percentage = ((double)totalData/this.getPartition_capacity()) * 100.0;
+		double percentage = ((double)totalData/Partition.PARTITION_MAX_CAPACITY) * 100.0;
 		percentage = Math.round(percentage * 100.0) / 100.0;
 		this.setPartition_current_load(percentage);
-		
-		double sum = 0.0d;
-		for(Data data : this.getPartition_dataSet()) {
-			sum += data.getData_size();
-		}
-		
-		this.setPartition_size(sum);
-	}
-	
-	// Returns the current Partition Id for a queried Data Id
-	public int lookupPartitionId_byDataId(int data_id) {
-		int partition_id = -1;
-		
-		for(Entry<Integer, Integer> entry : this.getPartition_dataLookupTable().entrySet()) {
-			if(entry.getKey() == data_id)
-				return entry.getValue();
-		}
-		
-		return partition_id;
 	}
 	
 	// Returns a Data object queried by it's Data Id from the Partition
-	public Data getData_byDataId(int data_id) {		
+	public Data getData(int data_id) {		
 		for(Data data : this.getPartition_dataSet()) {
 			if(data.getData_id() == data_id)				
 				return data;
@@ -348,8 +308,7 @@ public class Partition implements Comparable<Partition> {
 		if(this.getPartition_roaming_data() != 0 || this.getPartition_foreign_data() !=0)
 			return (this.getPartition_label()
 					+"["+this.getPartition_dataSet().size()
-					+"|"+this.getPartition_size()+" MB"
-					+"|"+this.getPartition_current_load()+"%]-" //+"/"+this.getPartition_capacity()
+					+"|"+this.getPartition_current_load()+"%]-"
 					+"R("+this.getPartition_roaming_data()+")/"
 					+"F("+this.getPartition_foreign_data()+") - " 
 					+"Inflow("+this.getPartition_inflow()+")|"
@@ -357,8 +316,9 @@ public class Partition implements Comparable<Partition> {
 					);										
 		else	
 			return (this.getPartition_label()
-					+"["+this.getPartition_dataSet().size()+"|"+this.getPartition_current_load()+"%]"); //getPartition_capacity()
-					//+"H("+this.getPartition_dataSet().size()+")");
+					+"["+this.getPartition_dataSet().size()
+					+"|"+this.getPartition_current_load()+"%]"
+					);
 	}
 	
 	@Override

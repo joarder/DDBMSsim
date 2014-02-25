@@ -56,7 +56,7 @@ public class ClusterIdMapper {
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
 				for(Integer data_id : transaction.getTr_dataSet()) {
-					Data data = db.search(data_id);
+					Data data = db.getData(data_id);
 					
 					if(!dataSet.contains(data_id)) {
 						int shadow_id = workload.getWrl_dataId_shadowId_map().get(data.getData_id());

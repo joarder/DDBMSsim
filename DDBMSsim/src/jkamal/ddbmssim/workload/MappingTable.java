@@ -47,7 +47,7 @@ public class MappingTable {
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {							
 				for(Integer data_id : transaction.getTr_dataSet()) {
-					Data data = db.search(data_id);
+					Data data = db.getData(data_id);
 					
 					partition_id = data.getData_globalPartitionId();
 					

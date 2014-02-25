@@ -13,16 +13,16 @@ public class Node implements Comparable<Node> {
 	private int node_id;
 	private String node_label;	
 	private Set<Integer> node_partitions;
-	private static int NODE_MAX_CAPACITY = 100; // 1000GB = 1TB -- 1000 Partitions // 1TB Data (in Size) Or, equivalently 1000 Partitions can be stored in a single node.
+	public final static int NODE_MAX_CAPACITY = 10000; // 10GB Or, equivalently 10 Partitions can be stored in a single node.
 	private double node_size;
 	private int node_inflow;
 	private int node_outflow;
 	
 	private int node_total_data;
 	
-	public Node(int id, int label) {
+	public Node(int id) {
 		this.setNode_id(id);
-		this.setNode_label("N"+label);		
+		this.setNode_label("N"+id);		
 		this.setNode_partitions(new TreeSet<Integer>());
 		this.setNode_size(0.0d);
 		this.setNode_inflow(0);
@@ -44,14 +44,6 @@ public class Node implements Comparable<Node> {
 
 	public void setNode_label(String node_label) {
 		this.node_label = node_label;
-	}
-
-	public static long getNODE_MAX_CAPACITY() {
-		return NODE_MAX_CAPACITY;
-	}
-
-	public static void setNODE_MAX_CAPACITY(int max_capacity) {
-		NODE_MAX_CAPACITY = max_capacity;
 	}
 
 	public double getNode_size() {
@@ -146,6 +138,11 @@ public class Node implements Comparable<Node> {
 	public void decNode_outflow(){
 		int val = this.getNode_outflow();
 		this.setNode_outflow(--val);
+	}
+	
+	@Override
+	public String toString() {
+		return (this.getNode_label()+"(#P["+this.getNode_partitions().size()+"])");
 	}
 
 	@Override

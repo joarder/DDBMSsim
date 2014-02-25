@@ -30,7 +30,8 @@ import jkamal.ddbmssim.workload.WorkloadGenerator;
 
 public class DBMSSimulator {	
 	public final static int DB_NODES = 3;
-	public final static double PARTITION_SCALE = 0.1; // 1; 0.1; 0.01
+	public final static double NODE_SCALE = 1;
+	public final static double PARTITION_SCALE = 1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
 	
 	public final static int TRANSACTIONS = 100;
@@ -123,7 +124,7 @@ public class DBMSSimulator {
 		System.out.println("[ACT] Creating Database Server \""+dbs.getDbs_name()+"\" with "+dbs.getDbs_nodes().size()+" Nodes ...");
 		
 		// Database creation for tenant id-"0" with Range partitioning model with 1GB Partition size	
-		Database db = new Database(0, "tpcc", 0, dbs, "hash", PARTITION_SCALE);
+		Database db = new Database(0, "tpcc", 0, dbs, "hash");
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
 		dbs.getDbs_tenants().add(db);
@@ -132,15 +133,7 @@ public class DBMSSimulator {
 		System.out.println("[ACT] Started Bootstrapping Process ...");
 		Bootstrapping bootstrapping = new Bootstrapping();
 		bootstrapping.bootstrapping(db);
-		System.out.println("[MSG] Data creation and placement into partitions have been done.");
-		
-		//test
-		//for(Table table : db.getDb_tables()){
-			//if(table.getTbl_id() == 7)
-				//System.out.println(table.getTbl_data_map_s().get(69));
-				//System.out.println(table.getTbl_data_map_d().get(981, 281));
-		//}
-		
+		System.out.println("[MSG] Data creation and placement into partitions have been done.");		
 		
 		// Printing out details after data loading
 		dbs.show();
