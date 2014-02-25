@@ -120,7 +120,7 @@ public class TransactionGenerator {
 									break;
 									
 								case "Item":									
-									_i_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.5);
+									_i_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.0);
 									dataList = table.getTableData(_i_rank);
 									_i = dataList.get(0);
 									
