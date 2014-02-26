@@ -360,6 +360,7 @@ public class WorkloadFileGenerator {
 
 		System.out.println("[ACT] Starting workload compression with CR = 0.5 ...");
 		System.out.println("[ACT] Creating virtual data objects ...");
+		System.out.println("@ >> total data in workload = "+(workload.getWrl_totalDataObjects()/2));
 		// Creating Virtual Nodes
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
@@ -370,7 +371,7 @@ public class WorkloadFileGenerator {
 						
 						if(!dataSet.contains(trData.getData_id())) {
 							dataSet.add(trData.getData_id());							
-							int i = simpleHash(trData.getData_pk(), (workload.getWrl_totalDataObjects()/2));							
+							int i = simpleHash(trData.getData_id(), (workload.getWrl_totalDataObjects()/2));							
 							//System.out.println("@ "+trData.toString()+" | hashed at ("+i+")");
 							
 							if(!virtual_dataSet.contains(i+1)) {
@@ -395,10 +396,9 @@ public class WorkloadFileGenerator {
 							virtual_vertexWeightToHashMap.put(virtual_vertex_id, i+1);
 							
 							trData.setData_virtual_data_id(virtual_vertex_id);
-							
-							
+														
 							//System.out.println("@ vid = "+virtual_vertex_id+" (i+1) = "+(i+1)+" | "+trData.toString());
-							//System.out.println("@debug >> "+trData.toString()+" | hashed at ("+(i+1)+") | vid = "+trData.getData_virtual_node_id());
+							//System.out.println("@debug >> "+trData.toString()+" | hashed at ("+(i+1)+") | vid = "+trData.getData_virtual_data_id());
 							//System.out.println(trData.getData_id()+" | "+trData.getData_pk()+" | "+(i+1));
 						}
 					}

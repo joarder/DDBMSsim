@@ -27,32 +27,32 @@ public class ClusterIdMapper {
 		switch(partitioner) {
 		case "hgr":
 			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_hGraphWorkloadFile();
-			part_file_name = wrl_file_name+".part."+partition_numbers;
+			//part_file_name = wrl_file_name+".part."+partition_numbers;
 			break;
 		case "chg":			
 			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile();
-			
+			/*
 			if(virtual_data >= db.getDb_tables().size())
 				part_file_name = wrl_file_name+".part."+db.getDb_tables().size();
 			else
 				part_file_name = wrl_file_name+".part."+virtual_data;
-			
+			*/
 			break;
 		case "gr":			
 			wrl_file_name = workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_graphWorkloadFile();
-			part_file_name = wrl_file_name+".part."+partition_numbers;
+			//part_file_name = wrl_file_name+".part."+partition_numbers;
 			break;
 		}
 		
-		//part_file_name = wrl_file_name+".part."+partition_numbers;	
-		File file = new File(dir+"\\"+part_file_name);
+		part_file_name = wrl_file_name+".part."+partition_numbers;	
+		/*File file = new File(dir+"\\"+part_file_name);
 		
 		if(!file.exists() && partitioner == "chg") {
 			if(virtual_data >= db.getDb_tables().size())
 				part_file_name = wrl_file_name+".part."+(db.getDb_tables().size()-1);
 			else
 				part_file_name = wrl_file_name+".part."+(virtual_data-1);
-		}
+		}*/
 			
 		File part_file = new File(dir+"\\"+part_file_name);
 		
@@ -88,14 +88,15 @@ public class ClusterIdMapper {
 							break;
 							
 						case "chg":
-							int x = 0;
+							/*int x = 0;
 							if(virtual_data >= db.getDb_tables().size())
 								x = (virtual_id % db.getDb_tables().size())+1;
 							else
 								x = (virtual_id % virtual_data)+1;
-							
+							*/
 							//System.out.println(">> x="+"|keyMap.get(x)="+keyMap.get(x));
-							cluster_id = (keyMap.get(x)*3)+1;
+							//cluster_id = (keyMap.get(x)*3)+1;
+							cluster_id = keyMap.get(virtual_id)+1;
 							data.setData_chmetisClusterId(cluster_id);
 							workload.getWrl_chg_virtualDataId_clusterId_map().put(data.getData_virtual_data_id(), cluster_id);
 							workload.getWrl_chg_dataId_clusterId_map().put(data.getData_id(), cluster_id);

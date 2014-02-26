@@ -34,7 +34,7 @@ public class DBMSSimulator {
 	public final static double PARTITION_SCALE = 1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
 	
-	public final static int TRANSACTIONS = 1000;
+	public final static int TRANSACTIONS = 100;
 	public final static int SIMULATION_RUNS = 2;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
@@ -305,7 +305,7 @@ public class DBMSSimulator {
 		switch(partitioner) {
 		case "hgr":
 			// Run hMetis HyperGraph Partitioning
-			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "hgr", virtual_data); 		
+			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, "hgr", virtual_data); 		
 			hgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
@@ -318,7 +318,7 @@ public class DBMSSimulator {
 			break;
 			
 		case "chg":			
-			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, db.getDb_partitions(), "chg", virtual_data); 		
+			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, "chg", virtual_data); 		
 			chgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
@@ -333,7 +333,7 @@ public class DBMSSimulator {
 		case "gr":
 			//==============================================================================================
 			// Run Metis Graph Partitioning							
-			GraphMinCut graphMinCut = new GraphMinCut(db, workload, METIS, db.getDb_partitions()); 		
+			GraphMinCut graphMinCut = new GraphMinCut(db, workload, METIS); 		
 			graphMinCut.runMetis();
 			
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
