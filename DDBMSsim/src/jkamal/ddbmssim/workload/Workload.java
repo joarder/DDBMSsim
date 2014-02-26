@@ -5,6 +5,7 @@
 package jkamal.ddbmssim.workload;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -417,7 +418,7 @@ public class Workload implements Comparable<Workload> {
 		this.wrl_total_data = wrl_totalData;
 	}
 
-	public Map<Integer, Set<Integer>> getWrl_dataTransactionsInvolved() {
+	public Map<Integer, Set<Integer>> getWrl_dataInvolvedInTransactions() {
 		return wrl_dataTransactionsInvolved;
 	}
 
@@ -733,10 +734,7 @@ public class Workload implements Comparable<Workload> {
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
-			for(Transaction transaction : entry.getValue()) {
-				transaction.calculateDTCost(db);
-				transaction.calculateDTImapct();
-				
+			for(Transaction transaction : entry.getValue()) {							
 				for(Integer data_id : transaction.getTr_dataSet()) {
 					if(!dataSet.contains(data_id)) {
 						dataSet.add(data_id);
@@ -744,9 +742,9 @@ public class Workload implements Comparable<Workload> {
 						Set<Integer> transactionSet = new TreeSet<Integer>();
 						transactionSet.add(transaction.getTr_id());
 						
-						this.getWrl_dataTransactionsInvolved().put(data_id, transactionSet);
+						this.getWrl_dataInvolvedInTransactions().put(data_id, transactionSet);
 					} else {
-						this.getWrl_dataTransactionsInvolved().get(data_id).add(transaction.getTr_id());
+						this.getWrl_dataInvolvedInTransactions().get(data_id).add(transaction.getTr_id());
 					}					
 				}
 			}
@@ -780,26 +778,13 @@ public class Workload implements Comparable<Workload> {
 		
 		// i -- Transaction types
 		for(int i = 0; i < sampled_workload.getWrl_transactionTypes(); i++)
-			sampled_workload.removeTransactions(db, removable_transaction_map.get(i), i, false);						
+			sampled_workload.removeTransactions(removable_transaction_map.get(i), i, false);						
 		
 		System.out.println("[MSG] Total "+removed_count+" duplicate transactions have been removed from the workload.");
 		return sampled_workload;
 	}	
 	
-	public void calculateMeanDTI() {
-		int sum = 0;
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
-			for(Transaction transaction : entry.getValue()) {
-				if(transaction.getTr_dtCost() > 0)
-					sum += transaction.getTr_dtImpact();
-			}
-		}
-		
-		if(this.getWrl_distributedTransactions() != 0)
-			this.setWrl_meanDTI(((double)sum/(double)this.getWrl_distributedTransactions()));
-		else
-			this.setWrl_meanDTI(0.0);
-	}
+	
 	
 	// Search and return a target Transaction from the Workload
 	public Transaction getTransaction(int transaction_id) {		
@@ -811,6 +796,38 @@ public class Workload implements Comparable<Workload> {
 		}
 		
 		return null;
+	}
+	
+	// Remove a set of transactions from the Workload
+	public void removeTransactions(Set<Integer> removed_transactions, int i, boolean flag) {
+		HashMap<Integer, TreeSet<Integer>> _dataSetMap = new HashMap<Integer, TreeSet<Integer>>();
+		
+		for(int tr_id : removed_transactions) {
+			//System.out.println("@ tr_id = "+tr_id+" size="+transactionList.size());
+			Transaction transaction = this.getTransaction(tr_id);			
+			//System.out.println("@ Found T"+transaction.getTr_id());
+			
+			Set<Integer> dataSet = new TreeSet<Integer>();
+			dataSet = transaction.getTr_dataSet();
+			_dataSetMap.put(tr_id, (TreeSet<Integer>) dataSet);						
+			
+			if(flag) {
+				this.releaseTransactionData(tr_id);				
+			}
+			
+			this.getWrl_transactionMap().get(i).remove(transaction); // Removing Object
+			
+			this.decWrl_totalTransactions();				
+			this.decWrl_transactionProportions(i);
+			//System.out.println(">> Total="+this.getWrl_totalTransactions());
+			//System.out.println(">> i = "+i+" | tr_id = "+tr_id+" | T"+transaction.getTr_id());
+		}
+		
+		for(Entry<Integer, TreeSet<Integer>> entry : _dataSetMap.entrySet()) {
+			for(int data_id : entry.getValue()) {
+				this.removeDataFromTransactions(data_id, this.getTransactionListForSearchedData(data_id));				
+			}
+		}
 	}
 	
 	// Returns a list of transaction ids which contain the searched data id
@@ -839,43 +856,29 @@ public class Workload implements Comparable<Workload> {
 		}
 	}
 	
-	// Remove a set of transactions from the Workload
-	public void removeTransactions(Database db, Set<Integer> removed_transactions, int i, boolean flag) {
-		for(int tr_id : removed_transactions) {
-			//System.out.println("@ tr_id = "+tr_id+" size="+transactionList.size());
-			Transaction transaction = this.getTransaction(tr_id);			
-			//System.out.println("@ Found T"+transaction.getTr_id());
-			
-			if(flag) 
-				this.releaseInvolvedTransactionsFromData(db, tr_id);
-			
-			this.getWrl_transactionMap().get(i).remove(transaction); // Removing Object
-			
-			this.decWrl_totalTransactions();				
-			this.decWrl_transactionProportions(i);
-			//System.out.println(">> Total="+this.getWrl_totalTransactions());
-			//System.out.println(">> i = "+i+" | tr_id = "+tr_id+" | T"+transaction.getTr_id());
-		}
-	}
-	
-	
-	public void releaseInvolvedTransactionsFromData(Database db, int tr_id) {
+	// Only works for Transaction Classification which executes after workload sampling
+	public void releaseTransactionData(int tr_id) {
 		Transaction transaction = this.getTransaction(tr_id);
 		//System.out.println("@ Removing T"+transaction.getTr_id());
 		for(Integer data_id : transaction.getTr_dataSet()) {
 			//System.out.println("@ Removing T"+transaction.getTr_id()+" | d"+data.getData_id());
-			this.getWrl_dataTransactionsInvolved().get(data_id).remove(tr_id);
+			this.getWrl_dataInvolvedInTransactions().get(data_id).remove(tr_id);
 		}
 	}
 	
-	// Reinitialise workload transactions and data within a specific database
-	public void reInitialise(Database db) {
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
+	public void calculateMeanDTI() {
+		int sum = 0;
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
 			for(Transaction transaction : entry.getValue()) {
-				transaction.setTr_frequency(1); // resetting Transaction frequency
-				transaction.calculateDTCost(db);
+				if(transaction.getTr_dtCost() > 0)
+					sum += transaction.getTr_dtImpact();
 			}
 		}
+		
+		if(this.getWrl_distributedTransactions() != 0)
+			this.setWrl_meanDTI(((double)sum/(double)this.getWrl_distributedTransactions()));
+		else
+			this.setWrl_meanDTI(0.0);
 	}
 		
 	public void printWrl_transactionProp(int[] array) {

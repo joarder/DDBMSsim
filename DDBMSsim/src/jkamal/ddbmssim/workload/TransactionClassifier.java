@@ -156,14 +156,14 @@ public class TransactionClassifier {
 						Data data = db.getData(data_iterator.next());
 						//int tr_counts = data.getData_transactions_involved().size();
 						//System.out.println("@@ "+data.getData_id());
-						int tr_counts = workload.getWrl_dataTransactionsInvolved().get(data.getData_id()).size();
+						int tr_counts = workload.getWrl_dataInvolvedInTransactions().get(data.getData_id()).size();
 						//System.out.println("@ "+data.getData_id()+" | size = "+tr_counts);
 						//System.out.println("# "+data.toString());
 						if(tr_counts <= 1) 
 							++green_data;
 						else {							
 							//for(int tr_id : data.getData_transactions_involved()){
-							for(int tr_id : workload.getWrl_dataTransactionsInvolved().get(data.getData_id())) {
+							for(int tr_id : workload.getWrl_dataInvolvedInTransactions().get(data.getData_id())) {
 								Transaction tr = workload.getTransaction(tr_id);
 								//System.out.println("-- "+tr_id);
 								if(tr.getTr_dtCost() > 0)
@@ -193,7 +193,7 @@ public class TransactionClassifier {
 			
 			// Removing Green Transactions from the Workload
 			if(unique.size() > 0) {
-				workload.removeTransactions(db, unique, entry.getKey(), true);	
+				workload.removeTransactions(unique, entry.getKey(), true);	
 				//this.decGreen_tr(unique.size());
 				//unique.removeAll(unique);
 			}

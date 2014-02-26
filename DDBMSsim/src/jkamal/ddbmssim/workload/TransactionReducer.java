@@ -48,7 +48,7 @@ public class TransactionReducer {
 			//System.out.print("\n");
 			
 			if(tr_nums != 0)				
-				workload.removeTransactions(db, unique, i, false);
+				workload.removeTransactions(unique, i, false);
 			
 			old_tr += dying_tr_nums; 
 			//System.out.println("@debug >> total TR = "+workload.getWrl_totalTransaction());
@@ -61,29 +61,6 @@ public class TransactionReducer {
 	    int rnd = new Random().nextInt(array.length);
 	    return array[rnd];
 	}
-	
-	// Randomly selects Transactions for deletion
-	/*private Set<Integer> getRandomTransactions(int dying_tr_nums, int tr_nums, int tr_id_tracker, Workload workload) {
-		Set<Integer> random_transactions = new TreeSet<Integer>();
-		DBMSSimulator.random_data.reSeed(0);
-		
-		for(int i = 0; i < dying_tr_nums; i++) {
-			int tr_id = (int) DBMSSimulator.random_data.nextUniform(1, tr_nums);
-			tr_id += tr_id_tracker;
-			
-			//System.out.println("@debug >> Randomly picked up T"+tr_id);
-			
-			if(random_transactions.contains(tr_id) || workload.search(tr_id) == null) {
-				//System.out.println("@debug >> Choosing another random transaction ...");
-				--i;
-			} else {
-				random_transactions.add(tr_id);
-				System.out.println("@ Removing "+tr_id);
-			}
-		}
-		
-		return random_transactions;
-	}*/
 	
 	private void verifyTransactionDeathProportions(Workload workload) {
 		int difference = 0;

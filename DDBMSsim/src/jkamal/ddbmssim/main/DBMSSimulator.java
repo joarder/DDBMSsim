@@ -34,7 +34,7 @@ public class DBMSSimulator {
 	public final static double PARTITION_SCALE = 1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
 	
-	public final static int TRANSACTIONS = 100;
+	public final static int TRANSACTIONS = 1000;
 	public final static int SIMULATION_RUNS = 12;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	

@@ -41,7 +41,7 @@ public class WorkloadFileGenerator {
 			for(Transaction transaction : entry.getValue()) {		
 				for(Integer data_id : transaction.getTr_dataSet()) {
 					Data data = db.getData(data_id);
-					
+					if(data == null) System.out.println("@ "+data_id);
 					if(data.isData_hasShadowId()) {					
 						data.setData_shadowId(-1);
 						data.setData_hasShadowId(false);
@@ -267,7 +267,7 @@ public class WorkloadFileGenerator {
 							String str = Integer.toString(trData.getData_weight())+" ";							
 							//System.out.println("@ "+trData.toString()+" | size = "+trData.getData_transactions_involved().size());							
 							
-							Set<Integer> trSet = workload.getWrl_dataTransactionsInvolved().get(trData.getData_id());							
+							Set<Integer> trSet = workload.getWrl_dataInvolvedInTransactions().get(trData.getData_id());							
 							if(trSet.size() != 0) {					
 								for(Integer transaction_id : trSet) {
 									Transaction tr = workload.getTransaction(transaction_id);
