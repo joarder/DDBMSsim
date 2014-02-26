@@ -106,6 +106,17 @@ public class Database implements Comparable<Database> {
 	public void setDb_data_numbers(int db_data_numbers) {
 		this.db_data_numbers = db_data_numbers;
 	}
+	
+	public void updateDb_data_numbers() {
+		int data_count = 0;
+		for(Table table : this.getDb_tables()) {
+			for(Partition partition : table.getTbl_partitions()) {
+				data_count += partition.getPartition_dataSet().size();
+			}
+		}
+		
+		this.setDb_data_numbers(data_count);
+	}
 
 	public String getDb_partitioing() {
 		return db_partitioing;
@@ -191,9 +202,7 @@ public class Database implements Comparable<Database> {
 		partition.updatePartitionLoad();
 		
 		// Increment Data counts at Node, Database and Table level
-		this.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();					
-		this.setDb_data_numbers(data_id);
-		
+		this.getDb_dbs().getDbs_node(partition.getPartition_nodeId()).incNode_totalData();		
 		table.setTbl_data_count(data.getData_primary_key());		
 		
 		return data;

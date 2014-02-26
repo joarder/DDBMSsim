@@ -62,7 +62,7 @@ public class TransactionGenerator {
 				workload.incWrl_totalTransaction();
 				++new_tr;
 				
-				System.out.println(">> T"+global_tr_id+"|"+trDataSet.size()+"|i("+i+")");
+				//System.out.println(">> T"+global_tr_id+"|"+trDataSet.size()+"|i("+i+")");
 				
 				if(workload.getWrl_transactionMap().containsKey(i)) {
 					workload.getWrl_transactionMap().get(i).add(transaction);
@@ -88,7 +88,7 @@ public class TransactionGenerator {
 		ArrayList<Integer> keyList;
 		ArrayList<Integer> dataList = null;
 		ArrayList<Integer> _cache_items = null;
-		int data_id = -1;
+		int data_id = DBMSSimulator.getGlobal_data_id();
 		int _w_rank, _i_rank = 0;
 		int _w = 0, _i = 0, _d = 0, _s = 0, _c = 0, _o = 0, _no = 0, _ol = 0, cache_key = 0;
 		
@@ -96,7 +96,7 @@ public class TransactionGenerator {
 			int data_nums = DBMSSimulator.TPCC_TRANSACTION_DATA_DIST[i][table.getTbl_id()-1];
 			int action = DBMSSimulator.TPCC_TRANSACTIONAL_CHANGE[i][table.getTbl_id()-1];
 			
-			System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
+			//System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
 			
 			switch(action) {
 			case 0:						
@@ -249,11 +249,14 @@ public class TransactionGenerator {
 			
 			case 1:					
 					// Create a new Data object
-					data_id = db.getDb_data_numbers() + 1;					
+					++data_id;
+					DBMSSimulator.incGlobal_data_id();
+					
 					Data data = db.createNewDataObject(table, data_id);
 					
 					switch(table.getTbl_name()) {
 						case("History"):
+							//System.out.println("\t\t>> Inserting H(x) for C("+_c+") and D("+_d+") with global data_id ["+data_id+"]");
 							data.getData_foreign_key().put(3, _d); // 3: District Table
 							data.getData_foreign_key().put(5, _c); // 5: Customer Table
 						
@@ -261,10 +264,10 @@ public class TransactionGenerator {
 							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
 							break;
 						
-						case("Orders"):
-							//System.out.println("\t\t>> Inserting O("+table.getTbl_data_count()+") for C("+_c+"|D-"+_d+") with global data_id ["+data_id+"]");
+						case("Orders"):							
 							_o = table.getTbl_data_count();
-							
+							//System.out.println("\t\t>> Inserting O("+_o+") for C("+_c+") and D("+_d+") with global data_id ["+data_id+"]");
+						
 							data.setData_primary_key(_o);							
 							data.getData_foreign_key().put(5, _c); // 5: Customer Table
 							
@@ -275,7 +278,8 @@ public class TransactionGenerator {
 							// New-Order
 							Table t_no = db.getTable(8);
 							int no_data_id = data_id;
-							++no_data_id;							
+							++no_data_id;
+							DBMSSimulator.incGlobal_data_id();
 														
 							Data no_data = db.createNewDataObject(t_no, no_data_id);							
 							_no = t_no.getTbl_data_count();
@@ -290,7 +294,8 @@ public class TransactionGenerator {
 							// Order-Line
 							Table t_ol = db.getTable(9); 
 							int ol_data_id = no_data_id;
-							++ol_data_id;													
+							++ol_data_id;
+							DBMSSimulator.incGlobal_data_id();
 														
 							Data ol_data = db.createNewDataObject(t_ol, ol_data_id);							
 							_ol = t_ol.getTbl_data_count();
@@ -352,17 +357,17 @@ public class TransactionGenerator {
 					// Remove cache entry
 					this._cache_keys.remove(new Integer(cache_key));
 					this._cache.remove(cache_key);
-					System.out.println("\t\t@ Removed D("+_d+") from cache | index ("+cache_key+")"+"|cache size="+_cache.size());
+					//System.out.println("\t\t@ Removed D("+_d+") from cache | index ("+cache_key+")"+"|cache size="+_cache.size());
 					
 					// Remove the data id from the workload transactions
 					workload.removeDataFromTransactions(data_id, workload.getTransactionListForSearchedData(data_id));
 					
 					// Decrement Data counts at Node and Database level
 					db.getDb_dbs().getDbs_node(_partition.getPartition_nodeId()).decNode_totalData();
-					int data_counts = db.getDb_data_numbers();
-					db.setDb_data_numbers(--data_counts);
+					//int data_counts = db.getDb_data_numbers();
+					//db.setDb_data_numbers(--data_counts);
 										
-					System.out.println("\t\t@ Deleting d"+data_id+" from "+_partition.getPartition_label());
+					//System.out.println("\t\t@ Deleting d"+data_id+" from "+_partition.getPartition_label());
 					break;
 			}
 			

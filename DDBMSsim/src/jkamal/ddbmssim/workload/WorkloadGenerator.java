@@ -113,7 +113,7 @@ public class WorkloadGenerator {
 				transactionGenerator.generateTransaction(db, workload, DBMSSimulator.getGlobal_tr_id());
 			}						
 			
-			//workload.reInitialise(db);	
+			db.updateDb_data_numbers();
 			this.print(workload);
 			
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +

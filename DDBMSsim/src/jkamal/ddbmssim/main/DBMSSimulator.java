@@ -34,7 +34,7 @@ public class DBMSSimulator {
 	public final static double PARTITION_SCALE = 1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
 	
-	public final static int TRANSACTIONS = 100;
+	public final static int TRANSACTIONS = 1000;
 	public final static int SIMULATION_RUNS = 2;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
@@ -89,9 +89,9 @@ public class DBMSSimulator {
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
 											};
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
-	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "khmetis";
 	public final static String METIS = "pmetis";
@@ -100,6 +100,7 @@ public class DBMSSimulator {
 	public static RandomDataGenerator randomDataGenerator;
 	
 	private static int global_tr_id;
+	private static int global_data_id;
 	
 	public static int getGlobal_tr_id() {
 		return global_tr_id;
@@ -114,6 +115,19 @@ public class DBMSSimulator {
 		DBMSSimulator.setGlobal_tr_id(++id);
 	}
 	
+	public static int getGlobal_data_id() {
+		return global_data_id;
+	}
+
+	public static void setGlobal_data_id(int global_data_id) {
+		DBMSSimulator.global_data_id = global_data_id;
+	}
+	
+	public static void incGlobal_data_id() {
+		int id = DBMSSimulator.getGlobal_data_id();
+		DBMSSimulator.setGlobal_data_id(++id);
+	}
+
 	public static void main(String[] args) throws IOException {
 		random = new Random();
 		random.setSeed(0);

@@ -100,7 +100,7 @@ public class Bootstrapping {
 				
 		// Populating Data into Table Partitions
 		ArrayList<Integer> linkedTables = null;
-		int data_id = 1;
+		int data_id = DBMSSimulator.getGlobal_tr_id();		
 		
 		for(Table table : db.getDb_tables()) {					
 			//System.out.println(">-- <"+table.getTbl_name()+"> | data = "+table.getTbl_data_count());			
@@ -116,6 +116,9 @@ public class Bootstrapping {
 			boolean first_time = true;
 			
 			for(int d = 1; d <= table_data[table.getTbl_id() - 1]; d++) {
+				++data_id;
+				DBMSSimulator.incGlobal_data_id();
+				
 				Data data = db.createNewDataObject(table, data_id);
 				table.getTbl_data_id_map().put(d, data_id);
 				
@@ -192,14 +195,13 @@ public class Bootstrapping {
 					table.getTbl_data_map_d().put(f_keys.get(0), f_keys.get(1), d);	
 				}
 				
-				//System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");
-				++data_id;
+				//System.out.println("\t\t @-- "+data.getData_id()+"|pk("+data.getData_primary_key()+"|fk("+data.getData_foreign_key()+")");				
 			} //--end for()
 			
 			table.updateTableLoad();
 		}
 		
-		db.setDb_data_numbers(data_id - 1);
+		db.updateDb_data_numbers();
 		db.getDb_dbs().updateNodeLoad();
 	}	
 	
