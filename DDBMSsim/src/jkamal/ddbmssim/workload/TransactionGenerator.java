@@ -62,7 +62,7 @@ public class TransactionGenerator {
 				workload.incWrl_totalTransaction();
 				++new_tr;
 				
-				//System.out.println(">> T"+global_tr_id+"|"+trDataSet.size()+"|i("+i+")");
+				System.out.println(">> T"+global_tr_id+"|"+trDataSet.size()+"|i("+i+")");
 				
 				if(workload.getWrl_transactionMap().containsKey(i)) {
 					workload.getWrl_transactionMap().get(i).add(transaction);
@@ -82,8 +82,7 @@ public class TransactionGenerator {
 	}	
 	
 	// Create a data set for a specific transaction of type i
-	private Set<Integer> getTransactionalDataSet(Database db, int i, Workload workload) {
-		//DataPopularityProfile popularityProfile = new DataPopularityProfile();
+	private Set<Integer> getTransactionalDataSet(Database db, int i, Workload workload) {		
 		Set<Integer> trDataSet = new TreeSet<Integer>();
 		ArrayList<Integer> trDataList = new ArrayList<Integer>();
 		ArrayList<Integer> keyList;
@@ -97,7 +96,7 @@ public class TransactionGenerator {
 			int data_nums = DBMSSimulator.TPCC_TRANSACTION_DATA_DIST[i][table.getTbl_id()-1];
 			int action = DBMSSimulator.TPCC_TRANSACTIONAL_CHANGE[i][table.getTbl_id()-1];
 			
-			//System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
+			System.out.println("\t<"+table.getTbl_name()+">| data = "+data_nums+"| action = "+action);//+"|min = "+table.getTbl_min_cp()+"|max = "+table.getTbl_max_cp());
 			
 			switch(action) {
 			case 0:						
@@ -353,7 +352,7 @@ public class TransactionGenerator {
 					// Remove cache entry
 					this._cache_keys.remove(new Integer(cache_key));
 					this._cache.remove(cache_key);
-					//System.out.println("\t\t@ Removed D("+_d+") from cache | index ("+cache_key+")"+"|cache size="+_cache.size());
+					System.out.println("\t\t@ Removed D("+_d+") from cache | index ("+cache_key+")"+"|cache size="+_cache.size());
 					
 					// Remove the data id from the workload transactions
 					workload.removeDataFromTransactions(data_id, workload.getTransactionListForSearchedData(data_id));
@@ -363,7 +362,7 @@ public class TransactionGenerator {
 					int data_counts = db.getDb_data_numbers();
 					db.setDb_data_numbers(--data_counts);
 										
-					//System.out.println("\t\t@ Deleting d"+data_id+" from "+_partition.getPartition_label());
+					System.out.println("\t\t@ Deleting d"+data_id+" from "+_partition.getPartition_label());
 					break;
 			}
 			

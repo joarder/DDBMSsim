@@ -39,9 +39,10 @@ public class WorkloadFileGenerator {
 		// Cleanup
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {		
+				//transaction.show(db);
 				for(Integer data_id : transaction.getTr_dataSet()) {
 					Data data = db.getData(data_id);
-					if(data == null) System.out.println("@ "+data_id);
+					if(data == null) System.out.println("@ "+data_id+"|"+transaction.toString());
 					if(data.isData_hasShadowId()) {					
 						data.setData_shadowId(-1);
 						data.setData_hasShadowId(false);

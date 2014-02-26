@@ -803,9 +803,7 @@ public class Workload implements Comparable<Workload> {
 		HashMap<Integer, TreeSet<Integer>> _dataSetMap = new HashMap<Integer, TreeSet<Integer>>();
 		
 		for(int tr_id : removed_transactions) {
-			//System.out.println("@ tr_id = "+tr_id+" size="+transactionList.size());
-			Transaction transaction = this.getTransaction(tr_id);			
-			//System.out.println("@ Found T"+transaction.getTr_id());
+			Transaction transaction = this.getTransaction(tr_id);
 			
 			Set<Integer> dataSet = new TreeSet<Integer>();
 			dataSet = transaction.getTr_dataSet();
@@ -818,19 +816,21 @@ public class Workload implements Comparable<Workload> {
 			this.getWrl_transactionMap().get(i).remove(transaction); // Removing Object
 			
 			this.decWrl_totalTransactions();				
-			this.decWrl_transactionProportions(i);
-			//System.out.println(">> Total="+this.getWrl_totalTransactions());
-			//System.out.println(">> i = "+i+" | tr_id = "+tr_id+" | T"+transaction.getTr_id());
-		}
-		
-		for(Entry<Integer, TreeSet<Integer>> entry : _dataSetMap.entrySet()) {
-			for(int data_id : entry.getValue()) {
-				this.removeDataFromTransactions(data_id, this.getTransactionListForSearchedData(data_id));				
-			}
+			this.decWrl_transactionProportions(i);		
 		}
 	}
 	
-	// Returns a list of transaction ids which contain the searched data id
+	// Only works for Transaction Classification which executes after workload sampling
+	public void releaseTransactionData(int tr_id) {
+		Transaction transaction = this.getTransaction(tr_id);
+		//System.out.println("@ Removing T"+transaction.getTr_id());
+		for(Integer data_id : transaction.getTr_dataSet()) {
+			//System.out.println("@ Removing T"+transaction.getTr_id()+" | d"+data.getData_id());
+			this.getWrl_dataInvolvedInTransactions().get(data_id).remove(tr_id);
+		}
+	}
+	
+	// Returns a list of transaction ids which contain the searched data id (Only at the time of new Transaction generation)
 	public ArrayList<Integer> getTransactionListForSearchedData(int data_id) {
 		ArrayList<Integer> transactionList = new ArrayList<Integer>();
 		
@@ -844,25 +844,15 @@ public class Workload implements Comparable<Workload> {
 		return transactionList;
 	}
 	
-	// Remove a data id from the given list of transactions
-	public void removeDataFromTransactions(int data_id, ArrayList<Integer> transactionList) {
+	// Remove a data id from the given list of transactions (Only at the time of new Transaction generation)
+	public void removeDataFromTransactions(int data_id, ArrayList<Integer> transactionList) {		
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				if(transaction.getTr_dataSet().contains(data_id)) {
 					transaction.getTr_dataSet().remove(data_id);
-					//System.out.println("@ d"+data_id+" has been removed from T"+transaction.getTr_id());
+					//System.out.println("@ d"+data_id+" has been removed from T"+transaction.getTr_id());					
 				}
 			}
-		}
-	}
-	
-	// Only works for Transaction Classification which executes after workload sampling
-	public void releaseTransactionData(int tr_id) {
-		Transaction transaction = this.getTransaction(tr_id);
-		//System.out.println("@ Removing T"+transaction.getTr_id());
-		for(Integer data_id : transaction.getTr_dataSet()) {
-			//System.out.println("@ Removing T"+transaction.getTr_id()+" | d"+data.getData_id());
-			this.getWrl_dataInvolvedInTransactions().get(data_id).remove(tr_id);
 		}
 	}
 	
