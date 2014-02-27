@@ -7,10 +7,8 @@ package jkamal.ddbmssim.workload;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
-
 import jkamal.ddbmssim.db.DataPopularityProfile;
 import jkamal.ddbmssim.db.Database;
-import jkamal.ddbmssim.db.DatabaseServer;
 import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class WorkloadGenerator {	
@@ -56,7 +54,7 @@ public class WorkloadGenerator {
 	}
 	
 	// Generates Workloads for the entire simulation
-	public void generateWorkloads(DatabaseServer dbs, Database db, int simulation_run_numbers) throws IOException {
+	public void generateWorkloads(Database db, int simulation_run_numbers) throws IOException {
 		DataPopularityProfile popularityProfile = new DataPopularityProfile();				
 		Workload workload = null;
 		int workload_id = 0;
@@ -120,6 +118,7 @@ public class WorkloadGenerator {
 					"gathered for the target workload of simulation round "+workload_id);						
 			
 			workload.show(db, "");
+			db.show();
 			
 			// Clone the Workload
 			Workload cloned_workload = new Workload(workload);

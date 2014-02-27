@@ -35,7 +35,7 @@ public class DBMSSimulator {
 	public final static String WORKLOAD_TYPE = "tpcc";
 	
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 24;
+	public final static int SIMULATION_RUNS = 2;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -89,9 +89,9 @@ public class DBMSSimulator {
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
 											};
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
-	public final static String LOG_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\log";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "khmetis";
 	public final static String METIS = "pmetis";
@@ -155,7 +155,7 @@ public class DBMSSimulator {
 				
 		// Workload generation for the entire simulation		
 		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
-		workloadGenerator.generateWorkloads(dbs, db, DBMSSimulator.SIMULATION_RUNS);		
+		workloadGenerator.generateWorkloads(db, DBMSSimulator.SIMULATION_RUNS);		
 		
 		// Simulation initialisation
 		SimulationMetricsLogger simulation_logger = new SimulationMetricsLogger();
@@ -293,6 +293,8 @@ public class DBMSSimulator {
 		// Log collection after data movement operation
 		simulation_logger.setData_hasMoved(true);
 		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
+		
+		db.show();
 		
 		write("***********************************************************************************************************************", null);
 		} else {

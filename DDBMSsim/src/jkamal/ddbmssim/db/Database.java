@@ -346,7 +346,7 @@ public class Database implements Comparable<Database> {
 			
 			for(Partition partition : table.getTbl_partitions()) {
 				System.out.println("    ----"+partition.toString());
-				//partition.show();
+				partition.show();
 				
 				if(partition.isPartition_overloaded())
 					overloadedPartition.add(partition.getPartition_globalId());

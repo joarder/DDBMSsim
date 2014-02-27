@@ -141,10 +141,12 @@ public class SimulationMetricsLogger {
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print("hgr ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");																		
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_meanDTI()+" ");
 			} else {					
 				writer.print(workload.getMessage()+" ");								
 				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_meanDTI()+" ");
 				writer.print(workload.getWrl_hg_intraNodeDataMovements()+" ");
 				writer.print(workload.getWrl_hg_interNodeDataMovements()+" ");				
 				writer.println();
@@ -155,10 +157,12 @@ public class SimulationMetricsLogger {
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print("chg ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");																		
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_meanDTI()+" ");
 			} else {					
 				writer.print(workload.getMessage()+" ");				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_meanDTI()+" ");
 				writer.print(workload.getWrl_chg_intraNodeDataMovements()+" ");
 				writer.print(workload.getWrl_chg_interNodeDataMovements()+" ");				
 				writer.println();
@@ -169,10 +173,12 @@ public class SimulationMetricsLogger {
 			if(!this.isData_movement()) {
 				writer.print(workload.getWrl_id()+" ");			
 				writer.print("gr ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");																		
+				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_meanDTI()+" ");
 			} else {					
 				writer.print(workload.getMessage()+" ");				
 				writer.print(workload.getWrl_distributedTransactions()+" ");
+				writer.print(workload.getWrl_meanDTI()+" ");
 				writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");
 				writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");				
 				writer.println();
