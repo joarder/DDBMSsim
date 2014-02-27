@@ -119,7 +119,7 @@ public class Bootstrapping {
 				++data_id;
 				DBMSSimulator.incGlobal_data_id();
 				
-				Data data = db.createNewDataObject(table, data_id);
+				Data data = db.insertData(table.getTbl_id(), data_id);
 				table.getTbl_data_id_map().put(d, data_id);
 				
 				if(table.getTbl_type() != 2) { // Primary Tables					

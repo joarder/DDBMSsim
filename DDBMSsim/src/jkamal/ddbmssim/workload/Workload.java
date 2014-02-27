@@ -75,6 +75,12 @@ public class Workload implements Comparable<Workload> {
 	private String wrl_dmv_strategy;
 	private String message = null;
 	
+	private HashMap<Integer, ArrayList<Integer>> db_insert;
+	private HashMap<Integer, ArrayList<Integer>> db_delete;
+	
+	private int insert_count;
+	private int delete_count;
+	
 	public Workload(int id, int trTypes, int db_id) {
 		this.setWrl_id(id);
 		this.setWrl_label("W"+id);
@@ -131,6 +137,12 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_hasDataMoved(false);
 		this.setWrl_data_movement_strategy(null);
 		this.setMessage(" (Initial Stage) ");
+		
+		this.setDb_insert(new HashMap<Integer, ArrayList<Integer>>());
+		this.setDb_delete(new HashMap<Integer, ArrayList<Integer>>());
+		
+		this.setInsert_count(0);
+		this.setDelete_count(0);
 	}
 
 	// Copy Constructor
@@ -240,6 +252,29 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_hasDataMoved(workload.isWrl_hasDataMoved());
 		this.setWrl_data_movement_strategy(workload.getWrl_data_movement_strategy());
 		this.setMessage(workload.getMessage());
+		
+		HashMap<Integer, ArrayList<Integer>> clone_db_insert = new HashMap<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> clone_insert_list = new ArrayList<Integer>();
+		for(Entry<Integer, ArrayList<Integer>> entry : workload.getDb_insert().entrySet()){
+			for(Integer clone_value : entry.getValue()) 
+				clone_insert_list.add(clone_value);
+			
+			clone_db_insert.put(entry.getKey(), clone_insert_list);
+		}
+		this.setDb_insert(clone_db_insert);
+		
+		HashMap<Integer, ArrayList<Integer>> clone_db_delete = new HashMap<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> clone_delete_list = new ArrayList<Integer>();
+		for(Entry<Integer, ArrayList<Integer>> entry : workload.getDb_delete().entrySet()){
+			for(Integer clone_value : entry.getValue()) 
+				clone_delete_list.add(clone_value);
+			
+			clone_db_delete.put(entry.getKey(), clone_delete_list);
+		}
+		this.setDb_delete(clone_db_delete);
+		
+		this.setInsert_count(workload.getInsert_count());
+		this.setDelete_count(workload.getDelete_count());
 	}
 
 	public int getWrl_id() {
@@ -728,6 +763,67 @@ public class Workload implements Comparable<Workload> {
 		this.message = message;
 	}	
 	
+	public HashMap<Integer, ArrayList<Integer>> getDb_insert() {
+		return db_insert;
+	}
+
+	public void setDb_insert(HashMap<Integer, ArrayList<Integer>> db_insert) {
+		this.db_insert = db_insert;
+	}
+
+	public HashMap<Integer, ArrayList<Integer>> getDb_delete() {
+		return db_delete;
+	}
+
+	public void setDb_delete(HashMap<Integer, ArrayList<Integer>> db_delete) {
+		this.db_delete = db_delete;
+	}
+
+	public int getInsert_count() {
+		return insert_count;
+	}
+
+	public void setInsert_count(int insert_count) {
+		this.insert_count = insert_count;
+	}
+	
+	public void incInsert_count() {
+		int count = this.getInsert_count();
+		this.setInsert_count(++count);
+	}
+
+	public int getDelete_count() {
+		return delete_count;
+	}
+
+	public void setDelete_count(int delete_count) {
+		this.delete_count = delete_count;
+	}
+	
+	public void incDelete_count() {
+		int count = this.getDelete_count();
+		this.setDelete_count(++count);
+	}
+	
+	// Preserves the Database operations (insert and delete) due to workload generations
+	public void preserveDbOperations(int table_id, int data_id, String operation) {		
+		ArrayList<Integer> op_param_list = new ArrayList<Integer>();
+		op_param_list.add(table_id);
+		op_param_list.add(data_id);
+		
+		switch(operation) {
+		case "insert":
+			this.incInsert_count();
+			this.getDb_insert().put(this.getInsert_count(), op_param_list);
+			break;
+			
+		case "delete":
+			this.incDelete_count();
+			this.getDb_delete().put(this.getDelete_count(), op_param_list);
+			break;
+		}
+	}
+
 	// Workload initialisation after sampling
 	public void init(Database db) {
 		this.setWrl_dataTransactionsInvolved(new TreeMap<Integer, Set<Integer>>());
@@ -896,7 +992,7 @@ public class Workload implements Comparable<Workload> {
 				transaction.calculateDTCost(db);
 				
 				System.out.print("     ");
-				transaction.show(db);
+				//transaction.show(db);
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction Types						
 				
@@ -915,7 +1011,7 @@ public class Workload implements Comparable<Workload> {
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_hg_interNodeDataMovements());
 			}
 			
-			db.getDb_dbs().show();		
+			//db.getDb_dbs().show();		
 			break;
 	
 		case "chg":
@@ -924,7 +1020,7 @@ public class Workload implements Comparable<Workload> {
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_chg_interNodeDataMovements());
 			}
 			
-			db.getDb_dbs().show();		
+			//db.getDb_dbs().show();		
 			break;
 			
 		case "gr":
@@ -933,7 +1029,7 @@ public class Workload implements Comparable<Workload> {
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_gr_interNodeDataMovements());
 			}
 			
-			db.getDb_dbs().show();		
+			//db.getDb_dbs().show();		
 			break;
 		
 		default:

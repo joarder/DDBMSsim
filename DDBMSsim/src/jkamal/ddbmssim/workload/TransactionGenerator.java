@@ -33,7 +33,7 @@ public class TransactionGenerator {
 		Transaction transaction;		
 		Set<Integer> trDataSet = null;
 		int[] prop;
-		int new_tr = 0;
+		int new_tr = 0;		
 		
 		//Selecting Transaction Prop
 		if(workload.getWrl_id() != 0)
@@ -252,7 +252,11 @@ public class TransactionGenerator {
 					++data_id;
 					DBMSSimulator.incGlobal_data_id();
 					
-					Data data = db.createNewDataObject(table, data_id);
+					Data data = db.insertData(table.getTbl_id(), data_id);
+					
+					// preserving the db insert operations
+					workload.preserveDbOperations(table.getTbl_id(), data_id, "insert");
+					
 					
 					switch(table.getTbl_name()) {
 						case("History"):
@@ -274,38 +278,46 @@ public class TransactionGenerator {
 							table.getTbl_data_map_s().put(_c, data.getData_primary_key());
 							table.getTbl_data_id_map().put(data.getData_primary_key(), data_id);							
 							
-							// Also put an entry in the New-Order and Order-Line Table														
-							// New-Order
+							//=== Also put an entry in the New-Order and Order-Line Table														
+							//=== New-Order
 							Table t_no = db.getTable(8);
 							int no_data_id = data_id;
 							++no_data_id;
 							DBMSSimulator.incGlobal_data_id();
 														
-							Data no_data = db.createNewDataObject(t_no, no_data_id);							
-							_no = t_no.getTbl_data_count();
-							//System.out.println("\t\t>> Inserting NO("+_no+") for O("+_o+") with global data_id ["+no_data_id+"]");
+							Data no_data = db.insertData(t_no.getTbl_id(), no_data_id);
 							
+							// preserving the db insert operations
+							workload.preserveDbOperations(t_no.getTbl_id(), no_data_id, "insert");
+							
+							_no = t_no.getTbl_data_count();							
 							no_data.setData_primary_key(_no);							
 							no_data.getData_foreign_key().put(7, _o); // 7: Orders Table
 						
+							//System.out.println("\t\t>> Inserting NO("+_no+") for O("+_o+") with global data_id ["+no_data_id+"]");
+							
 							t_no.getTbl_data_map_s().put(_o, no_data.getData_primary_key());
 							t_no.getTbl_data_id_map().put(no_data.getData_primary_key(), no_data_id);
 							
-							// Order-Line
+							//=== Order-Line
 							Table t_ol = db.getTable(9); 
 							int ol_data_id = no_data_id;
 							++ol_data_id;
 							DBMSSimulator.incGlobal_data_id();
 														
-							Data ol_data = db.createNewDataObject(t_ol, ol_data_id);							
-							_ol = t_ol.getTbl_data_count();
-							//System.out.println("\t\t>> Inserting OL("+_ol+") for O("+_o+") and S("+_s+") with global data_id ["+ol_data_id+"]");
+							Data ol_data = db.insertData(t_ol.getTbl_id(), ol_data_id);	
 							
+							// preserving the db insert operations
+							workload.preserveDbOperations(t_ol.getTbl_id(), ol_data_id, "insert");
+														
+							_ol = t_ol.getTbl_data_count();
 							ol_data.setData_primary_key(_ol);								
 							ol_data.getData_foreign_key().put(4, _s); // 4: Stock Table
 							ol_data.getData_foreign_key().put(7, _o); // 7: Order Table
 							
+							//System.out.println("\t\t>> Inserting OL("+_ol+") for O("+_o+") and S("+_s+") with global data_id ["+ol_data_id+"]");
 							//System.out.println(">>-- _o="+_o+"|_s="+_s+"|Id="+t_ol.getTbl_data_count());
+							
 							t_ol.getTbl_data_map_d().put(_s, _o, ol_data.getData_primary_key());
 							t_ol.getTbl_data_id_map().put(ol_data.getData_primary_key(), ol_data_id);
 							
@@ -342,13 +354,10 @@ public class TransactionGenerator {
 			case -1:
 					//System.out.println("\t\t>> *** D-"+_d+"|C-"+_c+"|O-"+_o+"|NO-"+_no+"|OL-"+_ol+"|S-"+_s);
 					data_id = table.getTbl_data_id_map().get(_no);					
-					Data _data = table.getData(db, data_id);
-					Partition _partition = table.getPartition(_data.getData_localPartitionId());
+					db.deleteData(table.getTbl_id(), data_id);
 					
-					// Remove the entry from the Partition Data lookup table and remove the Data object from the Partition Data Set
-					_partition.getPartition_dataLookupTable().put(_data.getData_id(), _partition.getPartition_globalId());
-					_partition.getPartition_dataSet().remove(_data);
-					_partition.updatePartitionLoad();						
+					// preserving the db insert operations
+					workload.preserveDbOperations(table.getTbl_id(), data_id, "delete");
 					
 					// Remove from table
 					table.getTbl_data_map_s().remove(_o);
@@ -361,13 +370,6 @@ public class TransactionGenerator {
 					
 					// Remove the data id from the workload transactions
 					workload.removeDataFromTransactions(data_id, workload.getTransactionListForSearchedData(data_id));
-					
-					// Decrement Data counts at Node and Database level
-					db.getDb_dbs().getDbs_node(_partition.getPartition_nodeId()).decNode_totalData();
-					//int data_counts = db.getDb_data_numbers();
-					//db.setDb_data_numbers(--data_counts);
-										
-					//System.out.println("\t\t@ Deleting d"+data_id+" from "+_partition.getPartition_label());
 					break;
 			}
 			

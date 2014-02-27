@@ -5,6 +5,8 @@
 package jkamal.ddbmssim.workload;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import jkamal.ddbmssim.db.DataPopularityProfile;
@@ -67,6 +69,12 @@ public class WorkloadGenerator {
 				workload.setWrl_id(workload_id);
 				workload.setWrl_label("W"+workload_id);
 				
+				// create the empty db operation lists
+				workload.setDb_insert(new HashMap<Integer, ArrayList<Integer>>());
+				workload.setDb_delete(new HashMap<Integer, ArrayList<Integer>>());
+				workload.setInsert_count(0);
+				workload.setDelete_count(0);
+				
 				System.out.println("[MSG] Total "+workload.getWrl_totalTransactions()+" transactions are present in the workload.");
 				
 				// Setting Death Rate
@@ -123,7 +131,7 @@ public class WorkloadGenerator {
 			// Clone the Workload
 			Workload cloned_workload = new Workload(workload);
 			this.getWorkload_map().put(workload_id, cloned_workload);
-
+			
 			++workload_id;
 		}
 	}		

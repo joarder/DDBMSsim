@@ -183,7 +183,9 @@ public class Database implements Comparable<Database> {
 	}
 		
 	// Create a new Data object and attach it with the designated Table and Partition within a given Database
-	public Data createNewDataObject(Table table, int data_id) {
+	public Data insertData(int table_id, int data_id) {
+		Table table = this.getTable(table_id);
+		
 		// Generate Partition Id
 		int partition_id = (data_id % this.getDb_dbs().getDbs_nodes().size())+1;
 		Partition partition = table.getPartition(partition_id);
@@ -206,6 +208,24 @@ public class Database implements Comparable<Database> {
 		table.setTbl_data_count(data.getData_primary_key());		
 		
 		return data;
+	}
+	
+	public void deleteData(int table_id, int data_id) {
+		Table table = this.getTable(table_id);
+		
+		Data _data = table.getData(this, data_id);
+		Partition _partition = table.getPartition(_data.getData_localPartitionId());
+		
+		// Remove the entry from the Partition Data lookup table and remove the Data object from the Partition Data Set
+		_partition.getPartition_dataLookupTable().put(_data.getData_id(), _partition.getPartition_globalId());
+		_partition.getPartition_dataSet().remove(_data);
+		_partition.updatePartitionLoad();						
+		
+		// Decrement Data counts at Node and Table level
+		this.getDb_dbs().getDbs_node(_partition.getPartition_nodeId()).decNode_totalData();
+		int count = table.getTbl_data_count();
+		table.setTbl_data_count(--count);
+		//System.out.println("\t\t@ Deleting d"+data_id+" from "+_partition.getPartition_label());
 	}
 	
 	// Getting the dependency information for the target Table
