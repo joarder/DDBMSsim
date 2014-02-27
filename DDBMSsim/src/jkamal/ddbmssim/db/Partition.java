@@ -10,13 +10,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import jkamal.ddbmssim.main.DBMSSimulator;
+
 public class Partition implements Comparable<Partition> {
 	private int partition_global_id;
 	private int partition_id;
 	private String partition_label;
 	private int partition_table_id;	
-	private int partition_node_id;
-	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
+	private int partition_node_id;	
 	
 	private Set<Data> partition_data_set;
 	private Map<Integer, Integer> partition_data_lookup_table;
@@ -263,12 +264,12 @@ public class Partition implements Comparable<Partition> {
 	public void updatePartitionLoad() {
 		int totalData = this.getPartition_dataSet().size();
 		
-		if(totalData > Partition.PARTITION_MAX_CAPACITY * 0.9)
+		if(totalData > DBMSSimulator.PARTITION_MAX_CAPACITY * 0.9)
 			this.setPartition_overloaded(true);
 		else 
 			this.setPartition_overloaded(false);
 		
-		double percentage = ((double)totalData/Partition.PARTITION_MAX_CAPACITY) * 100.0;
+		double percentage = ((double)totalData/DBMSSimulator.PARTITION_MAX_CAPACITY) * 100.0;
 		percentage = Math.round(percentage * 100.0) / 100.0;
 		this.setPartition_current_load(percentage);
 	}

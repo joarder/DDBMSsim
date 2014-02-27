@@ -360,7 +360,7 @@ public class WorkloadFileGenerator {
 
 		System.out.println("[ACT] Starting workload compression with CR = 0.5 ...");
 		System.out.println("[ACT] Creating virtual data objects ...");
-		System.out.println("@ >> total data in workload = "+(workload.getWrl_totalDataObjects()/2));
+		//System.out.println("@ >> compressed data in the workload = "+(workload.getWrl_totalDataObjects()/2));
 		// Creating Virtual Nodes
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {

@@ -247,7 +247,7 @@ public class TransactionGenerator {
 					}
 					break;
 			
-			case 1:					
+			case 1:	//===Insert Operation				
 					// Create a new Data object
 					++data_id;
 					DBMSSimulator.incGlobal_data_id();
@@ -255,7 +255,7 @@ public class TransactionGenerator {
 					Data data = db.insertData(table.getTbl_id(), data_id);
 					
 					// preserving the db insert operations
-					workload.preserveDbOperations(table.getTbl_id(), data_id, "insert");
+					workload.preserveDbOperations(1, table.getTbl_id(), data_id);
 					
 					
 					switch(table.getTbl_name()) {
@@ -288,7 +288,7 @@ public class TransactionGenerator {
 							Data no_data = db.insertData(t_no.getTbl_id(), no_data_id);
 							
 							// preserving the db insert operations
-							workload.preserveDbOperations(t_no.getTbl_id(), no_data_id, "insert");
+							workload.preserveDbOperations(1, t_no.getTbl_id(), no_data_id);
 							
 							_no = t_no.getTbl_data_count();							
 							no_data.setData_primary_key(_no);							
@@ -308,7 +308,7 @@ public class TransactionGenerator {
 							Data ol_data = db.insertData(t_ol.getTbl_id(), ol_data_id);	
 							
 							// preserving the db insert operations
-							workload.preserveDbOperations(t_ol.getTbl_id(), ol_data_id, "insert");
+							workload.preserveDbOperations(1, t_ol.getTbl_id(), ol_data_id);
 														
 							_ol = t_ol.getTbl_data_count();
 							ol_data.setData_primary_key(_ol);								
@@ -351,13 +351,13 @@ public class TransactionGenerator {
 					trDataSet.add(data_id);					
 					break;
 					
-			case -1:
+			case -1://===Delete Operation
 					//System.out.println("\t\t>> *** D-"+_d+"|C-"+_c+"|O-"+_o+"|NO-"+_no+"|OL-"+_ol+"|S-"+_s);
 					data_id = table.getTbl_data_id_map().get(_no);					
 					db.deleteData(table.getTbl_id(), data_id);
 					
 					// preserving the db insert operations
-					workload.preserveDbOperations(table.getTbl_id(), data_id, "delete");
+					workload.preserveDbOperations(-1, table.getTbl_id(), data_id);
 					
 					// Remove from table
 					table.getTbl_data_map_s().remove(_o);

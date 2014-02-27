@@ -75,11 +75,8 @@ public class Workload implements Comparable<Workload> {
 	private String wrl_dmv_strategy;
 	private String message = null;
 	
-	private HashMap<Integer, ArrayList<Integer>> db_insert;
-	private HashMap<Integer, ArrayList<Integer>> db_delete;
-	
-	private int insert_count;
-	private int delete_count;
+	private HashMap<Integer, ArrayList<Integer>> db_operations;	
+	private int db_operation_count;	
 	
 	public Workload(int id, int trTypes, int db_id) {
 		this.setWrl_id(id);
@@ -138,11 +135,8 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_data_movement_strategy(null);
 		this.setMessage(" (Initial Stage) ");
 		
-		this.setDb_insert(new HashMap<Integer, ArrayList<Integer>>());
-		this.setDb_delete(new HashMap<Integer, ArrayList<Integer>>());
-		
-		this.setInsert_count(0);
-		this.setDelete_count(0);
+		this.setDb_operations(new HashMap<Integer, ArrayList<Integer>>());
+		this.setDb_operation_count(0);
 	}
 
 	// Copy Constructor
@@ -253,28 +247,18 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_data_movement_strategy(workload.getWrl_data_movement_strategy());
 		this.setMessage(workload.getMessage());
 		
-		HashMap<Integer, ArrayList<Integer>> clone_db_insert = new HashMap<Integer, ArrayList<Integer>>();
-		ArrayList<Integer> clone_insert_list = new ArrayList<Integer>();
-		for(Entry<Integer, ArrayList<Integer>> entry : workload.getDb_insert().entrySet()){
+		HashMap<Integer, ArrayList<Integer>> clone_db_operations = new HashMap<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> clone_op_param_list;
+		for(Entry<Integer, ArrayList<Integer>> entry : workload.getDb_operations().entrySet()){
+			clone_op_param_list = new ArrayList<Integer>();
 			for(Integer clone_value : entry.getValue()) 
-				clone_insert_list.add(clone_value);
+				clone_op_param_list.add(clone_value);
 			
-			clone_db_insert.put(entry.getKey(), clone_insert_list);
+			clone_db_operations.put(entry.getKey(), clone_op_param_list);
 		}
-		this.setDb_insert(clone_db_insert);
+		this.setDb_operations(clone_db_operations);
 		
-		HashMap<Integer, ArrayList<Integer>> clone_db_delete = new HashMap<Integer, ArrayList<Integer>>();
-		ArrayList<Integer> clone_delete_list = new ArrayList<Integer>();
-		for(Entry<Integer, ArrayList<Integer>> entry : workload.getDb_delete().entrySet()){
-			for(Integer clone_value : entry.getValue()) 
-				clone_delete_list.add(clone_value);
-			
-			clone_db_delete.put(entry.getKey(), clone_delete_list);
-		}
-		this.setDb_delete(clone_db_delete);
-		
-		this.setInsert_count(workload.getInsert_count());
-		this.setDelete_count(workload.getDelete_count());
+		this.setDb_operation_count(workload.getDb_operation_count());
 	}
 
 	public int getWrl_id() {
@@ -763,67 +747,66 @@ public class Workload implements Comparable<Workload> {
 		this.message = message;
 	}	
 	
-	public HashMap<Integer, ArrayList<Integer>> getDb_insert() {
-		return db_insert;
+	public HashMap<Integer, ArrayList<Integer>> getDb_operations() {
+		return db_operations;
 	}
 
-	public void setDb_insert(HashMap<Integer, ArrayList<Integer>> db_insert) {
-		this.db_insert = db_insert;
+	public void setDb_operations(HashMap<Integer, ArrayList<Integer>> db_insert) {
+		this.db_operations = db_insert;
 	}
 
-	public HashMap<Integer, ArrayList<Integer>> getDb_delete() {
-		return db_delete;
+	public int getDb_operation_count() {
+		return db_operation_count;
 	}
 
-	public void setDb_delete(HashMap<Integer, ArrayList<Integer>> db_delete) {
-		this.db_delete = db_delete;
-	}
-
-	public int getInsert_count() {
-		return insert_count;
-	}
-
-	public void setInsert_count(int insert_count) {
-		this.insert_count = insert_count;
+	public void setDb_operation_count(int insert_count) {
+		this.db_operation_count = insert_count;
 	}
 	
-	public void incInsert_count() {
-		int count = this.getInsert_count();
-		this.setInsert_count(++count);
-	}
-
-	public int getDelete_count() {
-		return delete_count;
-	}
-
-	public void setDelete_count(int delete_count) {
-		this.delete_count = delete_count;
+	public void incDb_operation_count() {
+		int count = this.getDb_operation_count();
+		this.setDb_operation_count(++count);
 	}
 	
-	public void incDelete_count() {
-		int count = this.getDelete_count();
-		this.setDelete_count(++count);
-	}
-	
-	// Preserves the Database operations (insert and delete) due to workload generations
-	public void preserveDbOperations(int table_id, int data_id, String operation) {		
-		ArrayList<Integer> op_param_list = new ArrayList<Integer>();
+	// Preserves the Database operations (insert and delete) due to workload generation
+	public void preserveDbOperations(int operation, int table_id, int data_id) {		
+		ArrayList<Integer> op_param_list = new ArrayList<Integer>();		
+		op_param_list.add(operation);
 		op_param_list.add(table_id);
 		op_param_list.add(data_id);
-		
-		switch(operation) {
-		case "insert":
-			this.incInsert_count();
-			this.getDb_insert().put(this.getInsert_count(), op_param_list);
-			break;
-			
-		case "delete":
-			this.incDelete_count();
-			this.getDb_delete().put(this.getDelete_count(), op_param_list);
-			break;
-		}
+		this.incDb_operation_count();
+		//System.out.println("@ "+this.db_operation_count+"|"+operation+"|"+table_id+"|"+data_id);
+		this.getDb_operations().put(this.getDb_operation_count(), op_param_list);
 	}
-
+	
+	//Re-applies Database operations (insert and delete) due to Workload generation 
+	public void reapplyDbOperations(Database db){
+		int insert = 0;
+		int delete = 0;
+		
+		for(Entry<Integer, ArrayList<Integer>> entry : this.getDb_operations().entrySet()) {
+			int operation = entry.getValue().get(0);
+			int table_id = entry.getValue().get(1);
+			int data_id = entry.getValue().get(2);
+			//System.out.println(">> "+entry.getKey()+"|"+operation+"|"+table_id+"|"+data_id);
+			
+			switch(operation) {
+				case 1:
+					db.insertData(table_id, data_id);
+					++insert;
+					break;
+					
+				case -1:
+					db.deleteData(table_id, data_id);					
+					++delete;
+					break;
+			}
+		}
+		
+		System.out.println("[OUT] Total "+insert+" data rows have been inserted to adopt the workload originated changes");
+		System.out.println("[OUT] Total "+delete+" data rows have been deleted to adopt the workload originated changes.");
+	}	
+	
 	// Workload initialisation after sampling
 	public void init(Database db) {
 		this.setWrl_dataTransactionsInvolved(new TreeMap<Integer, Set<Integer>>());

@@ -82,7 +82,7 @@ public class Bootstrapping {
 				// Adding Partition to the Table
 				table.getTbl_partitions().add(partition);
 				// Adding the partition id into the table-partition map at the db level
-				db.getDb_table_partitions().put(partition.getPartition_globalId(), table.getTbl_id());
+				db.getDb_table_partition_map().put(partition.getPartition_globalId(), table.getTbl_id());
 				// Adding partition to the Node
 				node.getNode_partitions().add(partition.getPartition_globalId());		
 				

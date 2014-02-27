@@ -34,6 +34,9 @@ public class DBMSSimulator {
 	public final static double PARTITION_SCALE = 1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
 	
+	public final static int NODE_MAX_CAPACITY = 10000; // 10GB Or, equivalently 10 Partitions can be stored in a single node.
+	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
+	
 	public final static int TRANSACTIONS = 1000;
 	public final static int SIMULATION_RUNS = 2;
 
@@ -141,7 +144,7 @@ public class DBMSSimulator {
 		Database db = new Database(0, "tpcc", 0, dbs, "hash");
 		System.out.println("[ACT] Creating Database \""+db.getDb_name()+"\" within "+dbs.getDbs_name()+" Database Server ...");		
 		
-		dbs.getDbs_tenants().add(db);
+		dbs.setDbs_tenant(db);
 		
 		// Perform Bootstrapping through synthetic Data generation and placing it into appropriate Partition
 		System.out.println("[ACT] Started Bootstrapping Process ...");
@@ -153,9 +156,12 @@ public class DBMSSimulator {
 		dbs.show();
 		db.show();
 				
+		// Preserve the Base Database Server and Database for cloning in later stage
+		DatabaseServer base_dbs = new DatabaseServer(dbs);
+		
 		// Workload generation for the entire simulation		
 		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
-		workloadGenerator.generateWorkloads(db, DBMSSimulator.SIMULATION_RUNS);		
+		workloadGenerator.generateWorkloads(dbs.getDbs_tenant(), DBMSSimulator.SIMULATION_RUNS);			
 		
 		// Simulation initialisation
 		SimulationMetricsLogger simulation_logger = new SimulationMetricsLogger();
@@ -169,14 +175,20 @@ public class DBMSSimulator {
 		String dir = null;
 		String log_dir = directories[2];
 		
-		for(int i = 0; i < partitioners.length; ++i) {
-			Set<Database> db_set = new TreeSet<Database>();
+		for(int i = 0; i < partitioners.length; ++i) {			
+			Set<Database> db_set = new TreeSet<Database>();			
 			for(int j = 0; j < strategies.length; ++j) {
-				// Creating individual databases
-				Database clone_db = new Database(db);
+				// Creating individual database servers and databases
+				DatabaseServer clone_dbs = new DatabaseServer(base_dbs);
+				clone_dbs.setDbs_name(partitioners[i]+"_"+strategies[j]+"_"+"dbs");
+				clone_dbs.setDbs_id((i+1)*(j+1));
+				
+				Database clone_db = clone_dbs.getDbs_tenant();
+				clone_db.setDb_dbs(clone_dbs);
 				clone_db.setDb_name(partitioners[i]+"_"+strategies[j]+"_"+"db");
 				clone_db.setDb_id((i+1)*(j+1));
 				
+				System.out.println("@ Creating database server "+clone_dbs.getDbs_name());
 				System.out.println("@ Creating database "+clone_db.getDb_name());
 				
 				if(i == 2)
@@ -192,7 +204,7 @@ public class DBMSSimulator {
 				clone_db.setPartition_log(simulation_logger.getWriter(log_dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"partition_log"));
 				
-				db_set.add(clone_db);
+				db_set.add(clone_db);				
 			}
 			//System.out.println("@ i = "+i+" db_set size = "+db_set.size());
 			db_map.put(i, db_set);
@@ -239,6 +251,13 @@ public class DBMSSimulator {
 	
 	private static void runSimulation(Database db, Workload workload, WorkloadGenerator workloadGenerator, 
 			String directory, String partitioner, String strategy, SimulationMetricsLogger simulation_logger) throws IOException{
+		// Reapplying Database operations(insert and delete) due to Workload generation
+		db.getDb_dbs().show();
+		write("Reapplying database operations due to the workload generation process ...", "ACT");
+		workload.reapplyDbOperations(db);
+		db.getDb_dbs().updateNodeLoad();
+		db.getDb_dbs().show();
+		
 		WorkloadFileGenerator workloadFileGenerator = new WorkloadFileGenerator();
 		ClusterIdMapper cluster_id_mapper = new ClusterIdMapper();
 		DataMovement data_movement = new DataMovement();
@@ -294,7 +313,7 @@ public class DBMSSimulator {
 		simulation_logger.setData_hasMoved(true);
 		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 		
-		db.show();
+		db.getDb_dbs().show();
 		
 		write("***********************************************************************************************************************", null);
 		} else {

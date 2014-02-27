@@ -23,8 +23,8 @@ public class Database implements Comparable<Database> {
 	private int db_partitions;
 	private String db_partitioing;
 	private Set<Table> db_tables;	
-	private Map<Integer, Integer> db_table_partitions;
-	private Map<Integer, Integer> db_partition_data;
+	private Map<Integer, Integer> db_table_partition_map;
+	private Map<Integer, Integer> db_partition_data_map;
 	private PrintWriter workload_log;
 	private PrintWriter node_log;
 	private PrintWriter partition_log;
@@ -38,8 +38,8 @@ public class Database implements Comparable<Database> {
 		this.setDb_partitions(0);
 		this.setDb_partitioing(model);
 		this.setDb_tables(new TreeSet<Table>());		
-		this.setDb_table_partitions(new HashMap<Integer, Integer>());
-		this.setDb_partition_data(new HashMap<Integer, Integer>());
+		this.setDb_table_partition_map(new HashMap<Integer, Integer>());
+		this.setDb_partition_data_map(new HashMap<Integer, Integer>());
 	}	
 	
 	// Copy Constructor
@@ -47,7 +47,7 @@ public class Database implements Comparable<Database> {
 		this.setDb_id(db.getDb_id());
 		this.setDb_name(db.getDb_name());
 		this.setDb_tenant(db.getDb_tenant());	
-		this.setDb_dbs(db.getDb_dbs());
+		//this.setDb_dbs(db.getDb_dbs());
 		this.setDb_data_numbers(db.getDb_data_numbers());		
 		this.setDb_partitions(db.getDb_partitions());
 		
@@ -57,14 +57,14 @@ public class Database implements Comparable<Database> {
 		this.setDb_tables(cloneDbTables);
 		
 		Map<Integer, Integer> clone_db_table_partitions = new HashMap<Integer, Integer>();		
-		for(Entry<Integer, Integer> entry : db.getDb_table_partitions().entrySet())			
+		for(Entry<Integer, Integer> entry : db.getDb_table_partition_map().entrySet())			
 			clone_db_table_partitions.put(entry.getKey(), entry.getValue());			
-		this.setDb_table_partitions(clone_db_table_partitions);
+		this.setDb_table_partition_map(clone_db_table_partitions);
 		
 		Map<Integer, Integer> clone_db_partition_data = new HashMap<Integer, Integer>();		
-		for(Entry<Integer, Integer> entry : db.getDb_partition_data().entrySet())			
+		for(Entry<Integer, Integer> entry : db.getDb_partition_data_map().entrySet())			
 			clone_db_partition_data.put(entry.getKey(), entry.getValue());			
-		this.setDb_partition_data(clone_db_partition_data);		
+		this.setDb_partition_data_map(clone_db_partition_data);		
 	}
 
 	public int getDb_id() {
@@ -142,20 +142,20 @@ public class Database implements Comparable<Database> {
 		this.db_tables = db_tables;
 	}
 
-	public Map<Integer, Integer> getDb_table_partitions() {
-		return db_table_partitions;
+	public Map<Integer, Integer> getDb_table_partition_map() {
+		return db_table_partition_map;
 	}
 
-	public void setDb_table_partitions(Map<Integer, Integer> db_table_partitions) {
-		this.db_table_partitions = db_table_partitions;
+	public void setDb_table_partition_map(Map<Integer, Integer> db_table_partitions) {
+		this.db_table_partition_map = db_table_partitions;
 	}
 
-	public Map<Integer, Integer> getDb_partition_data() {
-		return db_partition_data;
+	public Map<Integer, Integer> getDb_partition_data_map() {
+		return db_partition_data_map;
 	}
 
-	public void setDb_partition_data(Map<Integer, Integer> db_partition_data) {
-		this.db_partition_data = db_partition_data;
+	public void setDb_partition_data_map(Map<Integer, Integer> db_partition_data) {
+		this.db_partition_data_map = db_partition_data;
 	}
 
 	public PrintWriter getWorkload_log() {
@@ -196,7 +196,7 @@ public class Database implements Comparable<Database> {
 		data.setData_size(DBMSSimulator.TPCC_DATA_ROW_SIZE[partition.getPartition_table_id() - 1]);				
 		
 		// Put an entry into the Partition Data lookup table 
-		this.getDb_partition_data().put(data.getData_id(), partition.getPartition_globalId());
+		this.getDb_partition_data_map().put(data.getData_id(), partition.getPartition_globalId());
 		
 		// Put an entry into the Partition Data lookup table and add in the Data object into the Partition Data Set
 		partition.getPartition_dataLookupTable().put(data.getData_id(), partition.getPartition_globalId());
@@ -306,7 +306,7 @@ public class Database implements Comparable<Database> {
 	
 	// Searches for a specific Data by it's Id
 	public Data getData(int data_id) {
-		int global_partition_id = this.getDb_partition_data().get(data_id);		
+		int global_partition_id = this.getDb_partition_data_map().get(data_id);		
 		Partition partition = this.getPartition(global_partition_id);
 		//System.out.println("@ "+data_id+"|"+partition.toString());
 		Data data = partition.getData(data_id);
@@ -317,7 +317,7 @@ public class Database implements Comparable<Database> {
 	
 	// Search by global partition id from the Database level
 	public Partition getPartition(int global_partition_id) {
-		int table_id = this.getDb_table_partitions().get(global_partition_id);
+		int table_id = this.getDb_table_partition_map().get(global_partition_id);
 		Table table = this.getTable(table_id);
 				
 		return (this.getPartition(table, global_partition_id));
@@ -366,7 +366,7 @@ public class Database implements Comparable<Database> {
 			
 			for(Partition partition : table.getTbl_partitions()) {
 				System.out.println("    ----"+partition.toString());
-				partition.show();
+				//partition.show();
 				
 				if(partition.isPartition_overloaded())
 					overloadedPartition.add(partition.getPartition_globalId());

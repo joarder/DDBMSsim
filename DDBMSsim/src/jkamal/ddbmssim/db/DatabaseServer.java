@@ -10,20 +10,36 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import jkamal.ddbmssim.main.DBMSSimulator;
+
 public class DatabaseServer {
 	private int dbs_id;
 	private String dbs_name;
 	private Set<Node> dbs_nodes;
-	private Set<Database> dbs_tenants;
+	private Database dbs_tenants;
 	
 	public DatabaseServer(int id, String name, int nodes) {
 		this.setDbs_id(id);
 		this.setDbs_name(name);				
 		this.setDbs_nodes(new TreeSet<Node>());		
-		this.setDbs_tenants(new TreeSet<Database>());
+		//this.setDbs_tenant();
 		
 		for(int i = 1; i <= nodes; i++)			
 			this.getDbs_nodes().add(new Node(i));
+	}
+	
+	public DatabaseServer(DatabaseServer dbs) {
+		this.setDbs_id(dbs.getDbs_id());
+		this.setDbs_name(dbs.getDbs_name());
+		
+		TreeSet<Node> clone_nodes = new TreeSet<Node>();
+		for(Node node : dbs.getDbs_nodes()) {
+			Node clone_node = new Node(node);
+			clone_nodes.add(clone_node);
+		}
+		this.setDbs_nodes(clone_nodes);
+				
+		this.setDbs_tenant(new Database(dbs.getDbs_tenant()));		
 	}
 
 	public int getDbs_id() {
@@ -62,11 +78,11 @@ public class DatabaseServer {
 		return null;
 	}
 
-	public Set<Database> getDbs_tenants() {
+	public Database getDbs_tenant() {
 		return dbs_tenants;
 	}
 
-	public void setDbs_tenants(Set<Database> dbs_tenants) {
+	public void setDbs_tenant(Database dbs_tenants) {
 		this.dbs_tenants = dbs_tenants;
 	}
 	
@@ -74,10 +90,8 @@ public class DatabaseServer {
 		double sum = 0.0d;
 		for(Node node : this.getDbs_nodes()) {
 			sum = 0.0d;
-			for(int pid : node.getNode_partitions()) {
-				for(Database db : this.getDbs_tenants())
-					sum += db.getPartition(pid).getPartition_dataSet().size();
-			}
+			for(int pid : node.getNode_partitions())				
+				sum += this.getDbs_tenant().getPartition(pid).getPartition_dataSet().size();
 			
 			node.setNode_size(sum);
 		}
@@ -97,18 +111,16 @@ public class DatabaseServer {
 		for(Node node : this.getDbs_nodes()) {						
 			System.out.println("    --"+node.toString()
 			+" | Load "
-			+((double)node.getNode_size()/(double)Node.NODE_MAX_CAPACITY)*100+"%");
+			+((double)node.getNode_size()/(double)DBMSSimulator.NODE_MAX_CAPACITY)*100+"%");
 			
-			for(int partition_id : node.getNode_partitions()) {
-				for(Database db : this.getDbs_tenants()) {
-					Partition partition = db.getPartition(partition_id);
-					
-					System.out.println("    ----"+partition.toString());
-					//partition.show();
-					
-					if(partition.isPartition_overloaded())
-						overloadedPartition.add(partition.getPartition_globalId());
-				}
+			for(int partition_id : node.getNode_partitions()) {				
+				Partition partition = this.getDbs_tenant().getPartition(partition_id);
+				
+				System.out.println("    ----"+partition.toString());
+				//partition.show();
+				
+				if(partition.isPartition_overloaded())
+					overloadedPartition.add(partition.getPartition_globalId());	
 			}
 			
 		}		

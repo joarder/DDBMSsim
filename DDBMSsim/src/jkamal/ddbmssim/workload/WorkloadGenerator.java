@@ -70,10 +70,8 @@ public class WorkloadGenerator {
 				workload.setWrl_label("W"+workload_id);
 				
 				// create the empty db operation lists
-				workload.setDb_insert(new HashMap<Integer, ArrayList<Integer>>());
-				workload.setDb_delete(new HashMap<Integer, ArrayList<Integer>>());
-				workload.setInsert_count(0);
-				workload.setDelete_count(0);
+				workload.setDb_operations(new HashMap<Integer, ArrayList<Integer>>());
+				workload.setDb_operation_count(0);
 				
 				System.out.println("[MSG] Total "+workload.getWrl_totalTransactions()+" transactions are present in the workload.");
 				
@@ -126,7 +124,7 @@ public class WorkloadGenerator {
 					"gathered for the target workload of simulation round "+workload_id);						
 			
 			workload.show(db, "");
-			db.show();
+			//db.show();
 			
 			// Clone the Workload
 			Workload cloned_workload = new Workload(workload);
