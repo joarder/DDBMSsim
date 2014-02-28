@@ -87,13 +87,18 @@ public class DatabaseServer {
 	}
 	
 	public void updateNodeLoad() {
-		double sum = 0.0d;
+		double combined_partition_load = 0.0d;
+		double node_load = 0.0d;
+		
 		for(Node node : this.getDbs_nodes()) {
-			sum = 0.0d;
+			combined_partition_load = 0.0d;
 			for(int pid : node.getNode_partitions())				
-				sum += this.getDbs_tenant().getPartition(pid).getPartition_dataSet().size();
+				combined_partition_load += this.getDbs_tenant().getPartition(pid).getPartition_dataSet().size();
 			
-			node.setNode_size(sum);
+			node_load = ((double)combined_partition_load/(double)DBMSSimulator.NODE_MAX_CAPACITY)*100;
+			node_load = (node_load/100)*100;
+			
+			node.setNode_load(node_load);
 		}
 	}
 	
@@ -111,7 +116,7 @@ public class DatabaseServer {
 		for(Node node : this.getDbs_nodes()) {						
 			System.out.println("    --"+node.toString()
 			+" | Load "
-			+((double)node.getNode_size()/(double)DBMSSimulator.NODE_MAX_CAPACITY)*100+"%");
+			+node.getNode_load()+"%");
 			
 			for(int partition_id : node.getNode_partitions()) {				
 				Partition partition = this.getDbs_tenant().getPartition(partition_id);

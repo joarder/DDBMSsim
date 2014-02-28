@@ -13,7 +13,7 @@ public class Node implements Comparable<Node> {
 	private int node_id;
 	private String node_label;	
 	private Set<Integer> node_partitions;	
-	private double node_size;
+	private double node_load;
 	private int node_inflow;
 	private int node_outflow;	
 	private int node_total_data;
@@ -22,7 +22,7 @@ public class Node implements Comparable<Node> {
 		this.setNode_id(id);
 		this.setNode_label("N"+id);		
 		this.setNode_partitions(new TreeSet<Integer>());
-		this.setNode_size(0.0d);
+		this.setNode_load(0.0d);
 		this.setNode_inflow(0);
 		this.setNode_outflow(0);
 		this.setNode_total_data(0);
@@ -37,7 +37,7 @@ public class Node implements Comparable<Node> {
 			clone_partitions.add(p);
 		this.setNode_partitions(clone_partitions);
 		
-		this.setNode_size(node.getNode_size());
+		this.setNode_load(node.getNode_load());
 		this.setNode_inflow(node.getNode_inflow());
 		this.setNode_outflow(node.getNode_outflow());
 		this.setNode_total_data(node.getNode_total_data());
@@ -59,12 +59,12 @@ public class Node implements Comparable<Node> {
 		this.node_label = node_label;
 	}
 
-	public double getNode_size() {
-		return node_size;
+	public double getNode_load() {
+		return node_load;
 	}
 
-	public void setNode_size(double node_size) {
-		this.node_size = node_size;
+	public void setNode_load(double node_size) {
+		this.node_load = node_size;
 	}
 
 	public Set<Integer> getNode_partitions() {
