@@ -214,6 +214,10 @@ public class DataMovement {
         
         // Update the entry into the Partition Data lookup table
         db.getDb_partition_data_map().put(data.getData_id(), data.getData_globalPartitionId());
+        
+        dst_partition.updatePartitionLoad();
+        current_partition.updatePartitionLoad();
+        home_partition.updatePartitionLoad();
 	}
 	
 	private void updateMovementCounts(Database db, int dst_node_id, int current_node_id, int dst_partition_id, int current_partition_id) {
