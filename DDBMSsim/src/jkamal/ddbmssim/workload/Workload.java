@@ -935,17 +935,23 @@ public class Workload implements Comparable<Workload> {
 		}
 	}
 	
-	public void calculateMeanDTI() {
+	public void calculateMeanDTI(Database db) {
 		int sum = 0;
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
 			for(Transaction transaction : entry.getValue()) {
-				if(transaction.getTr_dtCost() > 0)
-					sum += transaction.getTr_dtImpact();
+				if(transaction.getTr_dtCost() > 0) {
+					transaction.calculateDTCost(db);
+					transaction.calculateDTImapct();
+					
+					sum += transaction.getTr_dtImpact();		 
+				}
 			}
-		}
+		}		
+		
+		double mean_dti = (((double)sum/(double)this.getWrl_distributedTransactions())*100)/100;		
 		
 		if(this.getWrl_distributedTransactions() != 0)
-			this.setWrl_meanDTI(((double)sum/(double)this.getWrl_distributedTransactions()));
+			this.setWrl_meanDTI(mean_dti);
 		else
 			this.setWrl_meanDTI(0.0);
 	}
@@ -982,7 +988,7 @@ public class Workload implements Comparable<Workload> {
 		System.out.println("      -----------------------------------------------------------------------------------------------------------------");
 		
 		this.calculateDistributedTransactions();	
-		this.calculateMeanDTI();
+		this.calculateMeanDTI(db);
 		
 		System.out.println("      # Total Distributed Transactions: "+this.getWrl_distributedTransactions()+" ("+this.getWrl_percentageDistributedTransactions()+"%)");
 		System.out.println("      # Mean Impact: "+this.getWrl_meanDTI());
