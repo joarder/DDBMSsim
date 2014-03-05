@@ -221,6 +221,10 @@ public class DataMovement {
 	}
 	
 	private void updateMovementCounts(Database db, int dst_node_id, int current_node_id, int dst_partition_id, int current_partition_id) {
+		
+		db.getPartition(dst_partition_id).incPartition_inflow();
+		db.getPartition(current_partition_id).incPartition_outflow();
+		
 		if(dst_node_id != current_node_id) {
 			this.incInter_node_data_movements();
 			
@@ -232,9 +236,6 @@ public class DataMovement {
 			
 		} else {
 			this.incIntra_node_data_movements();
-			
-			db.getPartition(dst_partition_id).incPartition_inflow();
-			db.getPartition(current_partition_id).incPartition_outflow();
 		}
 	}		
 	

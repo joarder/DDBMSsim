@@ -116,7 +116,7 @@ public class DatabaseServer {
 		for(Node node : this.getDbs_nodes()) {						
 			System.out.println("    --"+node.toString()
 			+" | Load "
-			+node.getNode_load()+"%");
+			+node.getNode_load()+"%"+"[In:"+node.getNode_inflow()+"][Out:"+node.getNode_outflow()+"]");
 			
 			for(int partition_id : node.getNode_partitions()) {				
 				Partition partition = this.getDbs_tenant().getPartition(partition_id);
