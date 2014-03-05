@@ -97,7 +97,7 @@ public class DBMSSimulator {
 	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "khmetis";
-	public final static String METIS = "pmetis";
+	public final static String METIS = "kmetis";
 	
 	public static Random random;
 	public static RandomDataGenerator randomDataGenerator;
