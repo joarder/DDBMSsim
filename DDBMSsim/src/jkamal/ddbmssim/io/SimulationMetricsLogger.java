@@ -194,8 +194,8 @@ public class SimulationMetricsLogger {
 		if(this.isData_movement()) {		
 		
 			DescriptiveStatistics _data = new DescriptiveStatistics();
-			DescriptiveStatistics _roaming_data = new DescriptiveStatistics();
-			DescriptiveStatistics _foreign_data = new DescriptiveStatistics();
+			//DescriptiveStatistics _roaming_data = new DescriptiveStatistics();
+			//DescriptiveStatistics _foreign_data = new DescriptiveStatistics();
 			DescriptiveStatistics _inflow = new DescriptiveStatistics();
 			DescriptiveStatistics _outflow = new DescriptiveStatistics();
 			
@@ -205,8 +205,8 @@ public class SimulationMetricsLogger {
 						//this.writePartitionLog(workload, partition, prWriter);
 					
 						_data.addValue(partition.getPartition_dataSet().size());
-						_roaming_data.addValue(partition.getPartition_roaming_data());
-						_foreign_data.addValue(partition.getPartition_foreign_data());
+						//_roaming_data.addValue(partition.getPartition_roaming_data());
+						//_foreign_data.addValue(partition.getPartition_foreign_data());
 						_inflow.addValue(partition.getPartition_inflow());
 						_outflow.addValue(partition.getPartition_outflow());				
 					//}
@@ -215,11 +215,11 @@ public class SimulationMetricsLogger {
 			
 			prWriter.print(workload.getWrl_id()+" ");
 			
-			this.writeStats(prWriter, _data);
-			this.writeStats(prWriter, _roaming_data);
-			this.writeStats(prWriter, _foreign_data);
-			this.writeStats(prWriter, _inflow);
-			this.writeStats(prWriter, _outflow);		
+			this.writeStats(prWriter, _data, db.getDb_partitions());
+			//this.writeStats(prWriter, _roaming_data);
+			//this.writeStats(prWriter, _foreign_data);
+			this.writeStats(prWriter, _inflow, db.getDb_partitions());
+			this.writeStats(prWriter, _outflow, db.getDb_partitions());		
 			
 			if(workload.getWrl_id() != (DBMSSimulator.SIMULATION_RUNS - 1))
 				prWriter.println();
@@ -244,16 +244,16 @@ public class SimulationMetricsLogger {
 			
 			prWriter.print(workload.getWrl_id()+" ");			
 			
-			this.writeStats(prWriter, _data);
-			this.writeStats(prWriter, _inflow);
-			this.writeStats(prWriter, _outflow);
+			this.writeStats(prWriter, _data, db.getDb_dbs().getDbs_nodes().size());
+			this.writeStats(prWriter, _inflow, db.getDb_dbs().getDbs_nodes().size());
+			this.writeStats(prWriter, _outflow, db.getDb_dbs().getDbs_nodes().size());
 			
 			if(workload.getWrl_id() != (DBMSSimulator.SIMULATION_RUNS - 1))
 				prWriter.println();
 		}
 	}
 	
-	private void writeStats(PrintWriter prWriter, DescriptiveStatistics stats) {
+	private void writeStats(PrintWriter prWriter, DescriptiveStatistics stats, int n) {
 		prWriter.print(stats.getMin()+" ");					// Min
 		prWriter.print(stats.getPercentile(25)+" "); 		// Q1
 		prWriter.print(stats.getPercentile(50)+" "); 		// Median
