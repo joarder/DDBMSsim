@@ -123,7 +123,7 @@ public class WorkloadGenerator {
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);						
 			
-			workload.show(db, "");
+			//workload.show(db, "");
 			//db.show();
 			
 			// Clone the Workload

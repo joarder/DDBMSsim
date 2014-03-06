@@ -38,7 +38,7 @@ public class DBMSSimulator {
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 24;
+	public final static int SIMULATION_RUNS = 2;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -290,7 +290,7 @@ public class DBMSSimulator {
 		if(partitioner == "chg") {
 			virtual_data = workloadFileGenerator.getVirtual_data();
 			//System.out.println("-->> virtual data = "+virtual_data);
-		}
+		}		
 		
 		if(!empty) {
 		// Perform hyper-graph/graph/compressed hyper-graph partitioning

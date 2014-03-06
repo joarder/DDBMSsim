@@ -51,7 +51,7 @@ public class DataMovement {
 	}
 
 	private void setEnvironment(Database db, Workload workload) {
-		workload.calculateDTandDTI(db);
+		//workload.calculateDTandDTI(db);
 		
 		this.setIntra_node_data_movements(0);
 		this.setInter_node_data_movements(0);		

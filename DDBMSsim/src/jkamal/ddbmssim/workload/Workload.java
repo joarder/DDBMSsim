@@ -114,7 +114,7 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_graphWorkloadFile("workload.txt");
 		
 		this.setWrl_distributedTransactions(0);
-		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
+		//this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
 		this.setWrl_meanDTI(0.0);		
 		this.setWrl_percentageDistributedTransactions(0.0);
 		
@@ -232,8 +232,8 @@ public class Workload implements Comparable<Workload> {
 		//Hypergraph
 		this.setWrl_hg_percentageIntraNodeDataMovements(workload.getWrl_hg_percentageIntraNodeDataMovements());
 		this.setWrl_hg_percentageInterNodeDataMovements(workload.getWrl_hg_percentageInterNodeDataMovements());
-		this.setWrl_hg_intraNodeDataMovements(workload.getWrl_hg_intraNodeDataMovements());
-		this.setWrl_hg_interNodeDataMovements(workload.getWrl_hg_interNodeDataMovements());
+		this.setWrl_hg_intraNodeDataMovements(workload.getWrl_hgr_intraNodeDataMovements());
+		this.setWrl_hg_interNodeDataMovements(workload.getWrl_hgr_interNodeDataMovements());
 		//Compressed Hypergraph				
 		this.setWrl_chg_percentageIntraNodeDataMovements(workload.getWrl_chg_percentageIntraNodeDataMovements());
 		this.setWrl_chg_percentageInterNodeDataMovements(workload.getWrl_chg_percentageInterNodeDataMovements());
@@ -261,7 +261,7 @@ public class Workload implements Comparable<Workload> {
 		this.setDb_operations(clone_db_operations);
 		
 		this.setDb_operation_count(workload.getDb_operation_count());
-		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
+		//this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
 	}
 
 	public int getWrl_id() {
@@ -449,7 +449,7 @@ public class Workload implements Comparable<Workload> {
 		this.wrl_dataTransactionsInvolved = wrl_dataTransactionsInvolved;
 	}
 
-	public int getWrl_hg_intraNodeDataMovements() {
+	public int getWrl_hgr_intraNodeDataMovements() {
 		return wrl_hg_intra_dmv;
 	}
 
@@ -457,7 +457,7 @@ public class Workload implements Comparable<Workload> {
 		this.wrl_hg_intra_dmv = wrl_intraNodeDataMovements;
 	}
 
-	public int getWrl_hg_interNodeDataMovements() {
+	public int getWrl_hgr_interNodeDataMovements() {
 		return wrl_hg_inter_dmv;
 	}
 
@@ -822,6 +822,8 @@ public class Workload implements Comparable<Workload> {
 				}
 			}
 		}
+		
+		this.calculateDTandDTI(db);
 	}
 	
 	// Workload Sampling
@@ -936,6 +938,7 @@ public class Workload implements Comparable<Workload> {
 
 	// Calculate the percentage of Distributed Transactions within the Workload (before and after the Data movements)
 	public void calculateDTandDTI(Database db) {
+		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
 		int dt_nums = 0;
 		int dti_sum = 0;		
 		
@@ -985,47 +988,36 @@ public class Workload implements Comparable<Workload> {
 				
 		System.out.println("\n      -----------------------------------------------------------------------------------------------------------------");
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {				
-				transaction.calculateDTCost(db);
-				
+			for(Transaction transaction : entry.getValue()) {
 				System.out.print("     ");
 				transaction.show(db);
 			} // end -- for()-Transaction
 		} // end -- for()-Transaction Types						
 				
-		System.out.println("      -----------------------------------------------------------------------------------------------------------------");
-		
-		this.calculateDTandDTI(db);			
-		
+		System.out.println("      -----------------------------------------------------------------------------------------------------------------");							
 		System.out.println("      # Total Distributed Transactions: "+this.getWrl_distributedTransactions()+" ("+this.getWrl_percentageDistributedTransactions()+"%)");
 		System.out.println("      # Mean Impact: "+this.getWrl_meanDTI());
 		
 		switch(type) {
 		case "hgr":
 			if(this.isWrl_hasDataMoved()) {
-				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_hg_intraNodeDataMovements());
-				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_hg_interNodeDataMovements());
-			}
-			
-			//db.getDb_dbs().show();		
+				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_hgr_intraNodeDataMovements());
+				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_hgr_interNodeDataMovements());
+			}		
 			break;
 	
 		case "chg":
 			if(this.isWrl_hasDataMoved()) {
 				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_chg_intraNodeDataMovements());
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_chg_interNodeDataMovements());
-			}
-			
-			//db.getDb_dbs().show();		
+			}		
 			break;
 			
 		case "gr":
 			if(this.isWrl_hasDataMoved()) {
 				System.out.println("      # Intra-Node Data Movements: "+this.getWrl_gr_intraNodeDataMovements());
 				System.out.println("      # Inter-Node Data Movements: "+this.getWrl_gr_interNodeDataMovements());
-			}
-			
-			//db.getDb_dbs().show();		
+			}		
 			break;
 		
 		default:

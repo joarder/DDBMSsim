@@ -156,8 +156,24 @@ public class SimulationMetricsLogger {
 				writer.print(workload.getWrl_dt_nums_typewise()[i]+" ");
 			
 			writer.print(workload.getWrl_meanDTI()+" ");
-			writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");
-			writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");				
+			
+			switch(partitioner) {
+				case "hgr":
+					writer.print(workload.getWrl_hgr_intraNodeDataMovements()+" ");
+					writer.print(workload.getWrl_hgr_interNodeDataMovements()+" ");
+					break;
+					
+				case "chg":
+					writer.print(workload.getWrl_chg_intraNodeDataMovements()+" ");
+					writer.print(workload.getWrl_chg_interNodeDataMovements()+" ");
+					break;
+				
+				case "gr":
+					writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");
+					writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");
+					break;
+			}
+			
 			writer.println();
 		}					
 	}

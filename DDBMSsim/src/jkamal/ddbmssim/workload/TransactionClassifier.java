@@ -206,6 +206,8 @@ public class TransactionClassifier {
 		workload.setWrl_tr_orange(this.getOrange_tr());		
 		System.out.println("[OUT] Classified "+this.getOrange_tr()+" transactions as ORANGE !!!");
 		
+		workload.calculateDTandDTI(db);
+		
 		return (this.getRed_tr()+this.getOrange_tr());
 	}
 }
