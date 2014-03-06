@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import jkamal.ddbmssim.db.Database;
-import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class Workload implements Comparable<Workload> {
 	private int wrl_id;
@@ -115,7 +114,7 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_graphWorkloadFile("workload.txt");
 		
 		this.setWrl_distributedTransactions(0);
-		this.setWrl_dt_nums_typewise(new int[DBMSSimulator.TPCC_TRANSACTION_PROPORTION.length]);
+		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
 		this.setWrl_meanDTI(0.0);		
 		this.setWrl_percentageDistributedTransactions(0.0);
 		
@@ -262,6 +261,7 @@ public class Workload implements Comparable<Workload> {
 		this.setDb_operations(clone_db_operations);
 		
 		this.setDb_operation_count(workload.getDb_operation_count());
+		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
 	}
 
 	public int getWrl_id() {
@@ -801,7 +801,8 @@ public class Workload implements Comparable<Workload> {
 	}	
 	
 	// Workload initialisation after sampling
-	public void init(Database db) {
+	public void initialise(Database db) {
+		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
 		this.setWrl_dataTransactionsInvolved(new TreeMap<Integer, Set<Integer>>());
 		Set<Integer> dataSet = new TreeSet<Integer>();
 		
@@ -928,7 +929,7 @@ public class Workload implements Comparable<Workload> {
 		}
 	}	
 	
-	private void incDTbyTypes(int i) {
+	private void incDTbyTypes(int i) {		
 		int val = this.getWrl_dt_nums_typewise()[i];
 		this.getWrl_dt_nums_typewise()[i] = ++val;
 	}
@@ -949,7 +950,7 @@ public class Workload implements Comparable<Workload> {
 					dti_sum += transaction.getTr_dtImpact();
 					
 					int i = transaction.getTr_type();
-					this.incDTbyTypes(i-1);
+					this.incDTbyTypes(i);
 				}
 			} // end -- for()-Transaction		
 		} // end -- for()-

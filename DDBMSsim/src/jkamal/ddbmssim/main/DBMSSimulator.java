@@ -29,7 +29,7 @@ import jkamal.ddbmssim.workload.WorkloadFileGenerator;
 import jkamal.ddbmssim.workload.WorkloadGenerator;
 
 public class DBMSSimulator {	
-	public final static int DB_NODES = 3;
+	public final static int DB_NODES = 5;
 	public final static double NODE_SCALE = 1;
 	public final static double PARTITION_SCALE = 1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
@@ -270,7 +270,7 @@ public class DBMSSimulator {
 		// Perform workload sampling
 		write("Starting workload sampling to remove duplicate transactions ...", "ACT");
 		Workload sampled_workload = workload.performSampling(db);		
-		sampled_workload.init(db);
+		sampled_workload.initialise(db);
 		//sampled_workload.show(db, "");
 		
 		// Perform transaction classification
