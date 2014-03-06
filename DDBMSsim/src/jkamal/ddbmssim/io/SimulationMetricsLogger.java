@@ -138,59 +138,31 @@ public class SimulationMetricsLogger {
 		} 
 	}
 	
-	public void logWorkload(Database db, Workload workload, PrintWriter writer, String type) {
-		switch(type) {
-		case "hgr":
-			if(!this.isData_movement()) {
-				writer.print(workload.getWrl_id()+" ");			
-				writer.print("hgr ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_meanDTI()+" ");
-			} else {					
-				writer.print(workload.getMessage()+" ");								
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_meanDTI()+" ");
-				writer.print(workload.getWrl_hg_intraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_hg_interNodeDataMovements()+" ");				
-				writer.println();
-			}
-			break;
+	public void logWorkload(Workload workload, PrintWriter writer, String partitioner) {
+		if(!this.isData_movement()) {
+			writer.print(workload.getWrl_id()+" ");			
+			writer.print(partitioner+" ");				
+			writer.print(workload.getWrl_distributedTransactions()+" ");
 			
-		case "chg":
-			if(!this.isData_movement()) {
-				writer.print(workload.getWrl_id()+" ");			
-				writer.print("chg ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_meanDTI()+" ");
-			} else {					
-				writer.print(workload.getMessage()+" ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_meanDTI()+" ");
-				writer.print(workload.getWrl_chg_intraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_chg_interNodeDataMovements()+" ");				
-				writer.println();
-			}
-			break;	
+			for(int i = 0; i < workload.getWrl_dt_nums_typewise().length; i++)
+				writer.print(workload.getWrl_dt_nums_typewise()[i]+" ");
 			
-		case "gr":
-			if(!this.isData_movement()) {
-				writer.print(workload.getWrl_id()+" ");			
-				writer.print("gr ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_meanDTI()+" ");
-			} else {					
-				writer.print(workload.getMessage()+" ");				
-				writer.print(workload.getWrl_distributedTransactions()+" ");
-				writer.print(workload.getWrl_meanDTI()+" ");
-				writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");
-				writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");				
-				writer.println();
-			}
-			break;
-		}			
+			writer.print(workload.getWrl_meanDTI()+" ");
+		} else {					
+			writer.print(workload.getMessage()+" ");				
+			writer.print(workload.getWrl_distributedTransactions()+" ");
+			
+			for(int i = 0; i < workload.getWrl_dt_nums_typewise().length; i++)
+				writer.print(workload.getWrl_dt_nums_typewise()[i]+" ");
+			
+			writer.print(workload.getWrl_meanDTI()+" ");
+			writer.print(workload.getWrl_gr_intraNodeDataMovements()+" ");
+			writer.print(workload.getWrl_gr_interNodeDataMovements()+" ");				
+			writer.println();
+		}					
 	}
 	
-	public void logPartition(Database db, Workload workload, PrintWriter prWriter) {
+	public void logPartition(Database db, Workload workload, PrintWriter writer) {
 		if(this.isData_movement()) {		
 		
 			DescriptiveStatistics _data = new DescriptiveStatistics();
@@ -200,33 +172,36 @@ public class SimulationMetricsLogger {
 			DescriptiveStatistics _outflow = new DescriptiveStatistics();
 			
 			for(Table table : db.getDb_tables()) {
-				for(Partition partition : table.getTbl_partitions()) {				
-					//if(this.isData_movement()) {
-						//this.writePartitionLog(workload, partition, prWriter);
-					
-						_data.addValue(partition.getPartition_dataSet().size());
-						//_roaming_data.addValue(partition.getPartition_roaming_data());
-						//_foreign_data.addValue(partition.getPartition_foreign_data());
-						_inflow.addValue(partition.getPartition_inflow());
-						_outflow.addValue(partition.getPartition_outflow());				
-					//}
+				
+				if(table.getTbl_name() == "Orders" || table.getTbl_name() == "New-Order" || table.getTbl_name() == "Order-Line" || table.getTbl_name() == "History") {
+					for(Partition partition : table.getTbl_partitions()) {				
+						//if(this.isData_movement()) {
+							//this.writePartitionLog(workload, partition, prWriter);
+						
+							_data.addValue(partition.getPartition_dataSet().size());
+							//_roaming_data.addValue(partition.getPartition_roaming_data());
+							//_foreign_data.addValue(partition.getPartition_foreign_data());
+							_inflow.addValue(partition.getPartition_inflow());
+							_outflow.addValue(partition.getPartition_outflow());				
+						//}
+					}
 				}
 			}
 			
-			prWriter.print(workload.getWrl_id()+" ");
+			writer.print(workload.getWrl_id()+" ");
 			
-			this.writeStats(prWriter, _data, db.getDb_partitions());
+			this.writeStats(writer, _data, db.getDb_partitions());
 			//this.writeStats(prWriter, _roaming_data);
 			//this.writeStats(prWriter, _foreign_data);
-			this.writeStats(prWriter, _inflow, db.getDb_partitions());
-			this.writeStats(prWriter, _outflow, db.getDb_partitions());		
+			this.writeStats(writer, _inflow, db.getDb_partitions());
+			this.writeStats(writer, _outflow, db.getDb_partitions());		
 			
 			if(workload.getWrl_id() != (DBMSSimulator.SIMULATION_RUNS - 1))
-				prWriter.println();
+				writer.println();
 		}
 	} 
 	
-	public void logNode(Database db, Workload workload, PrintWriter prWriter) {
+	public void logNode(Database db, Workload workload, PrintWriter writer) {
 		if(this.isData_movement()) {
 			DescriptiveStatistics _data = new DescriptiveStatistics();
 			DescriptiveStatistics _inflow = new DescriptiveStatistics();
@@ -242,25 +217,25 @@ public class SimulationMetricsLogger {
 				
 			}
 			
-			prWriter.print(workload.getWrl_id()+" ");			
+			writer.print(workload.getWrl_id()+" ");			
 			
-			this.writeStats(prWriter, _data, db.getDb_dbs().getDbs_nodes().size());
-			this.writeStats(prWriter, _inflow, db.getDb_dbs().getDbs_nodes().size());
-			this.writeStats(prWriter, _outflow, db.getDb_dbs().getDbs_nodes().size());
+			this.writeStats(writer, _data, db.getDb_dbs().getDbs_nodes().size());
+			this.writeStats(writer, _inflow, db.getDb_dbs().getDbs_nodes().size());
+			this.writeStats(writer, _outflow, db.getDb_dbs().getDbs_nodes().size());
 			
 			if(workload.getWrl_id() != (DBMSSimulator.SIMULATION_RUNS - 1))
-				prWriter.println();
+				writer.println();
 		}
 	}
 	
-	private void writeStats(PrintWriter prWriter, DescriptiveStatistics stats, int n) {
-		prWriter.print(stats.getMin()+" ");					// Min
-		prWriter.print(stats.getPercentile(25)+" "); 		// Q1
-		prWriter.print(stats.getPercentile(50)+" "); 		// Median
-		prWriter.print(stats.getPercentile(75)+" "); 		// Q3
-		prWriter.print(stats.getMax()+" ");					// Max
-		prWriter.print(stats.getMean()+" ");				// Mean
-		prWriter.print(stats.getStandardDeviation()+" "); 	// SD
+	private void writeStats(PrintWriter writer, DescriptiveStatistics stats, int n) {
+		writer.print(stats.getMin()+" ");				// Min
+		writer.print(stats.getPercentile(25)+" "); 		// Q1
+		writer.print(stats.getPercentile(50)+" "); 		// Median
+		writer.print(stats.getPercentile(75)+" "); 		// Q3
+		writer.print(stats.getMax()+" ");				// Max
+		writer.print(stats.getMean()+" ");				// Mean
+		writer.print(stats.getStandardDeviation()+" "); // SD
 	}
 	
 	/*private void writePartitionLog(Workload workload, Partition partition, PrintWriter prWriter) {

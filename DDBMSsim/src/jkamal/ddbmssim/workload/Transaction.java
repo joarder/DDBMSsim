@@ -14,7 +14,7 @@ import jkamal.ddbmssim.db.Partition;
 public class Transaction implements Comparable<Transaction> {
 	private int tr_id;
 	private String tr_label;	
-	private int tr_ranking;
+	private int tr_type;
 	private int tr_frequency;	
 	private int tr_dtCost; // Node Span Cost or, Distributed Transaction Cost
 	private int tr_psCost; // Partition Span Cost
@@ -25,7 +25,7 @@ public class Transaction implements Comparable<Transaction> {
 	public Transaction(int id, Set<Integer> dataSet) {
 		this.setTr_id(id);
 		this.setTr_label("T"+Integer.toString(this.getTr_id()));
-		this.setTr_ranking(0);
+		this.setTr_type(0);
 		this.setTr_frequency(0);		 	
 		this.setTr_dtCost(0);
 		this.setTr_psCost(0);
@@ -38,7 +38,7 @@ public class Transaction implements Comparable<Transaction> {
 	public Transaction(Transaction transaction) {
 		this.setTr_id(transaction.getTr_id());
 		this.setTr_label(transaction.getTr_label());
-		this.setTr_ranking(transaction.getTr_ranking());
+		this.setTr_type(transaction.getTr_type());
 		this.setTr_frequency(transaction.getTr_frequency());				
 		this.setTr_dtCost(transaction.getTr_dtCost());
 		this.setTr_psCost(transaction.getTr_psCost());
@@ -68,12 +68,12 @@ public class Transaction implements Comparable<Transaction> {
 		this.tr_label = tr_label;
 	}
 
-	public int getTr_ranking() {
-		return tr_ranking;
+	public int getTr_type() {
+		return tr_type;
 	}
 
-	public void setTr_ranking(int tr_ranking) {
-		this.tr_ranking = tr_ranking;
+	public void setTr_type(int tr_ranking) {
+		this.tr_type = tr_ranking;
 	}
 
 	public int getTr_frequency() {

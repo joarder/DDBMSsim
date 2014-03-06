@@ -58,7 +58,7 @@ public class TransactionGenerator {
 				// Create a new Transaction												
 				transaction = new Transaction(global_tr_id, trDataSet);
 				transaction.incTr_frequency();
-				transaction.setTr_ranking(i+1);				
+				transaction.setTr_type(i+1);				
 				workload.incWrl_totalTransaction();
 				++new_tr;
 				

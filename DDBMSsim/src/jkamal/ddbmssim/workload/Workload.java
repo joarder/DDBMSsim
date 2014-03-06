@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import jkamal.ddbmssim.db.Database;
+import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class Workload implements Comparable<Workload> {
 	private int wrl_id;
@@ -53,7 +54,8 @@ public class Workload implements Comparable<Workload> {
 	private String wrl_gr_workload_file = null;
 		
 	private double wrl_mean_dti;
-	private int wrl_dt_nums;	
+	private int wrl_dt_nums;
+	private int[] wrl_dt_nums_typewise;
 	private double wrl_percentage_dt;
 	
 	private double wrl_hg_percentage_intra_dmv;
@@ -113,6 +115,7 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_graphWorkloadFile("workload.txt");
 		
 		this.setWrl_distributedTransactions(0);
+		this.setWrl_dt_nums_typewise(new int[DBMSSimulator.TPCC_TRANSACTION_PROPORTION.length]);
 		this.setWrl_meanDTI(0.0);		
 		this.setWrl_percentageDistributedTransactions(0.0);
 		
@@ -530,6 +533,14 @@ public class Workload implements Comparable<Workload> {
 		this.wrl_dt_nums = wrl_dt_nums;
 	}
 
+	public int[] getWrl_dt_nums_typewise() {
+		return wrl_dt_nums_typewise;
+	}
+
+	public void setWrl_dt_nums_typewise(int[] wrl_dt_nums_typewise) {
+		this.wrl_dt_nums_typewise = wrl_dt_nums_typewise;
+	}
+
 	public double getWrl_percentageDistributedTransactions() {
 		return wrl_percentage_dt;
 	}
@@ -677,24 +688,6 @@ public class Workload implements Comparable<Workload> {
 
 	public void setWrl_data_movement_strategy(String wrl_data_movement_strategy) {
 		this.wrl_dmv_strategy = wrl_data_movement_strategy;
-	}
-
-	// Calculate the percentage of Distributed Transactions within the Workload (before and after the Data movements)
-	public void calculateDistributedTransactions() {
-		int counts = 0; 
-		
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
-			for(Transaction transaction : entry.getValue()) {
-				if(transaction.getTr_dtCost() >= 1)
-					++counts;			
-			} // end -- for()-Transaction		
-		} // end -- for()-
-				
-		double percentage = ((double)counts/(double)this.getWrl_totalTransactions())*100.0;
-		percentage = Math.round(percentage * 100.0)/100.0;
-		
-		this.setWrl_distributedTransactions(counts);
-		this.setWrl_percentageDistributedTransactions(percentage);	
 	}
 	
 	// Calculate the percentage of Data movements within the Workload (after running Strategy-Base/1/2)
@@ -933,27 +926,41 @@ public class Workload implements Comparable<Workload> {
 				}
 			}
 		}
-	}
+	}	
 	
-	public void calculateMeanDTI(Database db) {
-		int sum = 0;
-		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
+	private void incDTbyTypes(int i) {
+		int val = this.getWrl_dt_nums_typewise()[i];
+		this.getWrl_dt_nums_typewise()[i] = ++val;
+	}
+
+	// Calculate the percentage of Distributed Transactions within the Workload (before and after the Data movements)
+	public void calculateDTandDTI(Database db) {
+		int dt_nums = 0;
+		int dti_sum = 0;		
+		
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
+				transaction.calculateDTCost(db);
+				
 				if(transaction.getTr_dtCost() > 0) {
-					transaction.calculateDTCost(db);
-					transaction.calculateDTImapct();
+					++dt_nums;
 					
-					sum += transaction.getTr_dtImpact();		 
+					transaction.calculateDTImapct();
+					dti_sum += transaction.getTr_dtImpact();
+					
+					int i = transaction.getTr_type();
+					this.incDTbyTypes(i-1);
 				}
-			}
-		}		
+			} // end -- for()-Transaction		
+		} // end -- for()-
 		
-		double mean_dti = (((double)sum/(double)this.getWrl_distributedTransactions())*100)/100;		
+		this.setWrl_distributedTransactions(dt_nums);
 		
-		if(this.getWrl_distributedTransactions() != 0)
-			this.setWrl_meanDTI(mean_dti);
-		else
-			this.setWrl_meanDTI(0.0);
+		double percentage = ((double)dt_nums/(double)this.getWrl_totalTransactions())*100.0;
+		double mean_dti = ((double)dti_sum/(double)this.getWrl_distributedTransactions());
+		
+		this.setWrl_percentageDistributedTransactions(percentage);
+		this.setWrl_meanDTI(mean_dti);
 	}
 		
 	public void printWrl_transactionProp(int[] array) {
@@ -987,8 +994,7 @@ public class Workload implements Comparable<Workload> {
 				
 		System.out.println("      -----------------------------------------------------------------------------------------------------------------");
 		
-		this.calculateDistributedTransactions();	
-		this.calculateMeanDTI(db);
+		this.calculateDTandDTI(db);			
 		
 		System.out.println("      # Total Distributed Transactions: "+this.getWrl_distributedTransactions()+" ("+this.getWrl_percentageDistributedTransactions()+"%)");
 		System.out.println("      # Mean Impact: "+this.getWrl_meanDTI());
