@@ -394,7 +394,7 @@ public class DBMSSimulator {
 	private static void collectLog(SimulationMetricsLogger logger, Database db, Workload workload
 			, PrintWriter wrl_writer, PrintWriter node_writer, PrintWriter partition_writer, String partitioner) {
 		
-		logger.logWorkload(db, workload, wrl_writer, partitioner);
+		logger.logWorkload(workload, wrl_writer, partitioner);
 		logger.logNode(db, workload, node_writer);
 		logger.logPartition(db, workload, partition_writer);		
 	}
