@@ -941,6 +941,8 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
 		int dt_nums = 0;
 		int dti_sum = 0;		
+		double percentage = 0.0d;
+		double mean_dti = 0.0d;
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
@@ -960,8 +962,10 @@ public class Workload implements Comparable<Workload> {
 		
 		this.setWrl_distributedTransactions(dt_nums);
 		
-		double percentage = ((double)dt_nums/(double)this.getWrl_totalTransactions())*100.0;
-		double mean_dti = ((double)dti_sum/(double)this.getWrl_distributedTransactions());
+		if(this.getWrl_distributedTransactions() != 0) {
+			percentage = ((double)dt_nums/(double)this.getWrl_totalTransactions())*100.0;
+			mean_dti = ((double)dti_sum/(double)this.getWrl_distributedTransactions());
+		}
 		
 		this.setWrl_percentageDistributedTransactions(percentage);
 		this.setWrl_meanDTI(mean_dti);
