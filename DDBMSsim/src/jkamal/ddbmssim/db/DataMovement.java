@@ -253,7 +253,7 @@ public class DataMovement {
 			for(Transaction transaction : entry.getValue()) {		
 				for(Integer data_id : transaction.getTr_dataSet()) {					
 					Data data = db.getData(data_id);
-					if(data == null) System.out.println("@ "+data_id+"| T"+transaction.getTr_id());
+					
 					if(!dataSet.contains(data.getData_id())) {
 						dataSet.add(data.getData_id());
 						

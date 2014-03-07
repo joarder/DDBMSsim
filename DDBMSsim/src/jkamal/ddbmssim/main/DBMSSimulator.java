@@ -29,7 +29,7 @@ import jkamal.ddbmssim.workload.WorkloadFileGenerator;
 import jkamal.ddbmssim.workload.WorkloadGenerator;
 
 public class DBMSSimulator {	
-	public final static int DB_NODES = 5;
+	public final static int DB_NODES = 10;
 	public final static double NODE_SCALE = 1;
 	public final static double PARTITION_SCALE = 1; // 1; 0.1; 0.01
 	public final static String WORKLOAD_TYPE = "tpcc";
@@ -38,7 +38,7 @@ public class DBMSSimulator {
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 24;
+	public final static int SIMULATION_RUNS = 100;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
