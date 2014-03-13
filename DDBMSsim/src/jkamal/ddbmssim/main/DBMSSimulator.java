@@ -159,12 +159,12 @@ public class DBMSSimulator {
 		// Preserve the Base Database Server and Database for cloning in later stage
 		DatabaseServer base_dbs = new DatabaseServer(dbs);
 		
-		// Workload generation for the entire simulation		
-		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
-		workloadGenerator.generateWorkloads(dbs.getDbs_tenant(), DBMSSimulator.SIMULATION_RUNS);			
-		
 		// Simulation initialisation
 		SimulationMetricsLogger simulation_logger = new SimulationMetricsLogger();
+		
+		// Workload generation for the entire simulation		
+		WorkloadGenerator workloadGenerator = new WorkloadGenerator();		
+		workloadGenerator.generateWorkloads(dbs.getDbs_tenant(), DBMSSimulator.SIMULATION_RUNS, simulation_logger);		
 		
 		String[] partitioners = {"hgr", "chg", "gr"};
 		String[] strategies = {"bs", "s1", "s2"};
@@ -211,11 +211,11 @@ public class DBMSSimulator {
 		}
 
 		// Run simulations
-		int simulation_run = 0;
+		int simulation_run = 1;
 		dir = null;
-		while(simulation_run != SIMULATION_RUNS) {			
+		while(simulation_run != (SIMULATION_RUNS + 1)) {			
 			Workload workload = workloadGenerator.getWorkload_map().get(simulation_run);
-			workload.setMessage("in");			
+			workload.setMessage("in");						
 			
 			write("============================================================", null);			
 			
@@ -236,8 +236,8 @@ public class DBMSSimulator {
 				}
 				
 				s = 0;
-			}
-
+			}			
+			
 			++ simulation_run;
 		}
 		

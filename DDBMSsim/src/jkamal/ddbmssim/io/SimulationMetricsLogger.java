@@ -9,8 +9,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Map.Entry;
+
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import jkamal.ddbmssim.db.Database;
@@ -19,6 +23,7 @@ import jkamal.ddbmssim.db.Node;
 import jkamal.ddbmssim.db.Partition;
 import jkamal.ddbmssim.db.Table;
 import jkamal.ddbmssim.main.DBMSSimulator;
+import jkamal.ddbmssim.workload.Transaction;
 import jkamal.ddbmssim.workload.Workload;
 
 public class SimulationMetricsLogger {	
@@ -97,45 +102,24 @@ public class SimulationMetricsLogger {
 		return prWriter;
 	}
 	
-	public void log(DatabaseServer dbs, Database db, PrintWriter prWriter) {
-		int space = -1;
+	
+	public void traceWorkload(Database db, Workload workload) {
+		PrintWriter writer = workload.getWorkload_file();
 		
-		try {							
-			prWriter.print(Integer.toString(dbs.getDbs_nodes().size())+" ");		
-			prWriter.println();
-			
-			space = dbs.getDbs_nodes().size();
-			for(Node node : dbs.getDbs_nodes()) { 
-				prWriter.print(Integer.toString(node.getNode_partitions().size()));
+		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {
 				
-				if(space != 1)
-					prWriter.print(" ");
-				
-				--space;
-			}
-			
-			prWriter.println();			
-			
-			for(Table table : db.getDb_tables()) {
-				for(Partition partition : table.getTbl_partitions()) {				
-					space = db.getDb_partitions();
+				Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
+				while(data.hasNext()) {
+					writer.print(db.getData(data.next()).getData_id());
 					
-					prWriter.print(Integer.toString(partition.getPartition_dataSet().size())+" ");
-					prWriter.print(Integer.toString(partition.getPartition_roaming_data())+" "); //getRoaming_dataObjects().size()
-					prWriter.print(Integer.toString(partition.getPartition_foreign_data())); //getForeign_dataObjects().size()
-					
-					if(space != 1)
-						prWriter.print(" ");
-				
-					--space;									
+					if(data.hasNext())
+						writer.print(" ");
+					else
+						writer.println();
 				}
 			}
-			
-			prWriter.println();
-		} finally {
-			prWriter.flush();
-			prWriter.close();
-		} 
+		}
 	}
 	
 	public void logWorkload(Workload workload, PrintWriter writer, String partitioner) {

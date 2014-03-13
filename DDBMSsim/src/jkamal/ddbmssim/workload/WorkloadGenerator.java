@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import jkamal.ddbmssim.db.DataPopularityProfile;
 import jkamal.ddbmssim.db.Database;
+import jkamal.ddbmssim.io.SimulationMetricsLogger;
 import jkamal.ddbmssim.main.DBMSSimulator;
 
 public class WorkloadGenerator {	
@@ -56,15 +57,15 @@ public class WorkloadGenerator {
 	}
 	
 	// Generates Workloads for the entire simulation
-	public void generateWorkloads(Database db, int simulation_run_numbers) throws IOException {
+	public void generateWorkloads(Database db, int simulation_run_numbers, SimulationMetricsLogger simulation_logger) throws IOException {
 		DataPopularityProfile popularityProfile = new DataPopularityProfile();				
 		Workload workload = null;
-		int workload_id = 0;
+		int workload_id = 1;
 		
 		while(workload_id != simulation_run_numbers) {
 			System.out.println("--------------------------------------------------------------------------");
 			System.out.println("[ACT] Starting workload generation for simulation round "+workload_id+"...");
-			if(workload_id != 0) {
+			if(workload_id != 1) {
 				workload = new Workload(this.getWorkload_map().get(workload_id -1));
 				workload.setWrl_id(workload_id);
 				workload.setWrl_label("W"+workload_id);
@@ -122,6 +123,12 @@ public class WorkloadGenerator {
 			
 			System.out.println("[OUT] Initially "+workload.getWrl_totalTransactions()+" transactions have been " +
 					"gathered for the target workload of simulation round "+workload_id);						
+			
+			// write workload traces into file
+			workload.setWorkload_file(simulation_logger.getWriter(DBMSSimulator.LOG_LOCATION, Integer.toString(workload.getWrl_id())));
+			simulation_logger.traceWorkload(db, workload);
+			workload.getWorkload_file().flush();
+			workload.getWorkload_file().close();			
 			
 			//workload.show(db, "");
 			//db.show();

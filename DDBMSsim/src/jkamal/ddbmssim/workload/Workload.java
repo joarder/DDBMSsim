@@ -4,6 +4,7 @@
 
 package jkamal.ddbmssim.workload;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,7 +78,9 @@ public class Workload implements Comparable<Workload> {
 	private String message = null;
 	
 	private HashMap<Integer, ArrayList<Integer>> db_operations;	
-	private int db_operation_count;	
+	private int db_operation_count;
+	
+	private PrintWriter workload_file;
 	
 	public Workload(int id, int trTypes, int db_id) {
 		this.setWrl_id(id);
@@ -111,7 +114,7 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_hGraphFixFile("fixfile.txt");		
 		this.setWrl_chGraphWorkloadFile("workload.txt");
 		this.setWrl_chGraphFixFile("fixfile.txt");
-		this.setWrl_graphWorkloadFile("workload.txt");
+		this.setWrl_graphWorkloadFile("workload.txt");				
 		
 		this.setWrl_distributedTransactions(0);
 		//this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
@@ -970,7 +973,15 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_percentageDistributedTransactions(percentage);
 		this.setWrl_meanDTI(mean_dti);
 	}
-		
+
+	public PrintWriter getWorkload_file() {
+		return workload_file;
+	}
+
+	public void setWorkload_file(PrintWriter workload_file) {
+		this.workload_file = workload_file;
+	}
+
 	public void printWrl_transactionProp(int[] array) {
 		int size = array.length;
 		
