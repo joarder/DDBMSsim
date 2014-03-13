@@ -62,7 +62,8 @@ public class DataPopularityProfile {
 				data.setData_rank((d % table.getTbl_data_count())+1);
 				table.getTbl_data_rank()[(d % table.getTbl_data_count())+1] = data.getData_primary_key();
 				
-				//System.out.println("@ "+data.toString()+" | Rank = "+data.getData_rank()+" | CP = "+data.getData_cumulativeZipfProbability());
+				//System.out.println("@ "+data.toString()+" | Rank = "+data.getData_rank()+" | CP = "+data.getData_cumulativeZipfProbability()
+						//+" | table_data_rank "+table.getTbl_data_rank()[(d % table.getTbl_data_count())+1]);
 				
 				d++;
 			}
