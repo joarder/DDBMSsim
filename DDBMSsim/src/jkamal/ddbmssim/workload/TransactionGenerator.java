@@ -125,8 +125,8 @@ public class TransactionGenerator {
 									dataList = table.getTableData(_i_rank);
 									_i = dataList.get(0);
 									
-									if(_i == 10)
-										System.out.println("\t\t--> I("+_i_rank+")");
+									//if(_i == 10)
+										//System.out.println("\t\t--> I("+_i_rank+")");
 									break;
 									
 								case "District":
