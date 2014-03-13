@@ -215,13 +215,6 @@ public class Table implements Comparable<Table>{
 		
 		return data_id;
 	}
-	
-	public int getTableData(double value) {
-		int data_id = 0;
-		
-		
-		return data_id;
-	}
 
 	@SuppressWarnings("unchecked")
 	public ArrayList<Integer> getTableData(ArrayList<Integer> keyList) {

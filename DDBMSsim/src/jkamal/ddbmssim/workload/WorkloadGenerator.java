@@ -62,7 +62,7 @@ public class WorkloadGenerator {
 		Workload workload = null;
 		int workload_id = 1;
 		
-		while(workload_id != simulation_run_numbers) {
+		while(workload_id != (simulation_run_numbers + 1)) {
 			System.out.println("--------------------------------------------------------------------------");
 			System.out.println("[ACT] Starting workload generation for simulation round "+workload_id+"...");
 			if(workload_id != 1) {

@@ -36,7 +36,7 @@ public class TransactionGenerator {
 		int new_tr = 0;		
 		
 		//Selecting Transaction Prop
-		if(workload.getWrl_id() != 0)
+		if(workload.getWrl_id() != 1)
 			prop = workload.getWrl_transactionBirthProp();
 		else
 			prop = workload.getWrl_transactionProportions();
@@ -71,7 +71,7 @@ public class TransactionGenerator {
 					transactionList.add(transaction);							
 			} // end--j for() loop
 										
-			if(workload.getWrl_id() == 0)
+			if(workload.getWrl_id() == 1)
 				workload.getWrl_transactionMap().put(i, transactionList);
 			else 				
 				workload.incWrl_transactionProportions(i, typedTransactions);									
@@ -117,7 +117,7 @@ public class TransactionGenerator {
 									dataList = table.getTableData(_w_rank);
 									_w = dataList.get(0);
 									
-									//System.out.println("\t\t--> W("+_w+")");
+									//System.out.println("\t\t--> W("+_w_rank+")");
 									break;
 									
 								case "Item":									
@@ -125,7 +125,8 @@ public class TransactionGenerator {
 									dataList = table.getTableData(_i_rank);
 									_i = dataList.get(0);
 									
-									//System.out.println("\t\t--> I("+_i+")");
+									if(_i == 10)
+										System.out.println("\t\t--> I("+_i_rank+")");
 									break;
 									
 								case "District":
