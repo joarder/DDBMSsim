@@ -115,18 +115,17 @@ public class TransactionGenerator {
 								case "Warehouse":
 									_w_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.0);
 									dataList = table.getTableData(_w_rank);
-									_w = dataList.get(0);
+									_w = table.getTbl_pid_data_map().get(dataList.get(0)); // assigns the primary key
 									
-									//System.out.println("\t\t--> W("+_w_rank+")");
+									//System.out.println("\t\t--> W("+_w+")");
 									break;
 									
 								case "Item":									
 									_i_rank = DBMSSimulator.randomDataGenerator.nextZipf(table.getTbl_data_count(), 2.0);
 									dataList = table.getTableData(_i_rank);
-									_i = dataList.get(0);
+									_i = table.getTbl_pid_data_map().get(dataList.get(0)); // assigns the primary key									
 									
-									//if(_i == 10)
-										//System.out.println("\t\t--> I("+_i_rank+")");
+									//System.out.println("\t\t--> I("+_i+")");
 									break;
 									
 								case "District":
@@ -213,7 +212,7 @@ public class TransactionGenerator {
 										dataList = table.getTableData(keyList);
 										_o = dataList.get(1);
 									} else {
-										int d_id = table.getTbl_data_id_map().get(_o);										
+										int d_id = table.getTbl_data_pid_map().get(_o);										
 										dataList = new ArrayList<Integer>();										
 										dataList.add(d_id);
 										dataList.add(_o);										
@@ -266,7 +265,7 @@ public class TransactionGenerator {
 							data.getData_foreign_key().put(5, _c); // 5: Customer Table
 						
 							table.getTbl_data_map_d().put(_d, _c, table.getTbl_data_count());
-							table.getTbl_data_id_map().put(table.getTbl_data_count(), data_id);
+							table.getTbl_data_pid_map().put(table.getTbl_data_count(), data_id);
 							break;
 						
 						case("Orders"):							
@@ -277,7 +276,7 @@ public class TransactionGenerator {
 							data.getData_foreign_key().put(5, _c); // 5: Customer Table
 							
 							table.getTbl_data_map_s().put(_c, data.getData_primary_key());
-							table.getTbl_data_id_map().put(data.getData_primary_key(), data_id);							
+							table.getTbl_data_pid_map().put(data.getData_primary_key(), data_id);							
 							
 							//=== Also put an entry in the New-Order and Order-Line Table														
 							//=== New-Order
@@ -298,7 +297,7 @@ public class TransactionGenerator {
 							//System.out.println("\t\t>> Inserting NO("+_no+") for O("+_o+") with global data_id ["+no_data_id+"]");
 							
 							t_no.getTbl_data_map_s().put(_o, no_data.getData_primary_key());
-							t_no.getTbl_data_id_map().put(no_data.getData_primary_key(), no_data_id);
+							t_no.getTbl_data_pid_map().put(no_data.getData_primary_key(), no_data_id);
 							
 							//=== Order-Line
 							Table t_ol = db.getTable(9); 
@@ -320,7 +319,7 @@ public class TransactionGenerator {
 							//System.out.println(">>-- _o="+_o+"|_s="+_s+"|Id="+t_ol.getTbl_data_count());
 							
 							t_ol.getTbl_data_map_d().put(_s, _o, ol_data.getData_primary_key());
-							t_ol.getTbl_data_id_map().put(ol_data.getData_primary_key(), ol_data_id);
+							t_ol.getTbl_data_pid_map().put(ol_data.getData_primary_key(), ol_data_id);
 							
 							// Caching
 							_cache_items = new ArrayList<Integer>();
@@ -354,7 +353,7 @@ public class TransactionGenerator {
 					
 			case -1://===Delete Operation
 					//System.out.println("\t\t>> *** D-"+_d+"|C-"+_c+"|O-"+_o+"|NO-"+_no+"|OL-"+_ol+"|S-"+_s);
-					data_id = table.getTbl_data_id_map().get(_no);					
+					data_id = table.getTbl_data_pid_map().get(_no);					
 					db.deleteData(table.getTbl_id(), data_id);
 					
 					// preserving the db insert operations
@@ -362,7 +361,7 @@ public class TransactionGenerator {
 					
 					// Remove from table
 					table.getTbl_data_map_s().remove(_o);
-					table.getTbl_data_id_map().remove(_no);					
+					table.getTbl_data_pid_map().remove(_no);					
 					
 					// Remove cache entry
 					this._cache_keys.remove(new Integer(cache_key));

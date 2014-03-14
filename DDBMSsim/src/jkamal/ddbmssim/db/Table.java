@@ -27,7 +27,8 @@ public class Table implements Comparable<Table>{
 	private Set<Integer> tbl_foreign_tables;
 	private MultiValueMap<Integer, Integer> tbl_data_map_s; // For the secondary tables
 	private MultiKeyMap<Integer, Integer> tbl_data_map_d; // For the dependent tables
-	private HashMap<Integer, Integer> tbl_data_id_map;
+	private HashMap<Integer, Integer> tbl_data_pid_map;
+	private HashMap<Integer, Integer> tbl_pid_data_map;
 	private int[] tbl_data_rank;
 	
 	public Table(int id, int type, int db_id, String name) {
@@ -50,7 +51,8 @@ public class Table implements Comparable<Table>{
 			this.setTbl_data_map_d(new MultiKeyMap<Integer, Integer>());
 		}		
 		
-		this.setTbl_data_id_map(new HashMap<Integer, Integer>());
+		this.setTbl_data_pid_map(new HashMap<Integer, Integer>());
+		this.setTbl_pid_data_map(new HashMap<Integer, Integer>());
 		
 		if(this.getTbl_id() == 1)
 			this.setTbl_data_rank(new int[(DBMSSimulator.TPCC_WAREHOUSE) + 1]);
@@ -99,10 +101,15 @@ public class Table implements Comparable<Table>{
 			this.setTbl_data_map_d(clone_data_map_d);
 		}
 		
-		HashMap<Integer, Integer> clone_data_id_map = new HashMap<Integer, Integer>();
-		for(Entry<Integer, Integer> entry : table.getTbl_data_id_map().entrySet())
-			clone_data_id_map.put(entry.getKey(), entry.getValue());
-		this.setTbl_data_id_map(clone_data_id_map);
+		HashMap<Integer, Integer> clone_data_pid_map = new HashMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : table.getTbl_data_pid_map().entrySet())
+			clone_data_pid_map.put(entry.getKey(), entry.getValue());
+		this.setTbl_data_pid_map(clone_data_pid_map);
+		
+		HashMap<Integer, Integer> clone_pid_data_map = new HashMap<Integer, Integer>();
+		for(Entry<Integer, Integer> entry : table.getTbl_pid_data_map().entrySet())
+			clone_pid_data_map.put(entry.getKey(), entry.getValue());
+		this.setTbl_pid_data_map(clone_pid_data_map);
 		
 		if(this.getTbl_id() == 1 || this.getTbl_id() == 2) {
 			int[] clone_data_rank = new int[table.getTbl_data_rank().length];
@@ -192,14 +199,22 @@ public class Table implements Comparable<Table>{
 		this.tbl_data_map_d = tbl_data_map_d;
 	}
 
-	public HashMap<Integer, Integer> getTbl_data_id_map() {
-		return tbl_data_id_map;
+	public HashMap<Integer, Integer> getTbl_data_pid_map() {
+		return tbl_data_pid_map;
 	}
 
-	public void setTbl_data_id_map(HashMap<Integer, Integer> tbl_data_id_map) {
-		this.tbl_data_id_map = tbl_data_id_map;
+	public void setTbl_data_pid_map(HashMap<Integer, Integer> tbl_data_id_map) {
+		this.tbl_data_pid_map = tbl_data_id_map;
 	}
 	
+	public HashMap<Integer, Integer> getTbl_pid_data_map() {
+		return tbl_pid_data_map;
+	}
+
+	public void setTbl_pid_data_map(HashMap<Integer, Integer> tbl_id_data_map) {
+		this.tbl_pid_data_map = tbl_id_data_map;
+	}
+
 	public int[] getTbl_data_rank() {
 		return tbl_data_rank;
 	}
@@ -208,12 +223,13 @@ public class Table implements Comparable<Table>{
 		this.tbl_data_rank = tbl_data_rank;
 	}
 
-	// Returns the Data id 
+	// Returns the primary key of the corresponding data from the rank table 
 	public ArrayList<Integer> getTableData(int rank) {
-		ArrayList<Integer> data_id = new ArrayList<Integer>();
-		data_id.add(this.getTbl_data_rank()[rank]);
+		ArrayList<Integer> dataIdList = new ArrayList<Integer>();
+		int data_id = this.getTbl_data_pid_map().get(this.getTbl_data_rank()[rank]);
+		dataIdList.add(data_id);
 		
-		return data_id;
+		return dataIdList;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -248,7 +264,7 @@ public class Table implements Comparable<Table>{
 		if(_null)
 			data_id.add(-1);
 		else
-			data_id.add(this.getTbl_data_id_map().get(d));
+			data_id.add(this.getTbl_data_pid_map().get(d));
 		
 		data_id.add(d);
 		

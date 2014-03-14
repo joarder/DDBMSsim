@@ -120,7 +120,8 @@ public class Bootstrapping {
 				DBMSSimulator.incGlobal_data_id();
 				
 				Data data = db.insertData(table.getTbl_id(), data_id);
-				table.getTbl_data_id_map().put(d, data_id);
+				table.getTbl_data_pid_map().put(d, data_id);
+				table.getTbl_pid_data_map().put(data_id, d);
 				
 				if(table.getTbl_type() != 2) { // Primary Tables					
 					data.setData_primary_key(d);					
