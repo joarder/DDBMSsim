@@ -155,7 +155,8 @@ public class SimulationMetricsLogger {
 					break;
 			}
 			
-			writer.println();
+			if(workload.getWrl_id() != DBMSSimulator.SIMULATION_RUNS)
+				writer.println();
 		}					
 	}
 	
@@ -193,7 +194,7 @@ public class SimulationMetricsLogger {
 			this.writeStats(writer, _inflow, db.getDb_partitions());
 			this.writeStats(writer, _outflow, db.getDb_partitions());		
 			
-			if(workload.getWrl_id() != (DBMSSimulator.SIMULATION_RUNS - 1))
+			if(workload.getWrl_id() != DBMSSimulator.SIMULATION_RUNS)
 				writer.println();
 		}
 	} 
@@ -220,7 +221,7 @@ public class SimulationMetricsLogger {
 			this.writeStats(writer, _inflow, db.getDb_dbs().getDbs_nodes().size());
 			this.writeStats(writer, _outflow, db.getDb_dbs().getDbs_nodes().size());
 			
-			if(workload.getWrl_id() != (DBMSSimulator.SIMULATION_RUNS - 1))
+			if(workload.getWrl_id() != DBMSSimulator.SIMULATION_RUNS)
 				writer.println();
 		}
 	}
