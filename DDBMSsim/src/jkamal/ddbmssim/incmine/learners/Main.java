@@ -23,8 +23,7 @@ public class Main {
         TimingUtils.enablePreciseTiming();
         long start = TimingUtils.getNanoCPUTimeOfCurrentThread();
         while(stream.hasMoreInstances()){
-            learner.trainOnInstance(stream.nextInstance());
-            
+            learner.trainOnInstance(stream.nextInstance());            
         }
         
         long end = TimingUtils.getNanoCPUTimeOfCurrentThread();
