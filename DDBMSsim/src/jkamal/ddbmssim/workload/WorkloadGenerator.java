@@ -125,10 +125,10 @@ public class WorkloadGenerator {
 					"gathered for the target workload of simulation round "+workload_id);						
 			
 			// write workload traces into file
-			workload.setWorkload_file(simulation_logger.getWriter(DBMSSimulator.LOG_LOCATION, Integer.toString(workload.getWrl_id())));
-			simulation_logger.traceWorkload(db, workload);
-			workload.getWorkload_file().flush();
-			workload.getWorkload_file().close();			
+			workload.setWorkload_writer(simulation_logger.getWriter(DBMSSimulator.LOG_LOCATION, Integer.toString(workload.getWrl_id())));
+			simulation_logger.traceWorkload(db, workload, (workload.getWrl_id()-1)*1000, workload.getWorkload_writer());
+			workload.getWorkload_writer().flush();
+			workload.getWorkload_writer().close();			
 			
 			//workload.show(db, "");
 			//db.show();

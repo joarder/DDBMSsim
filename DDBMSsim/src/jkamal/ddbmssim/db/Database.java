@@ -28,6 +28,7 @@ public class Database implements Comparable<Database> {
 	private PrintWriter workload_log;
 	private PrintWriter node_log;
 	private PrintWriter partition_log;
+	private int db_miner_id;
 	
 	public Database(int id, String name, int tenant_id, DatabaseServer dbs, String model) {
 		this.setDb_id(id);
@@ -182,6 +183,14 @@ public class Database implements Comparable<Database> {
 		this.partition_log = partition_log;
 	}
 		
+	public int getDb_miner_id() {
+		return db_miner_id;
+	}
+
+	public void setDb_miner_id(int db_miner_id) {
+		this.db_miner_id = db_miner_id;
+	}
+
 	// Create a new Data object and attach it with the designated Table and Partition within a given Database
 	public Data insertData(int table_id, int data_id) {
 		Table table = this.getTable(table_id);

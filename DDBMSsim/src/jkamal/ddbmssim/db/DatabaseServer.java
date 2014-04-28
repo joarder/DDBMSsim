@@ -30,6 +30,7 @@ public class DatabaseServer {
 	
 	public DatabaseServer(DatabaseServer dbs) {
 		this.setDbs_id(dbs.getDbs_id());
+		//this.setDbs_id(id);
 		this.setDbs_name(dbs.getDbs_name());
 		
 		TreeSet<Node> clone_nodes = new TreeSet<Node>();

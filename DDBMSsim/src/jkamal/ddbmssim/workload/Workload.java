@@ -81,6 +81,7 @@ public class Workload implements Comparable<Workload> {
 	private int db_operation_count;
 	
 	private PrintWriter workload_file;
+	private PrintWriter miner_file;
 	
 	public Workload(int id, int trTypes, int db_id) {
 		this.setWrl_id(id);
@@ -974,12 +975,20 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_meanDTI(mean_dti);
 	}
 
-	public PrintWriter getWorkload_file() {
+	public PrintWriter getWorkload_writer() {
 		return workload_file;
 	}
 
-	public void setWorkload_file(PrintWriter workload_file) {
+	public void setWorkload_writer(PrintWriter workload_file) {
 		this.workload_file = workload_file;
+	}
+
+	public PrintWriter getMiner_writer() {
+		return miner_file;
+	}
+
+	public void setMiner_writer(PrintWriter miner_file) {
+		this.miner_file = miner_file;
 	}
 
 	public void printWrl_transactionProp(int[] array) {

@@ -350,6 +350,10 @@ public class FCITable implements Iterable<SemiFCI>, Serializable  {
         }
         return sb.toString();
     }
+    
+    public void log(){
+    	
+    }
 
     /**
      * Provides a size descending iterator of the semiFCIs stored in the table

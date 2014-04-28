@@ -8,6 +8,7 @@ package jkamal.ddbmssim.main;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -23,6 +24,7 @@ import jkamal.ddbmssim.hgraph.HGraphMinCut;
 import jkamal.ddbmssim.bootstrap.Bootstrapping;
 import jkamal.ddbmssim.io.SimulationMetricsLogger;
 import jkamal.ddbmssim.workload.ClusterIdMapper;
+import jkamal.ddbmssim.workload.StreamMiner;
 import jkamal.ddbmssim.workload.TransactionClassifier;
 import jkamal.ddbmssim.workload.Workload;
 import jkamal.ddbmssim.workload.WorkloadFileGenerator;
@@ -38,7 +40,7 @@ public class DBMSSimulator {
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 100;
+	public final static int SIMULATION_RUNS = 3;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -92,10 +94,9 @@ public class DBMSSimulator {
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
 											};
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
-	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
-	public final static String TEST_DATA_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\moa";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "khmetis";
 	public final static String METIS = "kmetis";
@@ -104,7 +105,7 @@ public class DBMSSimulator {
 	public static RandomDataGenerator randomDataGenerator;
 	
 	private static int global_tr_id;
-	private static int global_data_id;
+	private static int global_data_id;	
 	
 	public static int getGlobal_tr_id() {
 		return global_tr_id;
@@ -150,15 +151,15 @@ public class DBMSSimulator {
 		// Perform Bootstrapping through synthetic Data generation and placing it into appropriate Partition
 		System.out.println("[ACT] Started Bootstrapping Process ...");
 		Bootstrapping bootstrapping = new Bootstrapping();
-		bootstrapping.bootstrapping(db);
+		bootstrapping.bootstrapping(dbs.getDbs_tenant());
 		System.out.println("[MSG] Data creation and placement into partitions have been done.");		
 		
 		// Printing out details after data loading
 		dbs.show();
-		db.show();
+		dbs.getDbs_tenant().show();
 				
 		// Preserve the Base Database Server and Database for cloning in later stage
-		DatabaseServer base_dbs = new DatabaseServer(dbs);
+		//DatabaseServer base_dbs = new DatabaseServer(dbs);
 		
 		// Simulation initialisation
 		SimulationMetricsLogger simulation_logger = new SimulationMetricsLogger();
@@ -175,19 +176,24 @@ public class DBMSSimulator {
 		Map<Integer, Set<Database>> db_map = new TreeMap<Integer, Set<Database>>();
 		String dir = null;
 		String log_dir = directories[2];
+		HashMap<Integer, StreamMiner> miner_set = new HashMap<Integer, StreamMiner>();
+		int id = 0;
 		
 		for(int i = 0; i < partitioners.length; ++i) {			
 			Set<Database> db_set = new TreeSet<Database>();			
 			for(int j = 0; j < strategies.length; ++j) {
+				++id;
 				// Creating individual database servers and databases
-				DatabaseServer clone_dbs = new DatabaseServer(base_dbs);
+				DatabaseServer clone_dbs = new DatabaseServer(dbs);
 				clone_dbs.setDbs_name(partitioners[i]+"_"+strategies[j]+"_"+"dbs");
-				clone_dbs.setDbs_id((i+1)*(j+1));
+				//clone_dbs.setDbs_id((i+1)*(j+1));				
+				clone_dbs.setDbs_id(id);
 				
 				Database clone_db = clone_dbs.getDbs_tenant();
 				clone_db.setDb_dbs(clone_dbs);
 				clone_db.setDb_name(partitioners[i]+"_"+strategies[j]+"_"+"db");
-				clone_db.setDb_id((i+1)*(j+1));
+				//clone_db.setDb_id((i+1)*(j+1));				
+				clone_db.setDb_id(id);
 				
 				System.out.println("@ Creating database server "+clone_dbs.getDbs_name());
 				System.out.println("@ Creating database "+clone_db.getDb_name());
@@ -197,6 +203,11 @@ public class DBMSSimulator {
 				else
 					dir = directories[0];
 				
+				// Initialise individual Data Stream Miner
+				StreamMiner miner = new StreamMiner(clone_db.getDb_id());
+				miner.init();
+				miner_set.put(clone_db.getDb_id(), miner);				
+				
 				// Creating individual log files
 				clone_db.setWorkload_log(simulation_logger.getWriter(log_dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"workload_log"));
@@ -205,12 +216,13 @@ public class DBMSSimulator {
 				clone_db.setPartition_log(simulation_logger.getWriter(log_dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"partition_log"));
 				
-				db_set.add(clone_db);				
+				db_set.add(clone_db);	
+				//System.out.println("@ j = "+j+"| db_set size = "+db_set.size());
 			}
 			//System.out.println("@ i = "+i+" db_set size = "+db_set.size());
 			db_map.put(i, db_set);
 		}
-
+		
 		// Run simulations
 		int simulation_run = 1;
 		dir = null;
@@ -223,7 +235,7 @@ public class DBMSSimulator {
 			int s = 0;
 			for(Entry<Integer, Set<Database>> entry : db_map.entrySet()) {				
 				for(Database database : entry.getValue()) {
-					write("Starting simulation round ("+simulation_run+") for database ("+database.getDb_name()+")", "ACT");
+					write("Starting simulation round ("+simulation_run+") for database ("+database.getDb_name()+") with id "+database.getDb_id(), "ACT");
 					//System.out.println("@ entry = "+entry.getKey()+" | size = "+entry.getValue().size());
 					if(entry.getKey() == 2)
 						dir = directories[1];
@@ -231,14 +243,15 @@ public class DBMSSimulator {
 						dir = directories[0];
 					
 					runSimulation(database, workload, workloadGenerator, 
-							dir, partitioners[entry.getKey()], strategies[s], simulation_logger);
+							dir, partitioners[entry.getKey()], strategies[s], simulation_logger, 
+							miner_set.get(database.getDb_id()));
 					
 					++s;
 				}
 				
 				s = 0;
 			}			
-			
+						
 			++ simulation_run;
 		}
 		
@@ -251,15 +264,15 @@ public class DBMSSimulator {
 	}
 	
 	private static void runSimulation(Database db, Workload workload, WorkloadGenerator workloadGenerator, 
-			String directory, String partitioner, String strategy, SimulationMetricsLogger simulation_logger) throws IOException{
+			String directory, String partitioner, String strategy, SimulationMetricsLogger simulation_logger, StreamMiner miner) throws IOException{
 		// Reapplying Database operations(insert and delete) due to Workload generation
-		db.getDb_dbs().show();
+		//db.getDb_dbs().show();
 		write("Reapplying database operations due to the workload generation process ...", "ACT");
 		workload.reapplyDbOperations(db);
 		
 		// Update Node level load
 		db.getDb_dbs().updateNodeLoad();
-		db.getDb_dbs().show();
+		//db.getDb_dbs().show();
 		
 		// Initialisation
 		WorkloadFileGenerator workloadFileGenerator = new WorkloadFileGenerator();
@@ -280,6 +293,11 @@ public class DBMSSimulator {
 		TransactionClassifier transactionClassifier = new TransactionClassifier();
 		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
 				
+		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
+		write("Starting data stream mining to identify the the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples) ...", "ACT");
+		write("Miner("+miner.getId()+") has started for Database("+db.getDb_id()+")", "MSG");
+		miner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		
 		// Assign Shadow HMetis Data Id and generate workload and fix files
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);		
 		write("Total "+target_transactions+" transactions having "+sampled_workload.getWrl_totalDataObjects()+" data objects have been identified for partitioning.", "MSG");		

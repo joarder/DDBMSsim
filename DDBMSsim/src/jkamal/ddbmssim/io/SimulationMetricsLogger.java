@@ -100,13 +100,15 @@ public class SimulationMetricsLogger {
 	}
 	
 	
-	public void traceWorkload(Database db, Workload workload) {
-		PrintWriter writer = workload.getWorkload_file();
-		
+	public int traceWorkload(Database db, Workload workload, int serial, PrintWriter writer) {		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				
 				Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
+				
+				++serial;
+				writer.print(serial+" "+serial+" "+transaction.getTr_dataSet().size()+" ");
+				
 				while(data.hasNext()) {
 					writer.print(db.getData(data.next()).getData_id());
 					
@@ -117,6 +119,8 @@ public class SimulationMetricsLogger {
 				}
 			}
 		}
+		
+		return serial;
 	}
 	
 	public void logWorkload(Workload workload, PrintWriter writer, String partitioner) {
