@@ -226,17 +226,16 @@ public class SemiFCI implements Comparable<SemiFCI>,Serializable {
     }
     
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        
+    public String toString(){
+        StringBuilder sb = new StringBuilder();        
         sb.append(items.toString());
 
         sb.append("\t");
-        for(int i=0;i<supports.length-1;i++) {
+        for(int i = 0; i < (supports.length-1); i++) {
             sb.append(supports[i]);
             sb.append(",");
         }
-        sb.append(supports[supports.length-1]);
+        sb.append(supports[(supports.length-1)]);
         
         return sb.toString();
     }

@@ -79,8 +79,9 @@ public class Segment implements Serializable{
         AlgoCharm_Bitset charmBitset = new AlgoCharm_Bitset();        
         Itemsets closedItemsets = charmBitset.runAlgorithm(context, minSupport, 1000000);
         
-        System.out.println("Compute FCIs:" + charmBitset.getExecTime() + "ms\n (CHARM-BITSET)");
-        System.out.println(closedItemsets.getItemsetsCount() + " FCIs found in the last segment (CHARM-BITSET)");
+        //System.out.println("Compute FCIs:"+charmBitset.getExecTime()+"ms\n (CHARM-BITSET)");
+        System.out.println("[ACT] Computing FCIs ...");
+        System.out.println("[MSG] "+closedItemsets.getItemsetsCount()+" FCIs found in the last segment using CHARM-BITSET.");
         
         List<SemiFCI> fciSet = new ArrayList<SemiFCI>();
        

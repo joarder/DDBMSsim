@@ -164,7 +164,7 @@ public class FCITable implements Iterable<SemiFCI>, Serializable  {
      * Default constructor. Creates a new FCITable with an empty Inverted Index
      * associated.
      */
-    public FCITable() {
+    public FCITable(){
         this.maxFCISize = 0;
         this.table = new HashMap<Integer, FCIArray>();
         this.invertedIndex = new InvertedFCIIndex();
@@ -175,8 +175,7 @@ public class FCITable implements Iterable<SemiFCI>, Serializable  {
      * @param itemset itemset to be added to the table
      * @return id assigned to the passed itemset
      */
-    public SemiFCIid addSemiFCI(SemiFCI itemset) {
-        
+    public SemiFCIid addSemiFCI(SemiFCI itemset){
         int itemsetSize = itemset.getId().getDimension();
         
         if(itemsetSize > this.maxFCISize)
@@ -190,8 +189,7 @@ public class FCITable implements Iterable<SemiFCI>, Serializable  {
         
         this.nAdded++;
         
-        return itemset.getId();       
-        
+        return itemset.getId();        
     }
 
     /**
@@ -341,18 +339,14 @@ public class FCITable implements Iterable<SemiFCI>, Serializable  {
     }
     
     @Override
-    public String toString() {
-        
+    public String toString(){        
         StringBuilder sb = new StringBuilder();
 
         for(SemiFCI fci:this){
             sb.append(fci.toString()).append("\n");
         }
+        
         return sb.toString();
-    }
-    
-    public void log(){
-    	
     }
 
     /**

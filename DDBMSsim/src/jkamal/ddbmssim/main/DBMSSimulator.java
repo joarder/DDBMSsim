@@ -40,7 +40,7 @@ public class DBMSSimulator {
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 3;
+	public final static int SIMULATION_RUNS = 5;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -94,9 +94,9 @@ public class DBMSSimulator {
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
 											};
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
-	public final static String LOG_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\log";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "khmetis";
 	public final static String METIS = "kmetis";
@@ -176,7 +176,7 @@ public class DBMSSimulator {
 		Map<Integer, Set<Database>> db_map = new TreeMap<Integer, Set<Database>>();
 		String dir = null;
 		String log_dir = directories[2];
-		HashMap<Integer, StreamMiner> miner_set = new HashMap<Integer, StreamMiner>();
+		HashMap<Integer, StreamMiner> streamMiners = new HashMap<Integer, StreamMiner>();
 		int id = 0;
 		
 		for(int i = 0; i < partitioners.length; ++i) {			
@@ -206,7 +206,7 @@ public class DBMSSimulator {
 				// Initialise individual Data Stream Miner
 				StreamMiner miner = new StreamMiner(clone_db.getDb_id());
 				miner.init();
-				miner_set.put(clone_db.getDb_id(), miner);				
+				streamMiners.put(clone_db.getDb_id(), miner);				
 				
 				// Creating individual log files
 				clone_db.setWorkload_log(simulation_logger.getWriter(log_dir, 
@@ -244,7 +244,7 @@ public class DBMSSimulator {
 					
 					runSimulation(database, workload, workloadGenerator, 
 							dir, partitioners[entry.getKey()], strategies[s], simulation_logger, 
-							miner_set.get(database.getDb_id()));
+							streamMiners.get(database.getDb_id()));
 					
 					++s;
 				}
@@ -264,7 +264,8 @@ public class DBMSSimulator {
 	}
 	
 	private static void runSimulation(Database db, Workload workload, WorkloadGenerator workloadGenerator, 
-			String directory, String partitioner, String strategy, SimulationMetricsLogger simulation_logger, StreamMiner miner) throws IOException{
+			String directory, String partitioner, String strategy, SimulationMetricsLogger simulation_logger, 
+			StreamMiner streamMiner) throws IOException{
 		// Reapplying Database operations(insert and delete) due to Workload generation
 		//db.getDb_dbs().show();
 		write("Reapplying database operations due to the workload generation process ...", "ACT");
@@ -287,16 +288,16 @@ public class DBMSSimulator {
 		sampled_workload.initialise(db);
 		//sampled_workload.show(db, "");
 		
+		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
+		write("Starting data stream mining to identify the the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples) ...", "ACT");
+		if(sampled_workload.getWrl_id() == 1) streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
 		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
 		TransactionClassifier transactionClassifier = new TransactionClassifier();
-		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
-				
-		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
-		write("Starting data stream mining to identify the the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples) ...", "ACT");
-		write("Miner("+miner.getId()+") has started for Database("+db.getDb_id()+")", "MSG");
-		miner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);						
 		
 		// Assign Shadow HMetis Data Id and generate workload and fix files
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);		

@@ -39,16 +39,12 @@ public class FixedLengthWindowManager extends SlidingWindowManager {
     }
 
     @Override
-    public void addInstance(Instance transaction) {
-
-                
+    public void addInstance(Instance transaction){
         currentSegment.addItemset(transaction);
-        if(currentSegment.size() >= segmentLenght)
-        {
-            System.out.print("Updating FCI set....");
+        if(currentSegment.size() >= segmentLenght){
+            System.out.println("[ACT] Updating FCI set ...");
             notifyIncMine();
             currentSegment.clear();
         }
     }
-
 }
