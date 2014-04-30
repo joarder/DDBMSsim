@@ -97,10 +97,11 @@ public class StreamMiner {
 			int orange_data = 0, green_data = 0;
 			int tr_red = 0, tr_orange = 0, tr_green = 0;
 			int tr_id = 0;
+			Set<Integer> frequent_dsfci = new TreeSet<Integer>();
 			
-			Set<Integer> toBeRemoved = new TreeSet<Integer>();
-			
-			for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {								
+			for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+				Set<Integer> toBeRemoved = new TreeSet<Integer>();
+				
 				for(Transaction transaction : entry.getValue()) {
 					orange_data = 0;
 					green_data = 0;
@@ -120,6 +121,7 @@ public class StreamMiner {
 							if(containsDistributedSemiFCI(transaction, distributedSemiFCIList)){
 								++tr_red;
 								transaction.setTr_class("red");
+								frequent_dsfci.add(transaction.getTr_id());
 							}//end-if
 							// Distributed Transactions containing Non-Distributed Semi-FCI
 							else{
@@ -139,8 +141,14 @@ public class StreamMiner {
 								else {							
 									for(int tid : workload.getWrl_dataInvolvedInTransactions().get(data.getData_id())) {
 										Transaction tr = workload.getTransaction(tid);
-										if(tr.getTr_dtCost() > 0)
-											++orange_data;
+										if(tr.getTr_dtCost() > 0){
+											if(frequent_dsfci.contains(tr.getTr_id()))
+												++orange_data;
+											else{
+												if(!toBeRemoved.contains(transaction.getTr_id()))
+													toBeRemoved.add(transaction.getTr_id());
+											}//end-else												
+										}//end-if
 									}//end-for() 
 								}//end-else
 							}//end-while()

@@ -863,7 +863,14 @@ public class Workload implements Comparable<Workload> {
 		return sampled_workload;
 	}	
 	
-	
+	//Retain the weights for the existing transactions
+	public void retainTransactionalWeight(){
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
+			for(Transaction transaction : entry.getValue()) {
+				transaction.incTr_frequency();
+			}
+		}
+	}
 	
 	// Search and return a target Transaction from the Workload
 	public Transaction getTransaction(int transaction_id) {		

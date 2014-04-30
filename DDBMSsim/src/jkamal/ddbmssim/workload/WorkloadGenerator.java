@@ -95,6 +95,9 @@ public class WorkloadGenerator {
 				System.out.println("[ACT] Varying current workload by reducing "+old_tr+" old transactions ...");
 				this.print(workload);
 
+				//Retain the weights for the existing transactions
+				workload.retainTransactionalWeight();
+				
 				// === Birth Management ===
 				workload.setWrl_transactionBirthProp(transactionPropConvertor(DBMSSimulator.TPCC_TRANSACTION_PROPORTION,
 						workload.getWrl_transactionBorning()));
