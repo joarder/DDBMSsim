@@ -357,7 +357,7 @@ public class IncMine extends AbstractLearner implements Observer {
         return this.fciTable.iterator();
     }
 
-    public FCITable getFciTable() {
+    public FCITable getFCITable() {
 		return fciTable;
 	}
 
