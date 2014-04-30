@@ -25,7 +25,6 @@ import jkamal.ddbmssim.bootstrap.Bootstrapping;
 import jkamal.ddbmssim.io.SimulationMetricsLogger;
 import jkamal.ddbmssim.workload.ClusterIdMapper;
 import jkamal.ddbmssim.workload.StreamMiner;
-import jkamal.ddbmssim.workload.TransactionClassifier;
 import jkamal.ddbmssim.workload.Workload;
 import jkamal.ddbmssim.workload.WorkloadFileGenerator;
 import jkamal.ddbmssim.workload.WorkloadGenerator;

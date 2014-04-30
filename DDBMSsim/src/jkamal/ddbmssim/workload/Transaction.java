@@ -21,6 +21,7 @@ public class Transaction implements Comparable<Transaction> {
 	private int tr_dtImpact;
 	private Set<Integer> tr_dataSet;
 	private String tr_class;
+	private boolean isFrequent;
 	
 	public Transaction(int id, Set<Integer> dataSet) {
 		this.setTr_id(id);
@@ -32,6 +33,7 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_dtImpact(0);
 		this.setTr_dataSet(dataSet);
 		this.setTr_class(null);
+		this.setFrequent(false);
 	}
 	
 	// Copy Constructor
@@ -44,6 +46,7 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_psCost(transaction.getTr_psCost());
 		this.setTr_dtImpact(transaction.getTr_dtImpact());
 		this.setTr_class(transaction.getTr_class());
+		this.setFrequent(transaction.isFrequent());
 		
 		Set<Integer> cloneDataSet = new TreeSet<Integer>();
 		for(Integer data_id : transaction.getTr_dataSet()) {
@@ -122,6 +125,14 @@ public class Transaction implements Comparable<Transaction> {
 
 	public void setTr_class(String tr_class) {
 		this.tr_class = tr_class;
+	}
+
+	public boolean isFrequent() {
+		return isFrequent;
+	}
+
+	public void setFrequent(boolean isFrequent) {
+		this.isFrequent = isFrequent;
 	}
 
 	public void incTr_frequency() {

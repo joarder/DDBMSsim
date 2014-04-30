@@ -30,6 +30,7 @@ public class HashTable {
 	int size;
 	List<Itemset>[] table;
 	
+	@SuppressWarnings("unchecked")
 	public HashTable(int size){
 		this.size = size;
 		table = new ArrayList[size];

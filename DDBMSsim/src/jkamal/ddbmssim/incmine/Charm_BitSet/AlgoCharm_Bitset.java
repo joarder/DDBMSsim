@@ -39,6 +39,7 @@ public class AlgoCharm_Bitset {
 	Map<Integer, BitSet> mapItemTIDS = new HashMap<Integer, BitSet>();
 
 	int tidcount;
+	@SuppressWarnings("unused")
 	private int itemsetCount;
 
 	// for optimization with a hashTable

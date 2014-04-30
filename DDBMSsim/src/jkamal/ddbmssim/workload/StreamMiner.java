@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map.Entry;
-
 import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.incmine.core.SemiFCI;
@@ -69,9 +68,7 @@ public class StreamMiner {
         }		
 	}
 	
-	public int mining(Database db, Workload workload, SimulationMetricsLogger simulation_logger, String dir, boolean flag) {
-		int tr_counts = 0;
-		
+	public int mining(Database db, Workload workload, SimulationMetricsLogger simulation_logger, String dir, boolean flag) {		
 		if(!flag)
 			this.mine(db, workload, simulation_logger, dir);
 		else{
@@ -80,63 +77,128 @@ public class StreamMiner {
 			System.out.println(this.learner);
 		
 			//Find the list of distributed semi-FCI
+			ArrayList<List<Integer>> semiFCIList = new ArrayList<List<Integer>>();
 			ArrayList<List<Integer>> distributedSemiFCIList = new ArrayList<List<Integer>>();
 			for(SemiFCI semiFCI : this.learner.getFCITable()){
 				//System.out.println("@ "+fci.getItems());
 				
 				if(semiFCI.getItems().size() > 1){
 					//System.out.println("@ "+fci.getItems());
+					semiFCIList.add(semiFCI.getItems());
+					
 					if(isDistributedFCI(db, semiFCI.getItems()))
-						distributedSemiFCIList.add(semiFCI.getItems());				
+						distributedSemiFCIList.add(semiFCI.getItems());
 				}
 	        }
 			
 			System.out.println("@--> "+distributedSemiFCIList);
 			
 			//Find the transactions containing distributed semi-FCI
-			int tr_frequent = 0;
-			int tr_orange = 0;
-			for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
-				Set<Integer> infrequent = new TreeSet<Integer>();
-				
-				for(Transaction transaction : entry.getValue()) {
-					if(!containsDistributedSemiFCI(transaction, distributedSemiFCIList)){
-						if(!infrequent.contains(transaction.getTr_id()))
-							infrequent.add(transaction.getTr_id());
-					} else {
-						++tr_frequent;
-						
-//						//Find the Orange transactions containing distributed semi-FCI
-//						Iterator<Integer> data_iterator = transaction.getTr_dataSet().iterator();					
-//						while(data_iterator.hasNext()) {
-//							Data data = db.getData(data_iterator.next());
-//							
-//							for(int tr_id : workload.getWrl_dataInvolvedInTransactions().get(data.getData_id())) {
-//								Transaction tr = workload.getTransaction(tr_id);
-//								//System.out.println("-- "+tr_id);
-//								if(tr.getTr_dtCost() > 0){
-//									++tr_orange;
-//									
-//									if(infrequent.contains(tr.getTr_id()))
-//										infrequent.remove(tr.getTr_id());
-//								}
-//							}
-//						}
-					}
-				}								
-				
-				// Removes the infrequent transactions
-				if(infrequent.size() > 0) {
-					workload.removeTransactions(infrequent, entry.getKey(), true);
-				}
-			}
+			int orange_data = 0, green_data = 0;
+			int tr_red = 0, tr_orange = 0, tr_green = 0;
+			int tr_id = 0;
 			
-			System.out.println("[OUT] "+tr_frequent+" frequent transactions containing distributed semi-frequent closed tuples are identified.");
-			//System.out.println("[OUT] "+tr_orange+" moveable "
+			Set<Integer> toBeRemoved = new TreeSet<Integer>();
+			
+			for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {								
+				for(Transaction transaction : entry.getValue()) {
+					orange_data = 0;
+					green_data = 0;
+					
+					tr_id = transaction.getTr_id();
+					
+					// Infrequent Transactions
+					if(!isFrequent(transaction, semiFCIList)){
+						if(!toBeRemoved.contains(tr_id))
+							toBeRemoved.add(tr_id);						
+					}//end-if
+					// Frequent Transactions
+					else{
+						// Distributed Transactions
+						if(transaction.getTr_dtCost() > 0){
+							// Distributed Transactions containing Distributed Semi-FCI
+							if(containsDistributedSemiFCI(transaction, distributedSemiFCIList)){
+								++tr_red;
+								transaction.setTr_class("red");
+							}//end-if
+							// Distributed Transactions containing Non-Distributed Semi-FCI
+							else{
+								if(!toBeRemoved.contains(tr_id))
+									toBeRemoved.add(tr_id);
+							}//end-else
+						}//end-if
+						// Non-Distributed Transactions
+						else{
+							// Evaluating Movable and Non-Movable Transactions
+							Iterator<Integer> data_iterator = transaction.getTr_dataSet().iterator();
+							while(data_iterator.hasNext()) {
+								Data data = db.getData(data_iterator.next());
+								int tr_counts = workload.getWrl_dataInvolvedInTransactions().get(data.getData_id()).size();
+								if(tr_counts <= 1) 
+									++green_data;
+								else {							
+									for(int tid : workload.getWrl_dataInvolvedInTransactions().get(data.getData_id())) {
+										Transaction tr = workload.getTransaction(tid);
+										if(tr.getTr_dtCost() > 0)
+											++orange_data;
+									}//end-for() 
+								}//end-else
+							}//end-while()
+							
+							if(transaction.getTr_dataSet().size() == green_data) { 
+								transaction.setTr_class("green");
+								++tr_green;
+								
+								if(!toBeRemoved.contains(transaction.getTr_id()))
+									toBeRemoved.add(transaction.getTr_id());
+							}
+							
+							if(orange_data > 0) {
+								transaction.setTr_class("orange");
+								++tr_orange;
+							}
+						}//end-else
+					}//end-else
+				}//end-for()
+				
+				// Removing the selected Transactions from the Workload
+				if(toBeRemoved.size() > 0)
+					workload.removeTransactions(toBeRemoved, entry.getKey(), true);					
+			}//end-for()
+			
+			System.out.println("[OUT] Classified "+tr_red+" transactions as RED !!!");
+			workload.setWrl_tr_green(tr_green);
+			System.out.println("[OUT] Classified "+tr_green+" transactions as GREEN !!!");
+			workload.setWrl_tr_orange(tr_orange);		
+			System.out.println("[OUT] Classified "+tr_orange+" transactions as ORANGE !!!");
+			
+			workload.calculateDTandDTI(db);
+			
+			return (tr_red + tr_orange);
+		}//end-else
+					
+		return 0;			
+	}
+	
+	// Returns true if a transaction contains any of the mined semi-FCI
+	private boolean isFrequent(Transaction transaction, ArrayList<List<Integer>> semiFCIList){
+		for(List<Integer> semiFCI : semiFCIList){
+			if(transaction.getTr_dataSet().containsAll(semiFCI))
+				return true;
 		}
 		
-		return tr_counts;
+		return false;
 	}
+	
+	// Returns true if a transaction contains any of the mined distributed semi-FCI
+	private boolean containsDistributedSemiFCI(Transaction transaction, ArrayList<List<Integer>> distributedSemiFCIList){
+		for(List<Integer> dSemiFCI : distributedSemiFCIList){
+			if(transaction.getTr_dataSet().containsAll(dSemiFCI))
+				return true;
+		} 
+		
+		return false;
+	}	
 	
 	// Returns true if a FCI is distributed between two or more physical servers
 	private boolean isDistributedFCI(Database db, List<Integer> semiFCI){
@@ -152,15 +214,5 @@ public class StreamMiner {
 		}
 				
 		return false;
-	} 
-	
-	// Returns true if a transaction contains a distributed FCI
-	private boolean containsDistributedSemiFCI(Transaction transaction, ArrayList<List<Integer>> distributedSemiFCIList){
-		for(List<Integer> dSemiFCI : distributedSemiFCIList){
-			if(transaction.getTr_dataSet().containsAll(dSemiFCI))
-				return true;
-		} 
-		
-		return false;
-	}
+	}	
 }

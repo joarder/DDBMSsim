@@ -87,7 +87,8 @@ public abstract class LearnEvaluateModel extends MainTask {
         return LearningCurve.class;
     }
 
-    @Override
+    @SuppressWarnings("unused")
+	@Override
     protected Object doMainTask(TaskMonitor monitor, ObjectRepository repository) {
         Learner learner = (Learner) getPreparedClassOption(this.learnerOption);
         InstanceStream stream = (InstanceStream) getPreparedClassOption(this.streamOption);

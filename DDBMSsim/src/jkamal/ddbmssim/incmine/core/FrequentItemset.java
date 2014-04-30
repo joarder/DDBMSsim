@@ -34,7 +34,8 @@ public class FrequentItemset {
      * @param items List of items
      * @param support Support value
      */
-    public FrequentItemset(List items, int support){
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public FrequentItemset(List items, int support){
         this.items = items;
         this.support = support;
         this.size = this.items.size();
