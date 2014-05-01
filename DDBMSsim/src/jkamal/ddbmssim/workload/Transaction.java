@@ -15,25 +15,25 @@ public class Transaction implements Comparable<Transaction> {
 	private int tr_id;
 	private String tr_label;	
 	private int tr_type;
-	private int tr_frequency;	
+	private int tr_frequency;
+	private int tr_temporal_weight;
 	private int tr_dtCost; // Node Span Cost or, Distributed Transaction Cost
 	private int tr_psCost; // Partition Span Cost
 	private int tr_dtImpact;
 	private Set<Integer> tr_dataSet;
 	private String tr_class;
-	private boolean isFrequent;
 	
 	public Transaction(int id, Set<Integer> dataSet) {
 		this.setTr_id(id);
 		this.setTr_label("T"+Integer.toString(this.getTr_id()));
 		this.setTr_type(0);
-		this.setTr_frequency(0);		 	
+		this.setTr_frequency(0);
+		this.setTr_temporal_weight(100);
 		this.setTr_dtCost(0);
 		this.setTr_psCost(0);
 		this.setTr_dtImpact(0);
 		this.setTr_dataSet(dataSet);
 		this.setTr_class(null);
-		this.setFrequent(false);
 	}
 	
 	// Copy Constructor
@@ -41,12 +41,12 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_id(transaction.getTr_id());
 		this.setTr_label(transaction.getTr_label());
 		this.setTr_type(transaction.getTr_type());
-		this.setTr_frequency(transaction.getTr_frequency());				
+		this.setTr_frequency(transaction.getTr_frequency());
+		this.setTr_temporal_weight(transaction.getTr_temporal_weight());
 		this.setTr_dtCost(transaction.getTr_dtCost());
 		this.setTr_psCost(transaction.getTr_psCost());
 		this.setTr_dtImpact(transaction.getTr_dtImpact());
 		this.setTr_class(transaction.getTr_class());
-		this.setFrequent(transaction.isFrequent());
 		
 		Set<Integer> cloneDataSet = new TreeSet<Integer>();
 		for(Integer data_id : transaction.getTr_dataSet()) {
@@ -85,6 +85,14 @@ public class Transaction implements Comparable<Transaction> {
 
 	public void setTr_frequency(int tr_frequency) {
 		this.tr_frequency = tr_frequency;
+	}
+
+	public int getTr_temporal_weight() {
+		return tr_temporal_weight;
+	}
+
+	public void setTr_temporal_weight(int tr_temporal_weight) {
+		this.tr_temporal_weight = tr_temporal_weight;
 	}
 
 	public int getTr_dtCost() {
@@ -127,17 +135,14 @@ public class Transaction implements Comparable<Transaction> {
 		this.tr_class = tr_class;
 	}
 
-	public boolean isFrequent() {
-		return isFrequent;
-	}
-
-	public void setFrequent(boolean isFrequent) {
-		this.isFrequent = isFrequent;
-	}
-
 	public void incTr_frequency() {
 		int tr_frequency = this.getTr_frequency();
 		this.setTr_frequency(++tr_frequency);
+	}
+	
+	public void decTr_temporalWeight() {
+		int tr_temporal_weight = this.getTr_temporal_weight();
+		this.setTr_temporal_weight(--tr_temporal_weight);
 	}
 	
 	// This function will calculate the Node and Partition Span Cost for the representative Transaction
@@ -184,7 +189,7 @@ public class Transaction implements Comparable<Transaction> {
 	
 	// Calculate DT Impacts for the Workload
 	public void calculateDTImapct() {
-		this.setTr_dtImpact(this.getTr_dtCost() * this.getTr_frequency());
+		this.setTr_dtImpact(this.getTr_dtCost() * this.getTr_frequency() * this.getTr_temporal_weight());
 	}	
 	
 	// Given a Data Id this function returns the corresponding Data from the Transaction

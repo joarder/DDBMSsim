@@ -39,7 +39,7 @@ public class StreamMiner {
 	
 	public void init() {
 		// Configure the learner
-		this.learner.minSupportOption.setValue(0.1d);
+		this.learner.minSupportOption.setValue(0.05d);
 		this.learner.relaxationRateOption.setValue(0.5d);
 		this.learner.fixedSegmentLengthOption.setValue(1000); //difference		
 		this.learner.windowSizeOption.setValue(10);

@@ -830,8 +830,8 @@ public class Workload implements Comparable<Workload> {
 		this.calculateDTandDTI(db);
 	}
 	
-	// Workload Sampling
-	public Workload performSampling(Database db) {
+	// Workload Pruning - Remove Duplicate Transactions
+	public Workload removeDuplication(Database db) {
 		Workload sampled_workload = new Workload(this);
 		int removed_count = 0;
 		
@@ -863,11 +863,11 @@ public class Workload implements Comparable<Workload> {
 		return sampled_workload;
 	}	
 	
-	//Retain the weights for the existing transactions
+	//Decrease the temporal weights for the old transactions
 	public void retainTransactionalWeight(){
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
 			for(Transaction transaction : entry.getValue()) {
-				transaction.incTr_frequency();
+				transaction.decTr_temporalWeight();
 			}
 		}
 	}

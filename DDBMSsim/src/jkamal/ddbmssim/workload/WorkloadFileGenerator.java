@@ -83,7 +83,7 @@ public class WorkloadFileGenerator {
 			break;
 			
 		case "chg":
-			empty = this.generateCHGraphWorkloadFile(db, workload);
+			empty = this.generateCHGraphWorkloadFile1(db, workload);
 			if(empty == false) 
 				this.generateCHGraphFixFile(db, workload);
 			break;
@@ -122,7 +122,7 @@ public class WorkloadFileGenerator {
 					for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 						for(Transaction transaction : entry.getValue()) {
 							if(transaction.getTr_class() != "green") {
-								writer.write(transaction.getTr_frequency()+" ");
+								writer.write((transaction.getTr_frequency()*transaction.getTr_temporal_weight())+" ");
 								//System.out.println("@@ "+transaction.getTr_frequency()+"* ");
 								Iterator<Integer> data =  transaction.getTr_dataSet().iterator();
 								while(data.hasNext()) {
@@ -279,7 +279,7 @@ public class WorkloadFileGenerator {
 											
 											if(!dataIdSet.contains(trInvolvedDataId) && trInvolvedData.getData_id() != trData.getData_id()) {
 												str += Integer.toString(trInvolvedData.getData_shadowId())+" ";							
-												str += tr.getTr_frequency()+" ";
+												str += (tr.getTr_frequency()*tr.getTr_temporal_weight())+" ";
 												
 												++edges;
 												//System.out.println("@ edges = "+edges);
@@ -340,6 +340,162 @@ public class WorkloadFileGenerator {
 		//System.out.println("@debug >> x = "+x+" nums = "+nums);
 		return (x % nums);
 	} 
+	
+	private boolean generateCHGraphWorkloadFile1(Database db, Workload workload) {		
+		System.out.println("[ACT] Starting workload compression with CR = 0.5 ...");
+		
+		Map<Integer, Set<Integer>> vedge = new TreeMap<Integer, Set<Integer>>();
+		Map<Integer, Integer> vedge_frequency = new TreeMap<Integer, Integer>();
+		Map<Integer, Integer> vedge_temporal_weight = new TreeMap<Integer, Integer>();		
+		Map<Integer, Integer> vvertex = new TreeMap<Integer, Integer>();
+		Set<Integer> vvertexSet = null;
+		Set<Integer> toBeRemoved = new TreeSet<Integer>();
+		
+		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {
+				if(transaction.getTr_class() != "green") {					
+					int tid = transaction.getTr_id();
+					int hash_pk = -1;
+					
+					// Set initial v' frequency
+					vedge_frequency.put(tid, 1);					
+					
+					for(Integer data_id : transaction.getTr_dataSet()){						
+						// Determine the virtual data id
+						hash_pk = simpleHash(data_id, (workload.getWrl_totalDataObjects()/2));
+						
+						// Storing v'
+						if(!vvertex.containsKey(hash_pk))
+							vvertex.put(hash_pk, 1);
+						else{
+							int v_weight = vvertex.get(hash_pk);
+							vvertex.put(hash_pk, ++v_weight);
+						}
+						
+						// Set the virtual data id
+						db.getData(data_id).setData_virtual_data_id(hash_pk);
+						
+						// Replace v' by v for each transactions 
+						if(vedge.containsKey(tid))
+							vedge.get(tid).add(hash_pk);
+						else{
+							vvertexSet = new TreeSet<Integer>();
+							vvertexSet.add(hash_pk);
+							vedge.put(tid, vvertexSet);
+						}//end-else				
+					}//end-for()
+					
+					if(vedge.get(tid).size() < 2)
+						toBeRemoved.add(tid);
+				}//end-if
+			}//end-for()
+		}//end-for()
+		
+		System.out.println("@ "+vedge.size()+"|"+toBeRemoved.size());
+		System.out.println(vedge);
+		
+		// Pruning duplicate virtual edges and recalculating frequencies		
+		for(Entry<Integer, Set<Integer>> vedg : vedge.entrySet()){
+			int e1 = vedg.getKey();
+			
+			for(Entry<Integer, Set<Integer>> ve : vedge.entrySet()){
+				int e2 = ve.getKey();
+				
+				if(e1 != e2){				
+					if(vedg.getValue().equals(ve.getValue())){
+						//System.out.println("*");
+						
+						if(!toBeRemoved.contains(ve.getKey()))
+							toBeRemoved.add(ve.getKey());
+						
+						int freq = vedge_frequency.get(vedg.getKey());
+						vedge_frequency.put(vedg.getKey(), ++freq);
+						
+						int tw_vedg = workload.getTransaction(vedg.getKey()).getTr_temporal_weight();
+						int tw_ve = workload.getTransaction(ve.getKey()).getTr_temporal_weight();
+						vedge_temporal_weight.put(vedg.getKey(), (tw_vedg+tw_ve));					
+					}
+				}
+			}
+		}
+		
+		System.out.println(">> "+vedge.size()+"|"+toBeRemoved.size());
+				
+		// Removing duplicate virtual edges
+		for(Integer r : toBeRemoved){
+			vedge.remove(r);
+			vedge_frequency.remove(r);
+			vedge_temporal_weight.remove(r);
+		}
+		
+		// Creating Compressed Hyper-graph Workload File
+		System.out.println("[MSG] Total "+vedge.size()+" virtual transactions containing "+vvertex.size()+" virtual tuples have been identified for partitioning.");
+		System.out.println("[ACT] Generating workload file for compressed hypergraph partitioning ...");
+
+		File workloadFile = new File(DBMSSimulator.hMETIS_DIR_LOCATION+"\\"
+				+workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_chGraphWorkloadFile());
+				
+		int hasTransactionWeight = 1;
+		int hasDataWeight = 1;						
+		
+		if(vedge.size() <= 1) { 
+			System.out.println("[ALM] Only "+vedge.size()+" compressed hyperedges have been present in the compressed workload");
+			System.out.println("[ACT] Simulation will be aborted for this run ...");
+			
+			return true;
+		} else {		
+			try {
+				workloadFile.createNewFile();
+				Writer writer = null;
+				try {
+					writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
+					writer.write(vedge.size()+" "+vvertex.size()+" "+hasTransactionWeight+""+hasDataWeight+"\n");
+					
+					for(Entry<Integer, Set<Integer>> entry : vedge.entrySet()) {
+						int freq = vedge_frequency.get(entry.getKey());
+						int tempWeight = vedge_temporal_weight.get(entry.getKey());
+						int vedge_weight = freq*tempWeight;
+						
+						// Writing Virtual Edge Weight
+						writer.write(vedge_weight+" ");
+								
+						Iterator<Integer> v_id_iterator =  entry.getValue().iterator();
+						while(v_id_iterator.hasNext()) {						
+							writer.write(Integer.toString(v_id_iterator.next()));							
+							
+							if(v_id_iterator.hasNext())
+								writer.write(" "); 
+						}
+						
+						writer.write("\n");		
+					}
+	
+					// Writing Virtual Vertex Weight
+					int newline = 0;
+					
+					for(Entry<Integer, Integer> entry : vvertex.entrySet()) {
+							writer.write(Integer.toString(entry.getValue()));							
+							
+							if(newline != (vvertex.size()-1))
+								writer.write("\n");
+							
+							++newline;
+					}
+					
+				} catch(IOException e) {
+					e.printStackTrace();
+				}finally {
+					writer.close();
+				}
+			} catch (IOException e) {		
+				e.printStackTrace();
+			}	
+			
+			System.out.println("[OUT] Workload file generation for compressed hypergraph partitioning has been completed.");
+			return false;
+		}				
+	}
+	
 	
 	// Generates Workload File for Compressed Hyper-graph partitioning
 	@SuppressWarnings("unused")
