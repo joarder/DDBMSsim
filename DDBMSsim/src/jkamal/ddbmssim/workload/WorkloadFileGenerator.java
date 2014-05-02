@@ -83,7 +83,7 @@ public class WorkloadFileGenerator {
 			break;
 			
 		case "chg":
-			empty = this.generateCHGraphWorkloadFile1(db, workload);
+			empty = this.generateCHGraphWorkloadFile(db, workload);
 			if(empty == false) 
 				this.generateCHGraphFixFile(db, workload);
 			break;
@@ -336,11 +336,14 @@ public class WorkloadFileGenerator {
 		//}
 	}
 	
-	private int simpleHash(int x, int nums) {
-		//System.out.println("@debug >> x = "+x+" nums = "+nums);
-		return (x % nums);
+	// Returns a simple hash key
+	private int simpleHash(int x, int divisor) {
+		//System.out.println("@debug >> x = "+x+" divisor = "+divisor);
+		return (x % divisor);
 	} 
 	
+	// Generates Workload File for Compressed Hyper-graph partitioning
+	//@SuppressWarnings("unused")
 	private boolean generateCHGraphWorkloadFile1(Database db, Workload workload) {		
 		System.out.println("[ACT] Starting workload compression with CR = 0.5 ...");
 		
@@ -350,37 +353,50 @@ public class WorkloadFileGenerator {
 		Map<Integer, Integer> vvertex = new TreeMap<Integer, Integer>();
 		Set<Integer> vvertexSet = null;
 		Set<Integer> toBeRemoved = new TreeSet<Integer>();
+		int vvertex_id = 0;
+		Map<Integer, Integer> vvertex_hash_pk_map = new TreeMap<Integer, Integer>();		
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				if(transaction.getTr_class() != "green") {					
 					int tid = transaction.getTr_id();
 					int hash_pk = -1;
+					int vv_id = -1;
 					
 					// Set initial v' frequency
-					vedge_frequency.put(tid, 1);					
+					vedge_frequency.put(tid, 1);
+					
+					// Set temporal weight
+					vedge_temporal_weight.put(tid, transaction.getTr_temporal_weight());
 					
 					for(Integer data_id : transaction.getTr_dataSet()){						
 						// Determine the virtual data id
-						hash_pk = simpleHash(data_id, (workload.getWrl_totalDataObjects()/2));
-						
+						hash_pk = simpleHash(data_id, (workload.getWrl_totalDataObjects()/2))+1;
+												
 						// Storing v'
-						if(!vvertex.containsKey(hash_pk))
-							vvertex.put(hash_pk, 1);
-						else{
-							int v_weight = vvertex.get(hash_pk);
-							vvertex.put(hash_pk, ++v_weight);
+						if(!vvertex_hash_pk_map.containsKey(hash_pk)){
+							++vvertex_id;
+							vvertex_hash_pk_map.put(hash_pk, vvertex_id);
+							vv_id = vvertex_id;
+							
+							vvertex.put(vvertex_id, 1);
+						}else{
+							vv_id = vvertex_hash_pk_map.get(hash_pk);
+							
+							// Increase the corresponding v' weight
+							int v_weight = vvertex.get(vv_id);
+							vvertex.put(vv_id, ++v_weight);
 						}
 						
 						// Set the virtual data id
-						db.getData(data_id).setData_virtual_data_id(hash_pk);
+						db.getData(data_id).setData_virtual_data_id(vv_id);
 						
 						// Replace v' by v for each transactions 
 						if(vedge.containsKey(tid))
-							vedge.get(tid).add(hash_pk);
+							vedge.get(tid).add(vv_id);
 						else{
 							vvertexSet = new TreeSet<Integer>();
-							vvertexSet.add(hash_pk);
+							vvertexSet.add(vv_id);
 							vedge.put(tid, vvertexSet);
 						}//end-else				
 					}//end-for()
@@ -393,6 +409,7 @@ public class WorkloadFileGenerator {
 		
 		System.out.println("@ "+vedge.size()+"|"+toBeRemoved.size());
 		System.out.println(vedge);
+		System.out.println(vvertex);
 		
 		// Pruning duplicate virtual edges and recalculating frequencies		
 		for(Entry<Integer, Set<Integer>> vedg : vedge.entrySet()){
@@ -409,10 +426,12 @@ public class WorkloadFileGenerator {
 							toBeRemoved.add(ve.getKey());
 						
 						int freq = vedge_frequency.get(vedg.getKey());
+						vedge_frequency.remove(vedg.getKey());
 						vedge_frequency.put(vedg.getKey(), ++freq);
 						
 						int tw_vedg = workload.getTransaction(vedg.getKey()).getTr_temporal_weight();
 						int tw_ve = workload.getTransaction(ve.getKey()).getTr_temporal_weight();
+						vedge_temporal_weight.remove(vedg.getKey());
 						vedge_temporal_weight.put(vedg.getKey(), (tw_vedg+tw_ve));					
 					}
 				}
@@ -443,7 +462,7 @@ public class WorkloadFileGenerator {
 			System.out.println("[ACT] Simulation will be aborted for this run ...");
 			
 			return true;
-		} else {		
+		}else{		
 			try {
 				workloadFile.createNewFile();
 				Writer writer = null;
@@ -494,8 +513,7 @@ public class WorkloadFileGenerator {
 			System.out.println("[OUT] Workload file generation for compressed hypergraph partitioning has been completed.");
 			return false;
 		}				
-	}
-	
+	}	
 	
 	// Generates Workload File for Compressed Hyper-graph partitioning
 	@SuppressWarnings("unused")
