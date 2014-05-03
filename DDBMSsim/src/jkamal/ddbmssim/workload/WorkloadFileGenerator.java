@@ -407,9 +407,9 @@ public class WorkloadFileGenerator {
 			}//end-for()
 		}//end-for()
 		
-		System.out.println("@ "+vedge.size()+"|"+toBeRemoved.size()+"|vvertex_id="+vvertex_id);
-		System.out.println(vedge);
-		System.out.println(vvertex);
+		//System.out.println("@ "+vedge.size()+"|"+toBeRemoved.size()+"|vvertex_id="+vvertex_id);
+		//System.out.println(vedge);
+		//System.out.println(vvertex);
 		
 		// Pruning duplicate virtual edges and recalculating frequencies		
 		for(Entry<Integer, Set<Integer>> vedg : vedge.entrySet()){
@@ -438,7 +438,7 @@ public class WorkloadFileGenerator {
 			}
 		}
 		
-		System.out.println(">> "+vedge.size()+"|"+toBeRemoved.size());
+		//System.out.println(">> "+vedge.size()+"|"+toBeRemoved.size());
 				
 		// Removing duplicate virtual edges
 		for(Integer r : toBeRemoved){
@@ -493,7 +493,7 @@ public class WorkloadFileGenerator {
 					// Writing v' weight
 					int newline = 0;
 					
-					for(Entry<Integer, Integer> entry : vvertex.entrySet()) {
+					for(@SuppressWarnings("unused") Entry<Integer, Integer> entry : vvertex.entrySet()) {
 							//writer.write(Integer.toString(entry.getValue()));
 							writer.write(Integer.toString(1));
 							
