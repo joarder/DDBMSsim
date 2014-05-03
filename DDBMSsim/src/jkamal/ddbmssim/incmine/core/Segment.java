@@ -81,7 +81,7 @@ public class Segment implements Serializable{
         
         //System.out.println("Compute FCIs:"+charmBitset.getExecTime()+"ms\n (CHARM-BITSET)");
         System.out.println("[ACT] Computing FCIs ...");
-        System.out.println("[MSG] "+closedItemsets.getItemsetsCount()+" FCIs found in the last segment using CHARM-BITSET.");
+        System.out.println("[OUT] Total "+closedItemsets.getItemsetsCount()+" frequent closed data tuple sets have been found in the last segment using CHARM-BITSET.");
         
         List<SemiFCI> fciSet = new ArrayList<SemiFCI>();
        

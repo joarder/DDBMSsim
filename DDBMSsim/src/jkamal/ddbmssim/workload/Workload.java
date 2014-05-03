@@ -867,7 +867,7 @@ public class Workload implements Comparable<Workload> {
 	public void retainTransactionalWeight(){
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {			
 			for(Transaction transaction : entry.getValue()) {
-				transaction.decTr_temporalWeight();
+				transaction.setTr_temporal_weight(1);
 			}
 		}
 	}

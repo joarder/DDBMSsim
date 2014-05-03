@@ -74,7 +74,7 @@ public class StreamMiner {
 		else{
 			//Find the list of semi-FCI
 			this.mine(db, workload, simulation_logger, dir);				
-			System.out.println(this.learner);
+			//System.out.println(this.learner);
 		
 			//Find the list of distributed semi-FCI
 			ArrayList<List<Integer>> semiFCIList = new ArrayList<List<Integer>>();
@@ -91,7 +91,7 @@ public class StreamMiner {
 				}
 	        }
 			
-			System.out.println("@--> "+distributedSemiFCIList);
+			System.out.println("[OUT] Total "+distributedSemiFCIList.size()+" distributed semi-frequent closed data tuple sets have been identified.");
 			
 			//Find the transactions containing distributed semi-FCI
 			int orange_data = 0, green_data = 0;

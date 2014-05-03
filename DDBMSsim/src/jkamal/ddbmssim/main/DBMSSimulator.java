@@ -39,7 +39,7 @@ public class DBMSSimulator {
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	public final static int TRANSACTIONS = 1000;
-	public final static int SIMULATION_RUNS = 3;
+	public final static int SIMULATION_RUNS = 5;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -93,9 +93,9 @@ public class DBMSSimulator {
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
 											};
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
-	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "khmetis";
 	public final static String METIS = "kmetis";
@@ -285,10 +285,11 @@ public class DBMSSimulator {
 		write("Starting workload sampling to remove duplicate transactions ...", "ACT");
 		Workload sampled_workload = workload.removeDuplication(db);		
 		sampled_workload.initialise(db);
+		write("Total "+sampled_workload.getWrl_totalTransactions()+" transactions containing "+sampled_workload.getWrl_totalDataObjects()+" data tuples remain in the worklaod.", "MSG");
 		//sampled_workload.show(db, "");
 		
 		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
-		write("Starting data stream mining to identify the the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples) ...", "ACT");
+		write("Starting data stream mining to identify the transactions containing distributed semi-frequent closed sets of data tuples ...", "ACT");
 		if(sampled_workload.getWrl_id() == 1) 
 			streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION, false);
 		int target_transactions = streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION, true);
@@ -301,7 +302,7 @@ public class DBMSSimulator {
 		
 		// Assign Shadow HMetis Data Id and generate workload and fix files
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);		
-		write("Total "+target_transactions+" transactions having "+sampled_workload.getWrl_totalDataObjects()+" data objects have been identified for partitioning.", "MSG");		
+		write("Total "+target_transactions+" transactions containing "+sampled_workload.getWrl_totalDataObjects()+" data tuples have been identified for partitioning.", "MSG");		
 		//sampled_workload.show(db, "");
 		
 		// Generate workload and fix-files for partitioning

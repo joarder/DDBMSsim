@@ -28,7 +28,7 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_label("T"+Integer.toString(this.getTr_id()));
 		this.setTr_type(0);
 		this.setTr_frequency(0);
-		this.setTr_temporal_weight(100);
+		this.setTr_temporal_weight(2);
 		this.setTr_dtCost(0);
 		this.setTr_psCost(0);
 		this.setTr_dtImpact(0);
@@ -140,7 +140,7 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_frequency(++tr_frequency);
 	}
 	
-	public void decTr_temporalWeight() {
+	public void incTr_temporalWeight() {
 		int tr_temporal_weight = this.getTr_temporal_weight();
 		this.setTr_temporal_weight(--tr_temporal_weight);
 	}

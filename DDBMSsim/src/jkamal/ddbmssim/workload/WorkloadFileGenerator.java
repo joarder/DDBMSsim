@@ -83,7 +83,7 @@ public class WorkloadFileGenerator {
 			break;
 			
 		case "chg":
-			empty = this.generateCHGraphWorkloadFile(db, workload);
+			empty = this.generateCHGraphWorkloadFile1(db, workload);
 			if(empty == false) 
 				this.generateCHGraphFixFile(db, workload);
 			break;
@@ -364,7 +364,7 @@ public class WorkloadFileGenerator {
 					int vv_id = -1;
 					
 					// Set initial v' frequency
-					vedge_frequency.put(tid, 1);
+					vedge_frequency.put(tid, transaction.getTr_frequency());
 					
 					// Set temporal weight
 					vedge_temporal_weight.put(tid, transaction.getTr_temporal_weight());
@@ -407,7 +407,7 @@ public class WorkloadFileGenerator {
 			}//end-for()
 		}//end-for()
 		
-		System.out.println("@ "+vedge.size()+"|"+toBeRemoved.size());
+		System.out.println("@ "+vedge.size()+"|"+toBeRemoved.size()+"|vvertex_id="+vvertex_id);
 		System.out.println(vedge);
 		System.out.println(vvertex);
 		
@@ -474,8 +474,9 @@ public class WorkloadFileGenerator {
 						int freq = vedge_frequency.get(entry.getKey());
 						int tempWeight = vedge_temporal_weight.get(entry.getKey());
 						int vedge_weight = freq*tempWeight;
+						//int vedge_weight = 1;
 						
-						// Writing Virtual Edge Weight
+						// Writing e' weight
 						writer.write(vedge_weight+" ");
 								
 						Iterator<Integer> v_id_iterator =  entry.getValue().iterator();
@@ -489,11 +490,12 @@ public class WorkloadFileGenerator {
 						writer.write("\n");		
 					}
 	
-					// Writing Virtual Vertex Weight
+					// Writing v' weight
 					int newline = 0;
 					
 					for(Entry<Integer, Integer> entry : vvertex.entrySet()) {
-							writer.write(Integer.toString(entry.getValue()));							
+							//writer.write(Integer.toString(entry.getValue()));
+							writer.write(Integer.toString(1));
 							
 							if(newline != (vvertex.size()-1))
 								writer.write("\n");
