@@ -39,7 +39,7 @@ public class DBMSSimulator {
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	public final static int TRANSACTIONS = 2000;
-	public final static int SIMULATION_RUNS = 100;
+	public final static int SIMULATION_RUNS = 3;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -290,9 +290,7 @@ public class DBMSSimulator {
 		
 		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
 		write("Starting data stream mining to identify the transactions containing distributed semi-frequent closed sets of data tuples ...", "ACT");
-		if(sampled_workload.getWrl_id() == 1) 
-			streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION, false);
-		int target_transactions = streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION, true);
+		int target_transactions = streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
 		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
@@ -356,7 +354,7 @@ public class DBMSSimulator {
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(15000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -369,7 +367,7 @@ public class DBMSSimulator {
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(15000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -384,7 +382,7 @@ public class DBMSSimulator {
 			
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(15000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

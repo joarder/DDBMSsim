@@ -100,7 +100,7 @@ public class SimulationMetricsLogger {
 	}
 	
 	
-	public int traceWorkload(Database db, Workload workload, int serial, PrintWriter writer) {		
+	public int traceWorkload(Database db, Workload workload, int serial, PrintWriter writer) {			
 		for(Entry<Integer, ArrayList<Transaction>> entry : workload.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
 				
@@ -119,6 +119,9 @@ public class SimulationMetricsLogger {
 				}
 			}
 		}
+		
+		writer.flush();
+		writer.close();
 		
 		return serial;
 	}
@@ -161,7 +164,10 @@ public class SimulationMetricsLogger {
 			
 			if(workload.getWrl_id() != DBMSSimulator.SIMULATION_RUNS)
 				writer.println();
-		}					
+		}
+		
+		writer.flush();
+		writer.close();
 	}
 	
 	public void logPartition(Database db, Workload workload, PrintWriter writer) {
@@ -200,6 +206,9 @@ public class SimulationMetricsLogger {
 			
 			if(workload.getWrl_id() != DBMSSimulator.SIMULATION_RUNS)
 				writer.println();
+			
+			writer.flush();
+			writer.close();
 		}
 	} 
 	
@@ -227,6 +236,9 @@ public class SimulationMetricsLogger {
 			
 			if(workload.getWrl_id() != DBMSSimulator.SIMULATION_RUNS)
 				writer.println();
+			
+			writer.flush();
+			writer.close();
 		}
 	}
 	
@@ -264,18 +276,21 @@ public class SimulationMetricsLogger {
 		prWriter.println();
 	}*/
 	
-	public void logTransactionProp(Workload workload, PrintWriter prWriter) {
-		prWriter.print(workload.getWrl_transactionTypes()+" ");
+	public void logTransactionProp(Workload workload, PrintWriter writer) {
+		writer.print(workload.getWrl_transactionTypes()+" ");
 		
 		int space = workload.getWrl_transactionProportions().length;
 		for(double prop : workload.getWrl_transactionProportions()) {
-			prWriter.print(Integer.toString((int)Math.round(prop)));
+			writer.print(Integer.toString((int)Math.round(prop)));
 			--space;
 			
 			if(space != 0)
-				prWriter.print(" ");
+				writer.print(" ");
 		}
 		
-		prWriter.println();	
+		writer.println();
+		
+		writer.flush();
+		writer.close();
 	}
 }
