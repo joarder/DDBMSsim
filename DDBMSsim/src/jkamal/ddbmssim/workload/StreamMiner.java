@@ -69,9 +69,7 @@ public class StreamMiner {
 	}
 	
 	public int mining(Database db, Workload workload, SimulationMetricsLogger simulation_logger, String dir, boolean flag) {		
-		if(!flag)
-			this.mine(db, workload, simulation_logger, dir);
-		else{
+		if(flag){
 			//Find the list of semi-FCI
 			this.mine(db, workload, simulation_logger, dir);				
 			//System.out.println(this.learner);
@@ -183,6 +181,8 @@ public class StreamMiner {
 			workload.calculateDTandDTI(db);
 			
 			return (tr_red + tr_orange);
+		}else{
+			this.mine(db, workload, simulation_logger, dir);
 		}//end-else
 					
 		return 0;			
