@@ -39,7 +39,7 @@ public class DBMSSimulator {
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
 	public final static int TRANSACTIONS = 2000;
-	public final static int SIMULATION_RUNS = 3;
+	public final static int SIMULATION_RUNS = 100;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
