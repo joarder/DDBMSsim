@@ -326,8 +326,8 @@ public class DBMSSimulator {
 		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 		
 		// Mapping cluster id to partition id
-		cluster_id_mapper.processPartFile(db, sampled_workload, db.getDb_partitions(), directory, partitioner, virtual_data);		
-		//db.show();
+		cluster_id_mapper.processPartFile(db, sampled_workload, partitions, directory, partitioner, virtual_data);		
+		//db.show(); //db.getDb_partitions()
 		
 		// Perform data movement		
 		data_movement.performDataMovement(db, sampled_workload, strategy, partitioner);
