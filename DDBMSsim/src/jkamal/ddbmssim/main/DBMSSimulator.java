@@ -94,9 +94,9 @@ public class DBMSSimulator {
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
 											};
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
-	public final static String LOG_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\log";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
 	
 	public final static String HMETIS = "khmetis";
 	public final static String METIS = "kmetis";
@@ -290,14 +290,14 @@ public class DBMSSimulator {
 		//sampled_workload.show(db, "");
 		
 		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
-		//write("Starting data stream mining to identify the transactions containing distributed semi-frequent closed sets of data tuples ...", "ACT");
-		//int target_transactions = streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		write("Starting data stream mining to identify the transactions containing distributed semi-frequent closed sets of data tuples ...", "ACT");
+		int target_transactions = streamMiner.mining1(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
 		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
-		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
-		TransactionClassifier transactionClassifier = new TransactionClassifier();
-		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);						
+		//write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
+		//TransactionClassifier transactionClassifier = new TransactionClassifier();
+		//int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);						
 		
 		// Assign shadow data id and generate workload and fix files
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);		
