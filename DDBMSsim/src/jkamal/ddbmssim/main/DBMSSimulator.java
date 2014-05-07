@@ -285,7 +285,7 @@ public class DBMSSimulator {
 		write("Starting workload sampling to remove duplicate transactions ...", "ACT");
 		Workload sampled_workload = workload.removeDuplication(db);		
 		sampled_workload.initialise(db);
-		write("Total "+sampled_workload.getWrl_totalTransactions()+" transactions containing "+sampled_workload.getWrl_totalDataObjects()+" data tuples remain in the worklaod.", "MSG");
+		write("Total "+sampled_workload.getWrl_totalTransactions()+" transactions remain in the worklaod.", "MSG");
 		//sampled_workload.show(db, "");
 		
 		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
@@ -354,7 +354,7 @@ public class DBMSSimulator {
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -367,7 +367,7 @@ public class DBMSSimulator {
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -382,7 +382,7 @@ public class DBMSSimulator {
 			
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
