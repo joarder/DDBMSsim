@@ -120,8 +120,7 @@ public class SimulationMetricsLogger {
 			}
 		}
 		
-		writer.flush();
-		writer.close();
+		writer.flush();		
 		
 		return serial;
 	}
@@ -166,8 +165,7 @@ public class SimulationMetricsLogger {
 				writer.println();
 		}
 		
-		writer.flush();
-		writer.close();
+		writer.flush();		
 	}
 	
 	public void logPartition(Database db, Workload workload, PrintWriter writer) {
@@ -208,7 +206,6 @@ public class SimulationMetricsLogger {
 				writer.println();
 			
 			writer.flush();
-			writer.close();
 		}
 	} 
 	
@@ -238,7 +235,6 @@ public class SimulationMetricsLogger {
 				writer.println();
 			
 			writer.flush();
-			writer.close();
 		}
 	}
 	
@@ -288,9 +284,7 @@ public class SimulationMetricsLogger {
 				writer.print(" ");
 		}
 		
-		writer.println();
-		
+		writer.println();		
 		writer.flush();
-		writer.close();
 	}
 }
