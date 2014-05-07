@@ -28,10 +28,10 @@ public class GraphMinCut {
 	private String graph_file = null;
 	private List<String> arg_list = new ArrayList<String>();		
 
-	public GraphMinCut(Database db, Workload workload, String graph_exec) {
+	public GraphMinCut(Database db, Workload workload, String graph_exec, int partitions) {
 		this.exec_dir = new File(DBMSSimulator.METIS_DIR_LOCATION);
 		this.exec_name = graph_exec;
-		this.num_partitions = Integer.toString(db.getDb_partitions());
+		this.num_partitions = Integer.toString(partitions); //Integer.toString(db.getDb_partitions());
 		this.setGraph_file(workload.getWrl_id()+"-"+db.getDb_name()+"-"+workload.getWrl_graphWorkloadFile()); 
 		
 		System.out.println("[MSG] Workload file: "+this.getGraph_file());

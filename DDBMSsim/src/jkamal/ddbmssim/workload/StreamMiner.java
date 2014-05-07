@@ -68,6 +68,7 @@ public class StreamMiner {
         }		
 	}
 	
+	// DSM (FD) - No DP
 	public int mining(Database db, Workload workload, SimulationMetricsLogger simulation_logger, String dir) {
 		//Find the list of semi-FCI
 		this.mine(db, workload, simulation_logger, dir);		
@@ -182,6 +183,7 @@ public class StreamMiner {
 		return (tr_red + tr_orange);
 	}
 	
+	// DSM - (FD+FND)
 	public int mining1(Database db, Workload workload, SimulationMetricsLogger simulation_logger, String dir) {
 		//Find the list of semi-FCI
 		this.mine(db, workload, simulation_logger, dir);		
@@ -294,7 +296,7 @@ public class StreamMiner {
 		workload.calculateDTandDTI(db);
 		
 		return (tr_red + tr_orange);
-	}
+	}		
 	
 	// Returns true if a transaction contains any of the mined semi-FCI
 	private boolean isFrequent(Transaction transaction, ArrayList<List<Integer>> semiFCIList){

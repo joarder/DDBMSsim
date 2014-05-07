@@ -312,8 +312,11 @@ public class DBMSSimulator {
 		}		
 		
 		if(!empty) {
+			
+		int partitions = sampled_workload.getTransactionalPartitions();	
+		write("Starting partitioner to partition the workload into "+partitions+" clusters ...", "ACT");	
 		// Perform hyper-graph/graph/compressed hyper-graph partitioning
-		runPartitioner(db, sampled_workload, partitioner, virtual_data);		
+		runPartitioner(db, sampled_workload, partitioner, virtual_data, partitions);		
 
 		write("Applying data movement strategies for database ("+db.getDb_name()+") ...", "ACT");
 		write("***********************************************************************************************************************", null);
@@ -345,11 +348,11 @@ public class DBMSSimulator {
 		}
 	}
 	
-	private static void runPartitioner(Database db, Workload workload, String partitioner, int virtual_data) throws IOException {		
+	private static void runPartitioner(Database db, Workload workload, String partitioner, int virtual_data, int partitions) throws IOException {		
 		switch(partitioner) {
 		case "hgr":
 			// Run hMetis HyperGraph Partitioning
-			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, "hgr", virtual_data); 		
+			HGraphMinCut hgraphMinCut = new HGraphMinCut(db, workload, HMETIS, "hgr", virtual_data, partitions); 		
 			hgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
@@ -362,7 +365,7 @@ public class DBMSSimulator {
 			break;
 			
 		case "chg":			
-			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, "chg", virtual_data); 		
+			HGraphMinCut chgraphMinCut = new HGraphMinCut(db, workload, HMETIS, "chg", virtual_data, partitions); 		
 			chgraphMinCut.runHMetis();
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
@@ -377,7 +380,7 @@ public class DBMSSimulator {
 		case "gr":
 			//==============================================================================================
 			// Run Metis Graph Partitioning							
-			GraphMinCut graphMinCut = new GraphMinCut(db, workload, METIS); 		
+			GraphMinCut graphMinCut = new GraphMinCut(db, workload, METIS, partitions); 		
 			graphMinCut.runMetis();
 			
 			// Wait for 5 seconds to ensure that the Part files have been generated properly

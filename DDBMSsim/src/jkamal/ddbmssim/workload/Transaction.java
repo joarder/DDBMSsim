@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import jkamal.ddbmssim.db.Data;
 import jkamal.ddbmssim.db.Database;
-import jkamal.ddbmssim.db.Partition;
 
 public class Transaction implements Comparable<Transaction> {
 	private int tr_id;
@@ -21,6 +20,8 @@ public class Transaction implements Comparable<Transaction> {
 	private int tr_psCost; // Partition Span Cost
 	private int tr_dtImpact;
 	private Set<Integer> tr_dataSet;
+	private Set<Integer> tr_partitionSet;
+	private Set<Integer> tr_nodeSet;
 	private String tr_class;
 	
 	public Transaction(int id, Set<Integer> dataSet) {
@@ -33,6 +34,8 @@ public class Transaction implements Comparable<Transaction> {
 		this.setTr_psCost(0);
 		this.setTr_dtImpact(0);
 		this.setTr_dataSet(dataSet);
+		this.setTr_partitionSet(new TreeSet<Integer>());
+		this.setTr_nodeSet(new TreeSet<Integer>());
 		this.setTr_class(null);
 	}
 	
@@ -53,6 +56,18 @@ public class Transaction implements Comparable<Transaction> {
 			cloneDataSet.add(data_id);
 		}		
 		this.setTr_dataSet(cloneDataSet);
+		
+		Set<Integer> clonePartitionSet = new TreeSet<Integer>();
+		for(Integer data_id : transaction.getTr_partitionSet()) {
+			clonePartitionSet.add(data_id);
+		}		
+		this.setTr_partitionSet(clonePartitionSet);
+		
+		Set<Integer> cloneNodeSet = new TreeSet<Integer>();
+		for(Integer data_id : transaction.getTr_nodeSet()) {
+			cloneNodeSet.add(data_id);
+		}		
+		this.setTr_nodeSet(cloneNodeSet);
 	}
 
 	public int getTr_id() {
@@ -127,6 +142,22 @@ public class Transaction implements Comparable<Transaction> {
 		this.tr_dataSet = tr_dataSet;
 	}	
 	
+	public Set<Integer> getTr_partitionSet() {
+		return tr_partitionSet;
+	}
+
+	public void setTr_partitionSet(Set<Integer> tr_partitionSet) {
+		this.tr_partitionSet = tr_partitionSet;
+	}
+
+	public Set<Integer> getTr_nodeSet() {
+		return tr_nodeSet;
+	}
+
+	public void setTr_nodeSet(Set<Integer> tr_nodeSet) {
+		this.tr_nodeSet = tr_nodeSet;
+	}
+
 	public String getTr_class() {
 		return tr_class;
 	}
@@ -147,44 +178,56 @@ public class Transaction implements Comparable<Transaction> {
 	
 	// This function will calculate the Node and Partition Span Cost for the representative Transaction
 	public void calculateDTCost(Database db) {
-		int pid = -1;
-		Partition partition;
-		Set<Integer> nsCost = new TreeSet<Integer>();
+		//int pid = -1;
+		//Partition partition;
+		Set<Integer> tr_nodes = new TreeSet<Integer>();
 		Set<Integer> dataSet = this.getTr_dataSet();
 		Data data;		
 	
 		// Calculate Node Span Cost which is equivalent to the Distributed Transaction Cost
 		Iterator<Integer> ns = dataSet.iterator();
+//		while(ns.hasNext()) {
+//			data = db.getData(ns.next());
+//			
+//			if(data.isData_isRoaming())
+//				pid = data.getData_globalPartitionId();				
+//			else 
+//				pid = data.getData_homePartitionId();
+//				
+//			partition = db.getPartition(pid);
+//			nsCost.add(partition.getPartition_nodeId());
+//		}
+		
 		while(ns.hasNext()) {
 			data = db.getData(ns.next());
-			
-			if(data.isData_isRoaming())
-				pid = data.getData_globalPartitionId();				
-			else 
-				pid = data.getData_homePartitionId();
-				
-			partition = db.getPartition(pid);
-			nsCost.add(partition.getPartition_nodeId());
+			tr_nodes.add(data.getData_nodeId());
 		}
 		
-		this.setTr_dtCost(nsCost.size()-1);
+		this.setTr_nodeSet(tr_nodes);
+		this.setTr_dtCost(tr_nodes.size()-1);
 		
 		// Calculate Partition Span Cost
-		pid = -1;
-		Set<Integer> psCost = new TreeSet<Integer>();
+		//pid = -1;
+		Set<Integer> tr_partitions = new TreeSet<Integer>();
 	
 		Iterator<Integer> ps = dataSet.iterator();
+//		while(ps.hasNext()) {
+//			data = db.getData(ps.next());
+//			if(data.isData_isRoaming())
+//				pid = data.getData_globalPartitionId();
+//			else 
+//				pid = data.getData_homePartitionId();				
+//			
+//			psCost.add(pid);
+//		}
+		
 		while(ps.hasNext()) {
 			data = db.getData(ps.next());
-			if(data.isData_isRoaming())
-				pid = data.getData_globalPartitionId();
-			else 
-				pid = data.getData_homePartitionId();				
-			
-			psCost.add(pid);
+			tr_partitions.add(data.getData_globalPartitionId());
 		}
 	
-		this.setTr_psCost(psCost.size()-1);		
+		this.setTr_partitionSet(tr_partitions);
+		this.setTr_psCost(tr_partitions.size()-1);		
 	}
 	
 	// Calculate DT Impacts for the Workload

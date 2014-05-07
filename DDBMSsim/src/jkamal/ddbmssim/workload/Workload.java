@@ -981,6 +981,18 @@ public class Workload implements Comparable<Workload> {
 		this.setWrl_percentageDistributedTransactions(percentage);
 		this.setWrl_meanDTI(mean_dti);
 	}
+	
+	// Returns the number of partitions involved in current transactional workload
+	public int getTransactionalPartitions() {
+		Set<Integer> tr_partitions = new TreeSet<Integer>();
+		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
+			for(Transaction transaction : entry.getValue()) {
+				tr_partitions.addAll(transaction.getTr_partitionSet());
+			}
+		}
+		
+		return tr_partitions.size();
+	}
 
 	public PrintWriter getWorkload_writer() {
 		return workload_file;

@@ -35,10 +35,10 @@ public class HGraphMinCut {
 	private String chg_fixfile = null;
 	
 	//public HGraphMinCut(File dir, String hgraph_exec, String hgraph_file, String fix_file, int num_partitions) {
-	public HGraphMinCut(Database db, Workload workload, String hgraph_exec, String type, int virtual_data) {
+	public HGraphMinCut(Database db, Workload workload, String hgraph_exec, String type, int virtual_data, int partitions) {
 		this.exec_dir = new File(DBMSSimulator.hMETIS_DIR_LOCATION);
 		this.exec_name = hgraph_exec;
-		this.num_partitions = Integer.toString(db.getDb_partitions());
+		this.num_partitions = Integer.toString(partitions); //Integer.toString(db.getDb_partitions());
 		
 		switch(type) {
 		case "hgr":
