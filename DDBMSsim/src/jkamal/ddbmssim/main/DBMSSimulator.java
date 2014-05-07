@@ -357,7 +357,7 @@ public class DBMSSimulator {
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -370,7 +370,7 @@ public class DBMSSimulator {
 
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -385,7 +385,7 @@ public class DBMSSimulator {
 			
 			// Wait for 5 seconds to ensure that the Part files have been generated properly
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
