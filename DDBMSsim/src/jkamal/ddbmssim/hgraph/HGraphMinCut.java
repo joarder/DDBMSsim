@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.io.StreamCollector;
 import jkamal.ddbmssim.main.DBMSSimulator;

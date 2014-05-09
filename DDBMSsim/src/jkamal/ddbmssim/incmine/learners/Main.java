@@ -1,5 +1,6 @@
 package jkamal.ddbmssim.incmine.learners;
 
+import moa.core.TimingUtils;
 //import moa.core.TimingUtils;
 import jkamal.ddbmssim.incmine.streams.ZakiFileStream;
 
@@ -21,16 +22,16 @@ public class Main {
         ZakiFileStream stream = new ZakiFileStream("C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\moa\\1.txt"); //r1_dsm.ascii
         
         stream.prepareForUse();
-        //TimingUtils.enablePreciseTiming();
-       // long start = TimingUtils.getNanoCPUTimeOfCurrentThread();
+        TimingUtils.enablePreciseTiming();
+        long start = TimingUtils.getNanoCPUTimeOfCurrentThread();
         while(stream.hasMoreInstances()){
             learner.trainOnInstance(stream.nextInstance());            
         }
         
-       // long end = TimingUtils.getNanoCPUTimeOfCurrentThread();
-       // double tp = 1e5/ ((double)(end - start) / 1e9);
+        long end = TimingUtils.getNanoCPUTimeOfCurrentThread();
+        double tp = 1e5/ ((double)(end - start) / 1e9);
         
-      //  System.out.println(tp + "trans/sec");
+        System.out.println(tp + "trans/sec");
         
         // 2
         stream = new ZakiFileStream("C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\moa\\2.txt"); //r1_dsm.ascii
