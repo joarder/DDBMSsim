@@ -10,25 +10,23 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
-
 import jkamal.ddbmssim.io.StreamCollector;
-
-import moa.core.TimingUtils;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
-public class ComputationalTiming {
-	private final static String TEST_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\test";
-	private final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";
-	private static Set<Integer> vertexSet = null;
+public class ComputationalTiming {	
+	private final static String TEST_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";
+	private static Map<Integer, Integer> vertexMap = null;
+	private static Map<Integer, Integer> vertexWeight = null;
 	
 	public static void main(String[] args) {
-		int[] transactional_dimensions = new int[]{10, 20, 30, 40, 50};
-		int[] transaction_numbers = new int[]{1000, 2000, 3000, 4000, 5000};
-		int[] cluster_size = new int[]{1000, 2000, 3000, 4000, 5000};
+		int[] transactional_dimensions = new int[]{5, 10, 15, 20, 25};
+		int[] transaction_numbers = new int[]{500, 1000, 1500, 2000, 2500};
+		int[] cluster_size = new int[]{50, 100, 150, 200, 250};
 		List<String> arg_list = null;
 		int lower = 1;
 		int upper = 10000;
@@ -61,8 +59,9 @@ public class ComputationalTiming {
 			        arg_list = new ArrayList<String>();
 			        arg_list.add("cmd");
 					arg_list.add("/c");
-					arg_list.add("start");
-					arg_list.add("hmetis");
+					//arg_list.add("start");
+					arg_list.add("khmetis");
+					arg_list.add(w_id+".txt");
 					arg_list.add(Integer.toString(cluster_size[i-1]));	// Nparts
 					arg_list.add("5");					// UBfactor(>=5)
 					arg_list.add("10");					// Nruns(>=1)
@@ -73,13 +72,14 @@ public class ComputationalTiming {
 					
 					String[] arg = arg_list.toArray(new String[arg_list.size()]);					
 					ProcessBuilder pb = new ProcessBuilder(arg);
-					pb.directory(new File(hMETIS_DIR_LOCATION));
+					pb.directory(new File(TEST_LOCATION));
 					
 					System.out.println("["+w_id+"] Clustering workload file "+w_id+".txt ...");					
 					startTime = System.nanoTime();					
 			        					
 					try {
 						Process p = pb.start();
+						p.waitFor();
 						
 						// Any error? Or, Any output? 
 						StreamCollector errorStreams = new StreamCollector(p.getErrorStream(), "ERROR");
@@ -91,7 +91,7 @@ public class ComputationalTiming {
 						
 						//PrintWriter printer = new PrintWriter(outputStreams);
 						
-					} catch (IOException e) {						
+					} catch (IOException | InterruptedException e) {						
 						e.printStackTrace();
 					}
 					
@@ -124,36 +124,43 @@ public class ComputationalTiming {
 		return transaction;
 	}
 	
-	private static void generateWorkload(int w_id, int tr_numbers, int tr_dimension, int min, int max, RandomDataGenerator rdg){
-		vertexSet = new TreeSet<Integer>();
+	private static void generateWorkload(int w_id, int tr_numbers, int tr_dimension, 
+			int min, int max, RandomDataGenerator rdg){
+		
+		vertexMap = new TreeMap<Integer, Integer>();
+		vertexWeight = new TreeMap<Integer, Integer>();
+		int v_id = 0;
 		int edges = tr_numbers;
-		int new_line = 0;
 		String content = "";
 		
 		// Edges
 		rdg.reSeed(0);
-		new_line = edges;
 		for(int i = 0; i < edges; i++){
 			Set<Integer> edge = generateTransaction(tr_dimension, min, max, rdg);
-			String e = "1 ";			
+			String e = Integer.toString(rdg.nextInt(1, 2))+" "; // Temporal edge weight for two consecutive workload windows			
 			
 			for(Integer v : edge){
-				vertexSet.add(v);
-				e += Integer.toString(v)+" ";
+				if(!vertexMap.containsKey(v)){
+					++v_id;
+					vertexMap.put(v, v_id);
+					vertexWeight.put(v_id, 1);
+				}else{
+					int weight = vertexWeight.get(vertexMap.get(v));
+					vertexWeight.remove(vertexMap.get(v));
+					vertexWeight.put(vertexMap.get(v), ++weight);
+				}
+				
+				e += Integer.toString(vertexMap.get(v))+" ";
 			}
 			
 			StringUtils.stripEnd(e, null);
-			content += e;
-			
-			--new_line;			
-			if(new_line != 0)
-				content += "\n";
+			content += e+"\n";
 		}
 		
 		// Vertices
-		new_line = vertexSet.size();
-		for(int i = 0; i< vertexSet.size(); i++){
-			content += Integer.toString(1);
+		int new_line = vertexMap.size();
+		for(int i = 1; i< vertexMap.size()+1; i++){
+			content += Integer.toString(vertexWeight.get(i));
 			
 			--new_line;			
 			if(new_line != 0)
@@ -168,7 +175,7 @@ public class ComputationalTiming {
 
 			try {
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(workloadFile), "utf-8"));
-				writer.write(edges+" "+vertexSet.size()+" "+Integer.toString(1)+""+Integer.toString(1)+"\n"+content);
+				writer.write(edges+" "+vertexMap.size()+" "+Integer.toString(1)+""+Integer.toString(1)+"\n"+content);
 			} catch(IOException e) {
 				e.printStackTrace();
 			}finally {
