@@ -28,7 +28,7 @@ public class ComputationalTiming {
 		int[] transaction_numbers = new int[]{500, 1000, 1500, 2000, 2500};
 		int[] cluster_size = new int[]{50, 100, 150, 200, 250};
 		List<String> arg_list = null;
-		int lower = 1;
+		int lower = 0;
 		int upper = 10000;
 		int w_id = 0;
 		long startTime;
@@ -111,14 +111,14 @@ public class ComputationalTiming {
 	
 	private static Set<Integer> generateTransaction(int dim, int min, int max, RandomDataGenerator rdg){
 		Set<Integer> transaction = new TreeSet<Integer>();
+		int step_size = max/dim;
+		int lower_limit = min+1;
+		int upper_limit = step_size;
 		
-		for(int i = 0; i < dim; i++){
-			int rand = rdg.nextInt(min, max);
-			
-			if(!transaction.contains(rand))
-				transaction.add(rand);
-			else
-				--i;
+		while(transaction.size() < dim){			
+			transaction.add(rdg.nextInt(lower_limit, upper_limit));
+			lower_limit = upper_limit+1;
+			upper_limit += step_size;
 		}
 		
 		return transaction;
