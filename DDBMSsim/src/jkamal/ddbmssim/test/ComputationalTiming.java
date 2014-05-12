@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
 public class ComputationalTiming {	
-	private final static String TEST_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";
+	private final static String TEST_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";
 	private static Map<Integer, Integer> vertexMap = null;
 	private static Map<Integer, Integer> vertexWeight = null;
 	
