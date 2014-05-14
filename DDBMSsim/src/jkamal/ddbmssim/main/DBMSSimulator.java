@@ -300,11 +300,11 @@ public class DBMSSimulator {
 		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
-		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
-		TransactionClassifier transactionClassifier = new TransactionClassifier();
+		//write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
+		//TransactionClassifier transactionClassifier = new TransactionClassifier();
 		simulation_logger.logTimings(db.getTiming_log(), "start");
-		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
-		simulation_logger.logTimings(db.getTiming_log(), "stop");
+		//int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+		simulation_logger.logTimings(db.getTiming_log(), "skip");
 		
 		// Assign shadow data id and generate workload and fix files
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);		
