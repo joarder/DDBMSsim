@@ -23,7 +23,8 @@ import jkamal.ddbmssim.main.DBMSSimulator;
 import jkamal.ddbmssim.workload.Transaction;
 import jkamal.ddbmssim.workload.Workload;
 
-public class SimulationMetricsLogger {	
+public class SimulationMetricsLogger {
+	private File file_name;
 	private Timings timing;
 	private boolean has_data_moved;
 	private Map<Integer, String> partitionsBeforeDM;
@@ -49,6 +50,14 @@ public class SimulationMetricsLogger {
 		this.partitionsBeforeDM = partitionsBeforeDM;
 	}
 
+	public File getFile_name() {
+		return file_name;
+	}
+
+	public void setFile_name(File file_name) {
+		this.file_name = file_name;
+	}
+
 	public PrintWriter getWriter(String dir, String trace) {		
 		File logFile = new File(dir+"\\"+trace+".txt");
 		PrintWriter prWriter = null;
@@ -66,6 +75,8 @@ public class SimulationMetricsLogger {
 		} catch (IOException e) {		
 			e.printStackTrace();
 		}
+		
+		this.setFile_name(logFile);
 		
 		return prWriter;
 	}
@@ -96,7 +107,8 @@ public class SimulationMetricsLogger {
 		return serial;
 	}
 	
-	public void logWorkload(Workload workload, PrintWriter writer, String partitioner) {
+	public void logWorkload(Workload workload, PrintWriter writer, String partitioner){
+		
 		if(!this.isData_movement()) {
 			writer.print(workload.getWrl_id()+" ");			
 			writer.print(partitioner+" ");				
