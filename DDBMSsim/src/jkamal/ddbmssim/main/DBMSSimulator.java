@@ -295,15 +295,15 @@ public class DBMSSimulator {
 		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)		
 		//write("Starting data stream mining to identify the transactions containing distributed semi-frequent closed sets of data tuples ...", "ACT");
 		simulation_logger.logTimings(db.getTiming_log(), "start");
-		int target_transactions = streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
-		simulation_logger.logTimings(db.getTiming_log(), "stop");
+		//int target_transactions = streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		simulation_logger.logTimings(db.getTiming_log(), "skip");
 		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
-		//write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
-		//TransactionClassifier transactionClassifier = new TransactionClassifier();
+		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
+		TransactionClassifier transactionClassifier = new TransactionClassifier();
 		simulation_logger.logTimings(db.getTiming_log(), "start");
-		//int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
 		simulation_logger.logTimings(db.getTiming_log(), "skip");
 		
 		// Assign shadow data id and generate workload and fix files
