@@ -50,7 +50,7 @@ public class DataMovement {
 		this.setInter_node_data_movements(++inter);
 	}
 
-	private void setEnvironment(Database db, Workload workload) {
+	public void setEnvironment(Database db, Workload workload) {
 		//workload.calculateDTandDTI(db);
 		
 		this.setIntra_node_data_movements(0);
@@ -69,7 +69,7 @@ public class DataMovement {
 		}
 	}
 	
-	private void wrappingUp(boolean movement, String message, Database db, Workload workload, String type) {
+	public void wrappingUp(boolean movement, String message, Database db, Workload workload, String type) {
 		workload.setWrl_hasDataMoved(true);					
 		workload.setMessage(message);				
 		workload.calculateDTandDTI(db);

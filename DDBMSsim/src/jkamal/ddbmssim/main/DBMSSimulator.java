@@ -216,6 +216,8 @@ public class DBMSSimulator {
 						partitioners[i]+"_"+strategies[j]+"_"+"node_log"));
 				clone_db.setPartition_log(simulation_logger.getWriter(log_dir, 
 						partitioners[i]+"_"+strategies[j]+"_"+"partition_log"));
+				clone_db.setTiming_log(simulation_logger.getWriter(log_dir, 
+						partitioners[i]+"_"+strategies[j]+"_"+"timing_log"));
 				
 				db_set.add(clone_db);	
 				//System.out.println("@ j = "+j+"| db_set size = "+db_set.size());
@@ -259,7 +261,7 @@ public class DBMSSimulator {
 		// Wrapping Up
 		for(Entry<Integer, Set<Database>> entry : db_map.entrySet()) {
 			for(Database database : entry.getValue()) {
-				close_logFiles(database.getWorkload_log(), database.getNode_log(), database.getPartition_log());
+				close_logFiles(database.getWorkload_log(), database.getNode_log(), database.getPartition_log(), database.getTiming_log());
 			}
 		}
 	}
@@ -290,15 +292,19 @@ public class DBMSSimulator {
 		write("Total "+sampled_workload.getWrl_totalTransactions()+" transactions remain in the worklaod.", "MSG");
 		//sampled_workload.show(db, "");
 		
-		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)
+		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)		
 		//write("Starting data stream mining to identify the transactions containing distributed semi-frequent closed sets of data tuples ...", "ACT");
+		simulation_logger.logTimings(db.getTiming_log(), "start");
 		//int target_transactions = streamMiner.mining1(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		simulation_logger.logTimings(db.getTiming_log(), "stop");
 		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
 		//write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
 		//TransactionClassifier transactionClassifier = new TransactionClassifier();
-		//int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);						
+		simulation_logger.logTimings(db.getTiming_log(), "start");
+		//int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+		simulation_logger.logTimings(db.getTiming_log(), "stop");
 		
 		// Assign shadow data id and generate workload and fix files
 		workloadFileGenerator.assignShadowDataId(db, sampled_workload);		
@@ -306,46 +312,75 @@ public class DBMSSimulator {
 		//sampled_workload.show(db, "");
 		
 		// Generate workload and fix-files for partitioning
+		simulation_logger.logTimings(db.getTiming_log(), "start");
 		boolean empty = workloadFileGenerator.generateWorkloadFile(db, sampled_workload, partitioner);
+		simulation_logger.logTimings(db.getTiming_log(), "stop");
+		
 		int virtual_data = 0;
 		if(partitioner == "chg") {
 			virtual_data = workloadFileGenerator.getVirtual_data();
 			//System.out.println("-->> virtual data = "+virtual_data);
 		}		
 		
-		if(!empty) {
+		if(!empty) {			
+			//int partitions = sampled_workload.getTransactionalPartitions();
+			int partitions = db.getDb_partitions();
+			write("Starting partitioner to partition the workload into "+partitions+" clusters ...", "ACT");	
+			// Perform hyper-graph/graph/compressed hyper-graph partitioning
+			simulation_logger.logTimings(db.getTiming_log(), "start");
+			runPartitioner(db, sampled_workload, partitioner, virtual_data, partitions);
+			simulation_logger.logTimings(db.getTiming_log(), "stop");
+	
+			write("Applying data movement strategies for database ("+db.getDb_name()+") ...", "ACT");
+			write("***********************************************************************************************************************", null);
 			
-		//int partitions = sampled_workload.getTransactionalPartitions();
-		int partitions = db.getDb_partitions();
-		write("Starting partitioner to partition the workload into "+partitions+" clusters ...", "ACT");	
-		// Perform hyper-graph/graph/compressed hyper-graph partitioning
-		runPartitioner(db, sampled_workload, partitioner, virtual_data, partitions);		
-
-		write("Applying data movement strategies for database ("+db.getDb_name()+") ...", "ACT");
-		write("***********************************************************************************************************************", null);
-		
-		// Log collection before data movement operation
-		simulation_logger.setData_hasMoved(false);
-		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
-		
-		// Mapping cluster id to partition id
-		cluster_id_mapper.processPartFile(db, sampled_workload, partitions, directory, partitioner, virtual_data);		
-		//db.show(); //db.getDb_partitions()
-		
-		// Perform data movement		
-		data_movement.performDataMovement(db, sampled_workload, strategy, partitioner);
-		
-		// Update Node level load
-		db.getDb_dbs().updateNodeLoad();
-		
-		// Log collection after data movement operation
-		simulation_logger.setData_hasMoved(true);
-		collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
-		
-		db.getDb_dbs().show();
-		
-		write("***********************************************************************************************************************", null);
+			// Log collection before data movement operation
+			simulation_logger.setData_hasMoved(false);
+			collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
+			
+			// Mapping cluster id to partition id
+			cluster_id_mapper.processPartFile(db, sampled_workload, partitions, directory, partitioner, virtual_data);		
+			//db.show(); //db.getDb_partitions()
+			
+			// Perform data movement
+			simulation_logger.logTimings(db.getTiming_log(), "start");
+			data_movement.performDataMovement(db, sampled_workload, strategy, partitioner);
+			simulation_logger.logTimings(db.getTiming_log(), "stop");
+			simulation_logger.logTimings(db.getTiming_log(), "newline");
+			
+			// Update Node level load
+			db.getDb_dbs().updateNodeLoad();
+			
+			// Log collection after data movement operation
+			simulation_logger.setData_hasMoved(true);
+			collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
+			
+			db.getDb_dbs().show();
+			
+			write("***********************************************************************************************************************", null);
 		} else {
+			simulation_logger.logTimings(db.getTiming_log(), "start");
+			simulation_logger.logTimings(db.getTiming_log(), "stop");
+			
+			// Log collection before data movement operation
+			simulation_logger.setData_hasMoved(false);
+			collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);			
+			
+			// logging
+			simulation_logger.logTimings(db.getTiming_log(), "start");
+			data_movement.setEnvironment(db, sampled_workload);
+			data_movement.wrappingUp(true, strategy, db, sampled_workload, partitioner);
+			simulation_logger.logTimings(db.getTiming_log(), "stop");
+			simulation_logger.logTimings(db.getTiming_log(), "newline");
+			
+			// Update Node level load
+			db.getDb_dbs().updateNodeLoad();
+			
+			// Log collection after data movement operation
+			simulation_logger.setData_hasMoved(true);
+			collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);			
+			
+			write("No changes are required for database ("+db.getDb_name()+")","OUT");
 			write("Simulation run round aborted for database ("+db.getDb_name()+")","OUT");
 			write("***********************************************************************************************************************", null);
 		}
@@ -397,7 +432,7 @@ public class DBMSSimulator {
 		}
 	}
 	
-	private static void close_logFiles(PrintWriter workload_log, PrintWriter node_log, PrintWriter partition_log) {
+	private static void close_logFiles(PrintWriter workload_log, PrintWriter node_log, PrintWriter partition_log, PrintWriter timing_log) {
 		// Flush and Close
 		workload_log.flush();
 		workload_log.close();
@@ -407,6 +442,9 @@ public class DBMSSimulator {
 		
 		partition_log.flush();
 		partition_log.close();
+		
+		timing_log.flush();
+		timing_log.close();
 	}
 	
 	private static void write(String content, String type) {

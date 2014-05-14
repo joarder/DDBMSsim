@@ -24,42 +24,13 @@ import jkamal.ddbmssim.workload.Transaction;
 import jkamal.ddbmssim.workload.Workload;
 
 public class SimulationMetricsLogger {	
-	private String db_logger;
-	private String workload_logger;
-	private String partition_logger;
+	private Timings timing;
 	private boolean has_data_moved;
 	private Map<Integer, String> partitionsBeforeDM;
 	
 	public SimulationMetricsLogger() {
-		this.setDb_logger("db-log.txt");
-		this.setWorkload_logger("workload-log.txt");
-		this.setPartition_logger("partition-log.txt");
 		this.setData_hasMoved(false);
 		this.setPartitionsBeforeDM(new TreeMap<Integer, String>());
-	}
-	
-	public String getDb_logger() {
-		return db_logger;
-	}
-
-	public void setDb_logger(String db_logger) {
-		this.db_logger = db_logger;
-	}
-
-	public String getWorkload_logger() {
-		return workload_logger;
-	}
-
-	public void setWorkload_logger(String workload_logger) {
-		this.workload_logger = workload_logger;
-	}
-
-	public String getPartition_logger() {
-		return partition_logger;
-	}
-
-	public void setPartition_logger(String partition_logger) {
-		this.partition_logger = partition_logger;
 	}
 
 	public boolean isData_movement() {
@@ -286,5 +257,17 @@ public class SimulationMetricsLogger {
 		
 		writer.println();		
 		writer.flush();
+	}
+	
+	public void logTimings(PrintWriter writer, String state){
+		if(state == "start")
+			this.timing = new Timings(System.nanoTime());
+		else if(state == "newline"){
+			writer.println();		
+			writer.flush();	
+		}else{
+			writer.print((System.nanoTime() - this.timing.getStart_time())+" ");					
+			writer.flush();
+		}
 	}
 }
