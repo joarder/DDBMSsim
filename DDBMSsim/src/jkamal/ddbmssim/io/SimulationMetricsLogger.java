@@ -272,14 +272,24 @@ public class SimulationMetricsLogger {
 	}
 	
 	public void logTimings(PrintWriter writer, String state){
-		if(state == "start")
-			this.timing = new Timings(System.nanoTime());
-		else if(state == "newline"){
-			writer.println();		
-			writer.flush();	
-		}else{
-			writer.print((System.nanoTime() - this.timing.getStart_time())+" ");					
-			writer.flush();
+		switch(state){
+			case "start":
+				this.timing = new Timings(System.nanoTime());
+				break;
+			case "stop":
+				writer.print((System.nanoTime() - this.timing.getStart_time())+" ");					
+				writer.flush();
+				break;
+			case"newline":
+				writer.println();		
+				writer.flush();
+				break;
+			case "skip":
+				writer.print(Integer.toString(0)+" ");					
+				writer.flush();
+				break;
+			default:
+				break;
 		}
 	}
 }
