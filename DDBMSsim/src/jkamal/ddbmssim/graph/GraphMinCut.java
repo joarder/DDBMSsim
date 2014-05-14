@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import jkamal.ddbmssim.db.Database;
 import jkamal.ddbmssim.io.StreamCollector;
@@ -41,7 +42,7 @@ public class GraphMinCut {
 		case "pmetis":		
 			this.arg_list.add("cmd");
 			this.arg_list.add("/c");
-			this.arg_list.add("start");
+			//this.arg_list.add("start");
 			this.arg_list.add(this.exec_name);			// Executable name
 			this.arg_list.add(this.getGraph_file());	// GraphFile
 			this.arg_list.add(this.num_partitions);		// Nparts
@@ -50,7 +51,7 @@ public class GraphMinCut {
 		case "kmetis":
 			this.arg_list.add("cmd");
 			this.arg_list.add("/c");
-			this.arg_list.add("start");
+			//this.arg_list.add("start");
 			this.arg_list.add(this.exec_name);			// Executable name
 			this.arg_list.add(this.getGraph_file());	// GraphFile
 			this.arg_list.add(this.num_partitions);		// Nparts				
@@ -71,13 +72,43 @@ public class GraphMinCut {
 		
 		ProcessBuilder pb = new ProcessBuilder(args);		
 		pb.directory(exec_dir);
-		Process p = pb.start();
+//		Process p = pb.start();
+//		
+//		// Any error? Or, Any output? 
+//		StreamCollector errorStreams = new StreamCollector(p.getErrorStream(), "ERROR");
+//		StreamCollector outputStreams = new StreamCollector(p.getInputStream(), "OUTPUT");
+//		// Start stream collectors
+//		outputStreams.start();
+//		errorStreams.start();
 		
-		// Any error? Or, Any output? 
-		StreamCollector errorStreams = new StreamCollector(p.getErrorStream(), "ERROR");
-		StreamCollector outputStreams = new StreamCollector(p.getInputStream(), "OUTPUT");
-		// Start stream collectors
-		outputStreams.start();
-		errorStreams.start();
-	}
+		try {
+			final Process p = pb.start();						
+			
+			new Thread(new Runnable(){
+				public void run(){
+		        	Scanner stdin = new Scanner(p.getInputStream());
+		            while(stdin.hasNextLine()){
+		            	System.out.println(stdin.nextLine());
+		            }
+		            
+		            stdin.close();
+				}
+		    }).start();
+			
+			// Any error? Or, Any output? 
+			//StreamCollector errorStreams = new StreamCollector(p.getErrorStream(), "ERROR");
+			//StreamCollector outputStreams = new StreamCollector(p.getInputStream(), "OUTPUT");
+			
+			// Start stream collectors
+			//outputStreams.start();
+			//errorStreams.start();
+			
+			p.waitFor();
+			
+			//PrintWriter printer = new PrintWriter(outputStreams);
+			
+		} catch (IOException | InterruptedException e) {						
+			e.printStackTrace();
+		}
+	}	
 }
