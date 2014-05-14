@@ -295,7 +295,7 @@ public class DBMSSimulator {
 		//Perform Data Stream Mining to find the transactions containing Distributed Semi-Frequent Closed Itemsets (tuples)		
 		//write("Starting data stream mining to identify the transactions containing distributed semi-frequent closed sets of data tuples ...", "ACT");
 		simulation_logger.logTimings(db.getTiming_log(), "start");
-		int target_transactions = streamMiner.mining1(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
+		int target_transactions = streamMiner.mining(db, sampled_workload, simulation_logger, DBMSSimulator.LOG_LOCATION);
 		simulation_logger.logTimings(db.getTiming_log(), "stop");
 		
 		// Perform transaction classification
