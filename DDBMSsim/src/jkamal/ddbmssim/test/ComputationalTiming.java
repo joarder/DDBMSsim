@@ -40,88 +40,91 @@ public class ComputationalTiming {
 		// Logging
 		PrintWriter writer = getWriter(TEST_LOCATION, "log");
 		
-		for(int i = 1; i <= 5; i++){//cluster_size
-			for(int j = 1; j <= 5; j++){//transaction_numbers
-				for(int k = 1; k <= 5; k++){//transactional_dimensions
-					// Workload file generation
-					++w_id;
-					System.out.println("["+w_id+"] Generating workload file "+w_id+".txt ...");					
-					startTime = System.nanoTime();					
-			        
-					generateWorkload(w_id, transaction_numbers[j-1], transactional_dimensions[k-1], lower, upper, randomDataGenerator);					
-			        
-					duration = (System.nanoTime() - startTime);			        
-			        System.out.println(">> Workload file "+w_id+".txt has been generated within "+duration + " nano sec.");
-				}
-			}
-		}
+//		for(int i = 1; i <= 5; i++){//cluster_size
+//			for(int j = 1; j <= 5; j++){//transaction_numbers
+//				for(int k = 1; k <= 5; k++){//transactional_dimensions
+//					// Workload file generation
+//					++w_id;
+//					System.out.println("["+w_id+"] Generating workload file "+w_id+".txt ...");					
+//					startTime = System.nanoTime();					
+//			        
+//					generateWorkload(w_id, transaction_numbers[j-1], transactional_dimensions[k-1], lower, upper, randomDataGenerator);					
+//			        
+//					duration = (System.nanoTime() - startTime);			        
+//			        System.out.println(">> Workload file "+w_id+".txt has been generated within "+duration + " nano sec.");
+//				}
+//			}
+//		}
 		
-		w_id = 0;
-		for(int i = 1; i <= 5; i++){//cluster_size
-			for(int j = 1; j <= 5; j++){//transaction_numbers
-				for(int k = 1; k <= 5; k++){//transactional_dimensions			        
-					++w_id;
-					
-			        // Hypergraph clustering
-			        arg_list = new ArrayList<String>();
-			        arg_list.add("cmd");
-					arg_list.add("/c");
-					//arg_list.add("start");
-					arg_list.add("khmetis");
-					arg_list.add(w_id+".txt");
-					arg_list.add(Integer.toString(cluster_size[i-1]));	// Nparts
-					arg_list.add("5");					// UBfactor(>=5)
-					arg_list.add("10");					// Nruns(>=1)
-					arg_list.add("1");					// CType(1-5)
-					arg_list.add("1");					// OType(1-2) -- 1: Minimizes the hyper edge cut, 2: Minimizes the sum of external degrees (SOED)
-					arg_list.add("0");					// Vcycle(0-3)
-					arg_list.add("0");					// dbglvl(0+1+2+4+8+16)
-					
-					String[] arg = arg_list.toArray(new String[arg_list.size()]);					
-					ProcessBuilder pb = new ProcessBuilder(arg);
-					pb.directory(new File(TEST_LOCATION));
-					
-					System.out.println("["+w_id+"] Clustering workload file "+w_id+".txt ...");					
-					startTime = System.nanoTime();					
-			        					
-					try {
-						final Process p = pb.start();						
+		int run = 1000;
+		while(run!=0){
+			w_id = 0;
+			for(int i = 1; i <= 5; i++){//cluster_size
+				for(int j = 1; j <= 5; j++){//transaction_numbers
+					for(int k = 1; k <= 5; k++){//transactional_dimensions			        
+						++w_id;
 						
-						new Thread(new Runnable(){
-							public void run(){
-					        	Scanner stdin = new Scanner(p.getInputStream());
-					            while(stdin.hasNextLine()){
-					            	System.out.println(stdin.nextLine());
-					            }
-					            
-					            stdin.close();
-							}
-					    }).start();
+				        // Hypergraph clustering
+				        arg_list = new ArrayList<String>();
+				        arg_list.add("cmd");
+						arg_list.add("/c");
+						//arg_list.add("start");
+						arg_list.add("khmetis");
+						arg_list.add(w_id+".txt");
+						arg_list.add(Integer.toString(cluster_size[i-1]));	// Nparts
+						arg_list.add("5");					// UBfactor(>=5)
+						arg_list.add("10");					// Nruns(>=1)
+						arg_list.add("1");					// CType(1-5)
+						arg_list.add("1");					// OType(1-2) -- 1: Minimizes the hyper edge cut, 2: Minimizes the sum of external degrees (SOED)
+						arg_list.add("0");					// Vcycle(0-3)
+						arg_list.add("0");					// dbglvl(0+1+2+4+8+16)
 						
-						// Any error? Or, Any output? 
-						//StreamCollector errorStreams = new StreamCollector(p.getErrorStream(), "ERROR");
-						//StreamCollector outputStreams = new StreamCollector(p.getInputStream(), "OUTPUT");
+						String[] arg = arg_list.toArray(new String[arg_list.size()]);					
+						ProcessBuilder pb = new ProcessBuilder(arg);
+						pb.directory(new File(TEST_LOCATION));
 						
-						// Start stream collectors
-						//outputStreams.start();
-						//errorStreams.start();
+						System.out.println("["+w_id+"] Clustering workload file "+w_id+".txt ...");					
+						startTime = System.nanoTime();					
+				        					
+						try {
+							final Process p = pb.start();						
+							
+							new Thread(new Runnable(){
+								public void run(){
+						        	Scanner stdin = new Scanner(p.getInputStream());
+						            while(stdin.hasNextLine()){
+						            	System.out.println(stdin.nextLine());
+						            }
+						            
+						            stdin.close();
+								}
+						    }).start();
+							
+							// Any error? Or, Any output? 
+							//StreamCollector errorStreams = new StreamCollector(p.getErrorStream(), "ERROR");
+							//StreamCollector outputStreams = new StreamCollector(p.getInputStream(), "OUTPUT");
+							
+							// Start stream collectors
+							//outputStreams.start();
+							//errorStreams.start();
+							
+							p.waitFor();
+							
+							//PrintWriter printer = new PrintWriter(outputStreams);
+							
+						} catch (IOException | InterruptedException e) {						
+							e.printStackTrace();
+						}
 						
-						p.waitFor();
-						
-						//PrintWriter printer = new PrintWriter(outputStreams);
-						
-					} catch (IOException | InterruptedException e) {						
-						e.printStackTrace();
+						duration = (System.nanoTime() - startTime);			        
+				        System.out.println("-->> Workload file "+w_id+".txt has been clustered within "+duration + " nano sec.");
+				        
+				        // Logging
+				        writer.print(transactional_dimensions[k-1]+" "+transaction_numbers[j-1]+" "+cluster_size[i-1]+" "+duration);
+				        //writer.print(duration);
+				        writer.println();
+				        writer.flush();
 					}
-					
-					duration = (System.nanoTime() - startTime);			        
-			        System.out.println("-->> Workload file "+w_id+".txt has been clustered within "+duration + " nano sec.");
-			        
-			        // Logging
-			        writer.print(transactional_dimensions[k-1]+" "+transaction_numbers[j-1]+" "+cluster_size[i-1]+" "+duration);
-			        //writer.print(duration);
-			        writer.println();
-			        writer.flush();
 				}
 			}
 		}
