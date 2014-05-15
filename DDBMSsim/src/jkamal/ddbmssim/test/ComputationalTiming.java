@@ -59,6 +59,7 @@ public class ComputationalTiming {
 		int run = 1000;
 		while(run!=0){
 			w_id = 0;
+			
 			for(int i = 1; i <= 5; i++){//cluster_size
 				for(int j = 1; j <= 5; j++){//transaction_numbers
 					for(int k = 1; k <= 5; k++){//transactional_dimensions			        
@@ -127,8 +128,10 @@ public class ComputationalTiming {
 					}
 				}
 			}
+			
+			--run;
 		}
-		
+				
 		writer.close();
 	}
 	
