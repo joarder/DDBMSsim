@@ -56,7 +56,7 @@ public class ComputationalTiming {
 //			}
 //		}
 		
-		int run = 1000;
+		int run = 10;
 		while(run!=0){
 			w_id = 0;
 			
