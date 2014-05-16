@@ -25,8 +25,8 @@ public class ComputationalTiming {
 	private static Map<Integer, Integer> vertexWeight = null;
 	
 	public static void main(String[] args) {
-		int[] transactional_dimensions = new int[]{10, 20, 30, 40, 50};
-		int[] transaction_numbers = new int[]{1000, 2000, 3000, 4000, 5000};
+		int[] transactional_dimensions = new int[]{5, 10, 15, 20, 25};
+		int[] transaction_numbers = new int[]{500, 1000, 1500, 2000, 2500};
 		int[] cluster_size = new int[]{100, 200, 300, 400, 500};
 		List<String> arg_list = null;
 		int lower = 0;
