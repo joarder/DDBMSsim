@@ -72,7 +72,7 @@ public class DataMovement {
 	public void wrappingUp(boolean movement, String message, Database db, Workload workload, String type) {
 		workload.setWrl_hasDataMoved(true);					
 		workload.setMessage(message);				
-		workload.calculateDTandDTI(db);
+		workload.calculateDTI(db);
 		//workload.show(db, type);
 	}
 	
