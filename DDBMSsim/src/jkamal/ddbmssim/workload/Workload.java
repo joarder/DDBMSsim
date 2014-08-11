@@ -58,6 +58,10 @@ public class Workload implements Comparable<Workload> {
 	private int[] wrl_dt_nums_typewise;
 	private double wrl_percentage_dt;
 	
+	private int wrl_ndt_nums;
+	private int[] wrl_ndt_nums_typewise;
+	private double wrl_percentage_ndt;
+	
 	private double wrl_hg_percentage_intra_dmv;
 	private double wrl_hg_percentage_inter_dmv;
 	private int wrl_hg_intra_dmv;
@@ -521,6 +525,7 @@ public class Workload implements Comparable<Workload> {
 		this.wrl_gr_workload_file = wrl_graph_workload_file;
 	}
 
+	// For distributed transactions
 	public double getWrl_meanDTI() {
 		return wrl_mean_dti;
 	}
@@ -552,7 +557,33 @@ public class Workload implements Comparable<Workload> {
 	public void setWrl_percentageDistributedTransactions(double wrl_percentage_dt) {
 		this.wrl_percentage_dt = wrl_percentage_dt;
 	}
+	
+	// For non-distributed transactions
+	public int getWrl_nonDistributedTransactions() {
+		return wrl_ndt_nums;
+	}
 
+	public void setWrl_nonDistributedTransactions(int wrl_ndt_nums) {
+		this.wrl_ndt_nums = wrl_ndt_nums;
+	}
+
+	public int[] getWrl_ndt_nums_typewise() {
+		return wrl_ndt_nums_typewise;
+	}
+
+	public void setWrl_ndt_nums_typewise(int[] wrl_ndt_nums_typewise) {
+		this.wrl_ndt_nums_typewise = wrl_ndt_nums_typewise;
+	}
+
+	public double getWrl_percentageNonDistributedTransactions() {
+		return wrl_percentage_ndt;
+	}
+
+	public void setWrl_percentageNonDistributedTransactions(double wrl_percentage_ndt) {
+		this.wrl_percentage_ndt = wrl_percentage_ndt;
+	}
+	
+	// ----
 	public double getWrl_hg_percentageIntraNodeDataMovements() {
 		return wrl_hg_percentage_intra_dmv;
 	}
@@ -827,7 +858,7 @@ public class Workload implements Comparable<Workload> {
 			}
 		}
 		
-		this.calculateDTandDTI(db);
+		this.calculateDTI(db);
 	}
 	
 	// Workload Pruning - Remove Duplicate Transactions
@@ -946,20 +977,31 @@ public class Workload implements Comparable<Workload> {
 		int val = this.getWrl_dt_nums_typewise()[i];
 		this.getWrl_dt_nums_typewise()[i] = ++val;
 	}
+	
+	private void incNDTbyTypes(int i) {		
+		int val = this.getWrl_ndt_nums_typewise()[i];
+		this.getWrl_ndt_nums_typewise()[i] = ++val;
+	}
 
 	// Calculate the percentage of Distributed Transactions within the Workload (before and after the Data movements)
-	public void calculateDTandDTI(Database db) {
+	public void calculateDTI(Database db) {
 		this.setWrl_dt_nums_typewise(new int[this.getWrl_transactionTypes()]);
+		this.setWrl_ndt_nums_typewise(new int[this.getWrl_transactionTypes()]);
+		
 		int dt_nums = 0;
-		int dti_sum = 0;		
-		double percentage = 0.0d;
+		int dti_sum = 0;
+		int ndt_nums = 0;
+		int ndti_sum = 0;
+		
+		double dt_percentage = 0.0d;
+		double ndt_percentage = 0.0d;
 		double mean_dti = 0.0d;
 		
 		for(Entry<Integer, ArrayList<Transaction>> entry : this.getWrl_transactionMap().entrySet()) {
 			for(Transaction transaction : entry.getValue()) {
-				transaction.calculateDTCost(db);
+				transaction.calculateTransactionalCost(db);
 				
-				if(transaction.getTr_dtCost() > 0) {
+				if(transaction.getTr_dtCost() > 1) {
 					++dt_nums;
 					
 					transaction.calculateDTImapct();
@@ -967,18 +1009,32 @@ public class Workload implements Comparable<Workload> {
 					
 					int i = transaction.getTr_type();
 					this.incDTbyTypes(i);
+				} else { // Non-distributed transactions
+					++ndt_nums;
+					
+					transaction.calculateDTImapct();
+					ndti_sum += transaction.getTr_dtImpact();
+					
+					int i = transaction.getTr_type();
+					this.incNDTbyTypes(i);
 				}
 			} // end -- for()-Transaction		
 		} // end -- for()-
 		
 		this.setWrl_distributedTransactions(dt_nums);
+		this.setWrl_nonDistributedTransactions(ndt_nums);
 		
-		if(this.getWrl_distributedTransactions() != 0) {
-			percentage = ((double)dt_nums/(double)this.getWrl_totalTransactions())*100.0;
-			mean_dti = ((double)dti_sum/(double)this.getWrl_distributedTransactions());
-		}
+		if(this.getWrl_distributedTransactions() != 0)
+			dt_percentage = ((double)dt_nums/(double)this.getWrl_totalTransactions())*100.0;
 		
-		this.setWrl_percentageDistributedTransactions(percentage);
+		if(this.getWrl_nonDistributedTransactions() != 0)
+			ndt_percentage = ((double)ndt_nums/(double)this.getWrl_totalTransactions())*100.0;
+		
+		
+		this.setWrl_percentageDistributedTransactions(dt_percentage);
+		this.setWrl_percentageNonDistributedTransactions(ndt_percentage);
+		
+		mean_dti = ((double)dti_sum/((double)(dti_sum+ndti_sum)));	// following equation 3 of the UCC 2014 paper			
 		this.setWrl_meanDTI(mean_dti);
 	}
 	

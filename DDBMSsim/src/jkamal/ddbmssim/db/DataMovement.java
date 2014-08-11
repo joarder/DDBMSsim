@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+
+import jkamal.ddbmssim.main.DBMSSimulator;
 import jkamal.ddbmssim.util.Matrix;
 import jkamal.ddbmssim.util.MatrixElement;
 import jkamal.ddbmssim.workload.MappingTable;
@@ -72,7 +74,7 @@ public class DataMovement {
 	public void wrappingUp(boolean movement, String message, Database db, Workload workload, String type) {
 		workload.setWrl_hasDataMoved(true);					
 		workload.setMessage(message);				
-		workload.calculateDTandDTI(db);
+		workload.calculateDTI(db);
 		//workload.show(db, type);
 	}
 	
@@ -100,6 +102,18 @@ public class DataMovement {
 				"      (Row :: Pre-Partition Id, Col :: Cluster Id, Elements :: Data Occurrence Counts)");
 	}
 	
+	private void shuffleArray(int[] array)
+	{
+	    int index, temp;	    
+	    for (int i = array.length - 1; i > 1; i--)
+	    {
+	        index = DBMSSimulator.random.nextInt(i-1) + 1;
+	        temp = array[index];
+	        array[index] = array[i];
+	        array[i] = temp;
+	    }
+	}
+	
 	private void baseStrategy(Database db, Workload workload, String partitioner) {
 		this.setEnvironment(db, workload);
 		
@@ -109,11 +123,26 @@ public class DataMovement {
 		this.message();
 		mapping.print();
 		
+		// Random assignment		
+		int[] arr = new int[mapping.getN()];
+		for (int i = 1; i <= arr.length-1; i++) {
+		    arr[i] = i;
+		}
+		
+		//System.out.println(">> "+mapping.getN()+"|"+arr.length);		
+		this.shuffleArray(arr);
+		
 		// Create Key-Value (Destination PID-Cluster ID) Mappings from Mapping Matrix
 		Map<Integer, Integer> keyMap = new TreeMap<Integer, Integer>();		
 		for(int col = 0; col < mapping.getN(); col++) {				
-			keyMap.put(col, col); // which cluster will go to which partition
+			//keyMap.put(col, col); // which cluster will go to which partition
 			//System.out.println("-#-Entry("+col+") [ACT] C"+col+"|P"+col);
+			
+			if(col == 0)
+				keyMap.put(col, col); // which cluster will go to which partition
+			
+			keyMap.put(col, arr[col]); // which cluster will go to which partition
+			//System.out.println("-#-Entry("+col+") [ACT] C"+col+"|P"+arr[col]);
 		}
 		
 		// Perform Actual Data Movement
@@ -279,10 +308,11 @@ public class DataMovement {
 							break;
 						}
 						
+						//System.out.println("@debug >> P"+dst_partition_id);
 						dst_partition = db.getPartition(dst_partition_id);
 						dst_node_id = dst_partition.getPartition_nodeId();												
 						
-						if(dst_partition_id != current_partition_id) { // Data needs to be moved					
+						if(dst_partition_id != current_partition_id && DBMSSimulator.BASELINE_RUNS) { // Data needs to be moved					
 							if(data.isData_isRoaming()) { // Data is already Roaming
 								if(dst_partition_id == home_partition_id) {
 									this.updateData(data, dst_partition_id, dst_node_id, false);

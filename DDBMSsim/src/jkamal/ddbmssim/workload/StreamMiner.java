@@ -178,7 +178,7 @@ public class StreamMiner {
 		workload.setWrl_tr_orange(tr_orange);		
 		System.out.println("[OUT] Classified "+tr_orange+" transactions as ORANGE !!!");
 		
-		workload.calculateDTandDTI(db);
+		workload.calculateDTI(db);
 		
 		return (tr_red + tr_orange);
 	}
@@ -293,7 +293,7 @@ public class StreamMiner {
 		workload.setWrl_tr_orange(tr_orange);		
 		System.out.println("[OUT] Classified "+tr_orange+" transactions as ORANGE !!!");
 		
-		workload.calculateDTandDTI(db);
+		workload.calculateDTI(db);
 		
 		return (tr_red + tr_orange);
 	}		

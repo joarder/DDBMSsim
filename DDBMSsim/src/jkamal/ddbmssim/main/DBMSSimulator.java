@@ -39,8 +39,9 @@ public class DBMSSimulator {
 	public final static int NODE_MAX_CAPACITY = 10000; // 10GB Or, equivalently 10 Partitions can be stored in a single node.
 	public final static int PARTITION_MAX_CAPACITY = 1000; // in data rows
 	
-	public final static int TRANSACTIONS = 2000;
+	public final static int TRANSACTIONS = 1000;
 	public final static int SIMULATION_RUNS = 100;
+	public static boolean BASELINE_RUNS = true;
 
 	public final static int TPCC_WAREHOUSE = 10; // # of Warehouse, W = 1+	
 	public final static double TPCC_Scale = 0.001; // Reflects the total number of Data Rows in each Table; 0.001 = 1/1K
@@ -94,10 +95,10 @@ public class DBMSSimulator {
 											{0, 0, 0, 0, 0, 0, 0, 0, 0}  // 0
 											};
 	
-	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
-	public final static String METIS_DIR_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
-	public final static String LOG_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\log";
-	public final static String TEST_LOCATION = "C:\\Users\\Joarder Kamal\\git\\DDBMSsim\\DDBMSsim\\test";
+	public final static String hMETIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\hMetis\\1.5.3-win32";		
+	public final static String METIS_DIR_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\lib\\native\\metis\\3-win32";
+	public final static String LOG_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\log";
+	public final static String TEST_LOCATION = "C:\\Users\\jkamal\\git\\DDBMSsim\\DDBMSsim\\test";
 	
 	public final static String HMETIS = "khmetis";
 	public final static String METIS = "kmetis";
@@ -255,6 +256,7 @@ public class DBMSSimulator {
 				s = 0;
 			}			
 						
+			BASELINE_RUNS = false;
 			++ simulation_run;
 		}
 		
@@ -287,8 +289,10 @@ public class DBMSSimulator {
 		
 		// Perform workload sampling
 		write("Starting workload sampling to remove duplicate transactions ...", "ACT");
-		Workload sampled_workload = workload.removeDuplication(db);		
-		sampled_workload.initialise(db);
+		Workload sampled_workload = workload.removeDuplication(db);
+		
+		sampled_workload.initialise(db);	
+		
 		write("Total "+sampled_workload.getWrl_totalTransactions()+" transactions remain in the worklaod.", "MSG");
 		//sampled_workload.show(db, "");
 		
@@ -300,10 +304,12 @@ public class DBMSSimulator {
 		
 		// Perform transaction classification
 		// Classify the workload transactions based on whether they are distributed or not (Red/Orange/Green List)
-		//write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
-		//TransactionClassifier transactionClassifier = new TransactionClassifier();
+		write("Starting workload classification to identify RED and ORANGE transactions ...", "ACT");				
+		TransactionClassifier transactionClassifier = new TransactionClassifier();
 		simulation_logger.logTimings(db.getTiming_log(), "start");
-		//int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+		
+		int target_transactions = transactionClassifier.classifyTransactions(db, sampled_workload);
+		
 		simulation_logger.logTimings(db.getTiming_log(), "skip");
 		
 		// Assign shadow data id and generate workload and fix files
@@ -313,14 +319,16 @@ public class DBMSSimulator {
 		
 		// Generate workload and fix-files for partitioning
 		simulation_logger.logTimings(db.getTiming_log(), "start");
-		boolean empty = workloadFileGenerator.generateWorkloadFile(db, sampled_workload, partitioner);
+		
+		boolean empty = workloadFileGenerator.generateWorkloadFile(db, sampled_workload, partitioner);		
+		
 		simulation_logger.logTimings(db.getTiming_log(), "stop");
 		
 		int virtual_data = 0;
 		if(partitioner == "chg") {
 			virtual_data = workloadFileGenerator.getVirtual_data();
 			//System.out.println("-->> virtual data = "+virtual_data);
-		}		
+		}	
 		
 		if(!empty) {			
 			//int partitions = sampled_workload.getTransactionalPartitions();
@@ -328,7 +336,10 @@ public class DBMSSimulator {
 			write("Starting partitioner to partition the workload into "+partitions+" clusters ...", "ACT");	
 			// Perform hyper-graph/graph/compressed hyper-graph partitioning
 			simulation_logger.logTimings(db.getTiming_log(), "start");
+						 
 			runPartitioner(db, sampled_workload, partitioner, virtual_data, partitions);
+			
+			
 			simulation_logger.logTimings(db.getTiming_log(), "stop");
 	
 			write("Applying data movement strategies for database ("+db.getDb_name()+") ...", "ACT");
@@ -339,12 +350,14 @@ public class DBMSSimulator {
 			collectLog(simulation_logger, db, sampled_workload, db.getWorkload_log(), db.getNode_log(), db.getPartition_log(), partitioner);
 			
 			// Mapping cluster id to partition id
-			cluster_id_mapper.processPartFile(db, sampled_workload, partitions, directory, partitioner, virtual_data);		
+			cluster_id_mapper.processPartFile(db, sampled_workload, partitions, directory, partitioner, virtual_data);
 			//db.show(); //db.getDb_partitions()
 			
 			// Perform data movement
 			simulation_logger.logTimings(db.getTiming_log(), "start");
+						 
 			data_movement.performDataMovement(db, sampled_workload, strategy, partitioner);
+			
 			simulation_logger.logTimings(db.getTiming_log(), "stop");
 			simulation_logger.logTimings(db.getTiming_log(), "newline");
 			

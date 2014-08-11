@@ -177,57 +177,32 @@ public class Transaction implements Comparable<Transaction> {
 	}
 	
 	// This function will calculate the Node and Partition Span Cost for the representative Transaction
-	public void calculateDTCost(Database db) {
-		//int pid = -1;
-		//Partition partition;
+	public void calculateTransactionalCost(Database db) {
 		Set<Integer> tr_nodes = new TreeSet<Integer>();
 		Set<Integer> dataSet = this.getTr_dataSet();
 		Data data;		
 	
 		// Calculate Node Span Cost which is equivalent to the Distributed Transaction Cost
-		Iterator<Integer> ns = dataSet.iterator();
-//		while(ns.hasNext()) {
-//			data = db.getData(ns.next());
-//			
-//			if(data.isData_isRoaming())
-//				pid = data.getData_globalPartitionId();				
-//			else 
-//				pid = data.getData_homePartitionId();
-//				
-//			partition = db.getPartition(pid);
-//			nsCost.add(partition.getPartition_nodeId());
-//		}
-		
+		Iterator<Integer> ns = dataSet.iterator();		
 		while(ns.hasNext()) {
 			data = db.getData(ns.next());
 			tr_nodes.add(data.getData_nodeId());
 		}
 		
 		this.setTr_nodeSet(tr_nodes);
-		this.setTr_dtCost(tr_nodes.size()-1);
+		this.setTr_dtCost(tr_nodes.size());
 		
 		// Calculate Partition Span Cost
-		//pid = -1;
 		Set<Integer> tr_partitions = new TreeSet<Integer>();
 	
 		Iterator<Integer> ps = dataSet.iterator();
-//		while(ps.hasNext()) {
-//			data = db.getData(ps.next());
-//			if(data.isData_isRoaming())
-//				pid = data.getData_globalPartitionId();
-//			else 
-//				pid = data.getData_homePartitionId();				
-//			
-//			psCost.add(pid);
-//		}
-		
 		while(ps.hasNext()) {
 			data = db.getData(ps.next());
 			tr_partitions.add(data.getData_globalPartitionId());
 		}
 	
 		this.setTr_partitionSet(tr_partitions);
-		this.setTr_psCost(tr_partitions.size()-1);		
+		this.setTr_psCost(tr_partitions.size());		
 	}
 	
 	// Calculate DT Impacts for the Workload
